@@ -1,4 +1,4 @@
-# 🎮 Rotinik Frontend - Sprint 1 Fase 2 Completa
+# 🎮 Rotinik Frontend
 
 Bem-vindo ao Rotinik! Uma plataforma de **gamificação de rotinas** construída com Angular 17+ Standalone Components e Design System personalizado.
 
