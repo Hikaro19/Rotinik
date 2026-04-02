@@ -1,0 +1,243 @@
+<div class="leaderboard-container">
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- HEADER: Título e filtros de ordenação -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="leaderboard-header">
+    <div class="header-content">
+      <h1 class="header-title">🏆 Ranking Global</h1>
+      <p class="header-subtitle">Veja como você se compara com outros jogadores</p>
+    </div>
+
+    <!-- Seu Ranking -->
+    <div class="user-rank-widget">
+      <app-card variant="elevated" padding="md" rounded="md">
+        <div class="rank-widget-content">
+          <span class="rank-label">Sua Posição</span>
+          <span class="rank-value">#{{ userService.userRank() }}</span>
+          <span class="rank-metric">{{ userService.currentUserSignal().name }}</span>
+        </div>
+      </app-card>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- FILTERS: Tipo de ordenação -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="leaderboard-filters">
+    <div class="filter-buttons">
+      <button
+        class="filter-btn"
+        [class.active]="userService.sortTypeSignal() === 'xp'"
+        (click)="changeSortType('xp')"
+      >
+        ⭐ Total XP
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="userService.sortTypeSignal() === 'level'"
+        (click)="changeSortType('level')"
+      >
+        📈 Nível
+      </button>
+      <button
+        class="filter-btn"
+        [class.active]="userService.sortTypeSignal() === 'achievements'"
+        (click)="changeSortType('achievements')"
+      >
+        🏅 Achievements
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+      <app-input
+        placeholder="🔍 Procurar jogador..."
+        [(ngModel)]="searchQueryText"
+        (change)="onSearchChange($event)"
+        type="text"
+      ></app-input>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- TOP 3: Destaque especial com medals -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="top-3-section">
+    <div class="top-3-grid">
+      <!-- Top 2 (Silver - Right) -->
+      <div class="top-card-wrapper" *ngIf="userService.leaderboard()[1]">
+        <div class="top-card silver">
+          <app-card variant="elevated" padding="lg" rounded="lg" class="top-card-inner">
+            <div class="top-card-medal">
+              <span class="medal-icon">🥈</span>
+              <span class="medal-rank">#2</span>
+            </div>
+
+            <!-- User Info -->
+            <div class="top-card-user">
+              <div class="avatar-large">{{ userService.leaderboard()[1].avatar }}</div>
+              <h3 class="user-name">{{ userService.leaderboard()[1].name }}</h3>
+              <p class="user-level">Nível {{ userService.leaderboard()[1].level }}</p>
+            </div>
+
+            <!-- Metrics -->
+            <div class="top-card-metrics">
+              <div class="metric">
+                <span class="metric-label">XP</span>
+                <span class="metric-value">{{ formatNumber(userService.leaderboard()[1].totalXP) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Achievements</span>
+                <span class="metric-value">{{ userService.leaderboard()[1].achievements }}</span>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button
+              class="top-card-action"
+              (click)="goToProfile(userService.leaderboard()[1].id)"
+            >
+              Ver Perfil
+            </button>
+          </app-card>
+        </div>
+      </div>
+
+      <!-- Top 1 (Gold - Center) -->
+      <div class="top-card-wrapper champion" *ngIf="userService.leaderboard()[0]">
+        <div class="top-card gold">
+          <app-card variant="elevated" padding="lg" rounded="lg" class="top-card-inner">
+            <div class="top-card-medal champion-medal">
+              <span class="medal-icon">🥇</span>
+              <span class="medal-rank">#1</span>
+            </div>
+
+            <!-- User Info -->
+            <div class="top-card-user">
+              <div class="avatar-large champion">{{ userService.leaderboard()[0].avatar }}</div>
+              <h3 class="user-name champion">{{ userService.leaderboard()[0].name }}</h3>
+              <p class="user-level champion">Nível {{ userService.leaderboard()[0].level }}</p>
+            </div>
+
+            <!-- Metrics -->
+            <div class="top-card-metrics champion">
+              <div class="metric">
+                <span class="metric-label">XP</span>
+                <span class="metric-value champion">{{ formatNumber(userService.leaderboard()[0].totalXP) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Achievements</span>
+                <span class="metric-value champion">{{ userService.leaderboard()[0].achievements }}</span>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button
+              class="top-card-action champion"
+              (click)="goToProfile(userService.leaderboard()[0].id)"
+            >
+              Ver Perfil
+            </button>
+          </app-card>
+        </div>
+      </div>
+
+      <!-- Top 3 (Bronze - Right) -->
+      <div class="top-card-wrapper" *ngIf="userService.leaderboard()[2]">
+        <div class="top-card bronze">
+          <app-card variant="elevated" padding="lg" rounded="lg" class="top-card-inner">
+            <div class="top-card-medal">
+              <span class="medal-icon">🥉</span>
+              <span class="medal-rank">#3</span>
+            </div>
+
+            <!-- User Info -->
+            <div class="top-card-user">
+              <div class="avatar-large">{{ userService.leaderboard()[2].avatar }}</div>
+              <h3 class="user-name">{{ userService.leaderboard()[2].name }}</h3>
+              <p class="user-level">Nível {{ userService.leaderboard()[2].level }}</p>
+            </div>
+
+            <!-- Metrics -->
+            <div class="top-card-metrics">
+              <div class="metric">
+                <span class="metric-label">XP</span>
+                <span class="metric-value">{{ formatNumber(userService.leaderboard()[2].totalXP) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Achievements</span>
+                <span class="metric-value">{{ userService.leaderboard()[2].achievements }}</span>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button
+              class="top-card-action"
+              (click)="goToProfile(userService.leaderboard()[2].id)"
+            >
+              Ver Perfil
+            </button>
+          </app-card>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- REST OF RANKING: Lista dos demais usuários -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="leaderboard-list">
+    <div class="list-header">
+      <span class="list-col rank-col">#</span>
+      <span class="list-col user-col">Jogador</span>
+      <span class="list-col level-col">Nível</span>
+      <span class="list-col metric-col">{{ getSortLabel(userService.sortTypeSignal()) }}</span>
+      <span class="list-col action-col">Ação</span>
+    </div>
+
+    <!-- Ranking Items (skip top 3) -->
+    <div
+      *ngFor="let user of userService.leaderboard().slice(3)"
+      class="list-item"
+      [class.is-current-user]="isCurrentUser(user.id)"
+    >
+      <span class="list-col rank-col">
+        <span class="rank-badge">{{ user.rank }}</span>
+      </span>
+
+      <span class="list-col user-col">
+        <div class="user-info">
+          <span class="user-avatar">{{ user.avatar }}</span>
+          <div class="user-names">
+            <span class="name">{{ user.name }}</span>
+            <span class="bio" *ngIf="user.bio">{{ user.bio }}</span>
+          </div>
+        </div>
+      </span>
+
+      <span class="list-col level-col">
+        <span class="level-badge">{{ user.level }}</span>
+      </span>
+
+      <span class="list-col metric-col">
+        <span class="metric-value">{{ formatNumber(getMetricValue(user, userService.sortTypeSignal())) }}</span>
+      </span>
+
+      <span class="list-col action-col">
+        <div class="action-buttons">
+          <button class="action-btn view-btn" (click)="goToProfile(user.id)" title="Ver Perfil">
+            👁️
+          </button>
+          <button
+            class="action-btn follow-btn"
+            [class.following]="user.isFollowed"
+            (click)="toggleFollow(user.id)"
+            [title]="user.isFollowed ? 'Deixar de seguir' : 'Seguir'"
+          >
+            {{ user.isFollowed ? '✓' : '+' }}
+          </button>
+        </div>
+      </span>
+    </div>
+  </section>
+</div>

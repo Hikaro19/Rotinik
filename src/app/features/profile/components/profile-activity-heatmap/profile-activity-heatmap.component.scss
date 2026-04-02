@@ -1,0 +1,117 @@
+
+.heatmap-container {
+  width: 100%;
+}
+
+.heatmap-legend {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+
+    .legend-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+
+      &.active {
+        background: #667eea;
+        border-color: #667eea;
+      }
+
+      &.inactive {
+        background: #f0f0f0;
+        border-color: #d0d0d0;
+      }
+    }
+  }
+}
+
+.heatmap-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.heatmap-week {
+  display: flex;
+  gap: 0.5rem;
+  min-width: max-content;
+}
+
+.heatmap-day {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  &.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+
+    &:hover {
+      transform: scale(1.15);
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.5);
+    }
+  }
+
+  &.inactive {
+    background: #f5f5f5;
+
+    &:hover {
+      background: #e8e8e8;
+      transform: scale(1.1);
+    }
+  }
+
+  &:hover {
+    z-index: 10;
+  }
+}
+
+.heatmap-info {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #999;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+
+  p {
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .heatmap-day {
+    width: 18px;
+    height: 18px;
+    font-size: 0.85rem;
+  }
+
+  .heatmap-week {
+    gap: 0.25rem;
+  }
+
+  .heatmap-grid {
+    gap: 0.25rem;
+  }
+
+  .heatmap-legend {
+    gap: 1rem;
+    font-size: 0.8rem;
+  }
+}

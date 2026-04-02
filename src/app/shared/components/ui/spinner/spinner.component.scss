@@ -1,0 +1,131 @@
+@use '../../../../../styles.scss' as *;
+
+.app-spinner {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-3);
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🎨 SVG Container
+  // ─────────────────────────────────────────────────────────────────────
+
+  &__svg {
+    color: var(--purple-neon);
+    animation: spin 1s linear infinite;
+  }
+
+  &__circle {
+    stroke-dashoffset: -31.4;
+    animation: spin 1s linear infinite;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 📏 Size Variants
+  // ─────────────────────────────────────────────────────────────────────
+
+  &--xs {
+    .app-spinner__text {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  &--sm {
+    .app-spinner__text {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  &--md {
+    .app-spinner__text {
+      font-size: var(--font-size-base);
+    }
+  }
+
+  &--lg {
+    .app-spinner__text {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  &--xl {
+    .app-spinner__text {
+      font-size: var(--font-size-xl);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🎯 Color Variants
+  // ─────────────────────────────────────────────────────────────────────
+
+  &--primary {
+    .app-spinner__svg {
+      color: var(--purple-neon);
+      filter: drop-shadow(0 0 8px rgba(217, 70, 239, 0.2));
+    }
+  }
+
+  &--success {
+    .app-spinner__svg {
+      color: var(--game-success);
+    }
+  }
+
+  &--warning {
+    .app-spinner__svg {
+      color: var(--game-warning);
+    }
+  }
+
+  &--danger {
+    .app-spinner__svg {
+      color: var(--game-danger);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 📝 Text
+  // ─────────────────────────────────────────────────────────────────────
+
+  &__text {
+    color: var(--text-primary);
+    font-weight: var(--font-medium);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 🎬 Animations (reuses global spin keyframe from styles.scss)
+// ─────────────────────────────────────────────────────────────────────
+
+// Backup if not imported from styles
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 📱 Responsive
+// ─────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .app-spinner {
+    &--lg {
+      .app-spinner__svg {
+        transform: scale(0.8);
+      }
+    }
+
+    &--xl {
+      .app-spinner__svg {
+        transform: scale(0.6);
+      }
+    }
+  }
+}

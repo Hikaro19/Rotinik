@@ -1,0 +1,185 @@
+<!-- Feed Header -->
+<div class="feed-header">
+  <div class="header-content">
+    <h1>🎯 Feed Social</h1>
+    <p>Descubra e copie rotinas incríveis de outros usuários</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <app-input
+      [(ngModel)]="searchQueryText"
+      (change)="onSearchChange($event)"
+      placeholder="Buscar rotinas, usuários..."
+      type="text"
+    ></app-input>
+  </div>
+
+  <!-- Category Filter -->
+  <div class="category-filter">
+    <div class="filter-label">📂 Categorias:</div>
+    <div class="category-buttons">
+      <button
+        *ngFor="let category of routineCategories"
+        [class.active]="selectedCategorySignal() === category.id"
+        (click)="onCategoryClick(category.id)"
+        class="category-btn"
+      >
+        {{ category.emoji }} {{ category.name.split(' ')[1] }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Feed Timeline -->
+<div class="feed-container">
+  <!-- Empty State -->
+  <div *ngIf="filteredRoutinesSignal().length === 0" class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>Nenhuma rotina encontrada</h3>
+    <p>Tente ajustar seus filtros ou busca</p>
+  </div>
+
+  <!-- Routines Timeline -->
+  <div *ngIf="filteredRoutinesSignal().length > 0" class="routines-timeline">
+    <div
+      *ngFor="let routine of filteredRoutinesSignal(); let i = index"
+      class="routine-card-wrapper"
+      [class.highlighted]="routine.isLiked"
+    >
+      <!-- Timeline Connector -->
+      <div class="timeline-connector">
+        <div class="connector-dot"></div>
+        <div *ngIf="i < filteredRoutinesSignal().length - 1" class="connector-line"></div>
+      </div>
+
+      <!-- Routine Card -->
+      <app-card variant="elevated" class="routine-card">
+        <!-- Card Header -->
+        <div class="card-header">
+          <!-- User Info -->
+          <div class="user-info">
+            <div class="avatar">{{ routine.sharedBy.avatar }}</div>
+            <div class="user-details">
+              <h4 class="username">{{ routine.sharedBy.username }}</h4>
+              <p class="timestamp">{{ formatDate(routine.sharedAt) }}</p>
+            </div>
+            <div class="user-level" [style.background]="'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+              <span class="level-text">Lvl {{ routine.sharedBy.level }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Routine Title & Category -->
+        <div class="routine-header">
+          <h3 class="routine-title">{{ routine.routineName }}</h3>
+          <div class="routine-meta">
+            <span class="category-badge">{{ getCategoryEmoji(routine.category) }} {{ routine.category }}</span>
+            <span
+              class="difficulty-badge"
+              [style.background]="getDifficultyColor(routine.difficulty)"
+              [style.color]="'white'"
+            >
+              {{ getDifficultyLabel(routine.difficulty) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Routine Description -->
+        <p class="routine-description">{{ routine.description }}</p>
+
+        <!-- Routine Stats Grid -->
+        <div class="routine-stats">
+          <div class="stat-item">
+            <span class="stat-icon">📊</span>
+            <span class="stat-label">Taxa Sucesso</span>
+            <span class="stat-value">{{ routine.completionStats.successRate }}%</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="stat-icon">🔥</span>
+            <span class="stat-label">Período</span>
+            <span class="stat-value">{{ routine.completionStats.streakDays }}d</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="stat-icon">✅</span>
+            <span class="stat-label">Completado</span>
+            <span class="stat-value">{{ routine.completionStats.totalCompleted }}x</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="stat-icon">⏱️</span>
+            <span class="stat-label">Tempo</span>
+            <span class="stat-value">{{ routine.estimatedTime }}min</span>
+          </div>
+        </div>
+
+        <!-- Tasks Preview -->
+        <div *ngIf="routine.tasks && routine.tasks.length > 0" class="tasks-preview">
+          <h4 class="tasks-title">✏️ Tarefas:</h4>
+          <ul class="tasks-list">
+            <li *ngFor="let task of routine.tasks.slice(0, 3)">{{ task }}</li>
+            <li *ngIf="routine.tasks.length > 3" class="more-tasks">
+              +{{ routine.tasks.length - 3 }} mais
+            </li>
+          </ul>
+        </div>
+
+        <!-- Engagement Stats -->
+        <div class="engagement-stats">
+          <div class="stat-badge">
+            <span class="badge-icon">❤️</span>
+            <span class="badge-text">{{ routine.likes }}</span>
+          </div>
+          <div class="stat-badge">
+            <span class="badge-icon">⤴️</span>
+            <span class="badge-text">{{ routine.shares }}</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card-actions">
+          <app-button
+            [variant]="routine.isLiked ? 'primary' : 'secondary'"
+            size="sm"
+            (click)="onLikeClick(routine)"
+            class="action-btn"
+          >
+            {{ routine.isLiked ? '❤️ Descurtido' : '🤍 Curtir' }}
+          </app-button>
+
+          <app-button variant="primary" size="sm" (click)="onCopyRoutine(routine)" class="action-btn">
+            📋 Copiar Rotina
+          </app-button>
+
+          <app-button variant="secondary" size="sm" class="action-btn">
+            👤 Ver Perfil
+          </app-button>
+        </div>
+      </app-card>
+    </div>
+  </div>
+
+  <!-- Load More Section -->
+  <div *ngIf="hasMoreRoutinesSignal()" class="load-more-section">
+    <app-button
+      variant="secondary"
+      size="md"
+      (click)="onLoadMore()"
+      [disabled]="isLoadingMoreSignal()"
+      class="load-more-btn"
+    >
+      <span *ngIf="!isLoadingMoreSignal()">⬇️ Carregar Mais</span>
+      <span *ngIf="isLoadingMoreSignal()">⏳ Carregando...</span>
+    </app-button>
+
+    <app-spinner *ngIf="isLoadingMoreSignal()"></app-spinner>
+  </div>
+
+  <!-- End of Feed -->
+  <div *ngIf="!hasMoreRoutinesSignal() && filteredRoutinesSignal().length > 0" class="end-of-feed">
+    <p>✨ Você chegou ao final do feed!</p>
+    <small>Volte mais tarde para novas rotinas</small>
+  </div>
+</div>

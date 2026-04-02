@@ -1,0 +1,39 @@
+<section class="section-box" *ngIf="historyItems.length > 0">
+  <div class="section-header">
+    <h2>📜 Histórico Recente</h2>
+  </div>
+
+  <div class="history-timeline">
+    <div class="history-item" *ngFor="let item of historyItems" [style.--item-color]="getTypeColor(item.type)">
+      <!-- Timeline dot -->
+      <div class="timeline-dot"></div>
+
+      <!-- Item card -->
+      <div class="history-card">
+        <div class="card-header">
+          <div class="icon-badge">{{ item.icon }}</div>
+          <div class="header-info">
+            <h3 class="item-title">{{ item.title }}</h3>
+            <p class="item-description">{{ item.description }}</p>
+          </div>
+          <span class="item-date">{{ formatDate(item.date) }}</span>
+        </div>
+        <div class="card-footer" *ngIf="item.details">
+          <span class="item-detail">{{ item.details }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- See more -->
+  <div class="see-more">
+    <button class="see-more-btn">Ver histórico completo →</button>
+  </div>
+</section>
+
+<!-- Empty state -->
+<section class="section-box" *ngIf="historyItems.length === 0">
+  <p class="empty-state-text">
+    Nenhum histórico disponível. Comece a jogar!
+  </p>
+</section>

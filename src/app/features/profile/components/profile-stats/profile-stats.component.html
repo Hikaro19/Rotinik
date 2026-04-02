@@ -1,0 +1,37 @@
+<section class="stats-grid">
+  <!-- Dias desde o início -->
+  <div class="stat-card">
+    <div class="stat-icon">{{ getIcon('days') }}</div>
+    <div class="stat-content">
+      <span class="stat-value">{{ daysSinceStart() }}</span>
+      <span class="stat-label">Dias no jogo</span>
+    </div>
+  </div>
+
+  <!-- Dias ativos -->
+  <div class="stat-card">
+    <div class="stat-icon">{{ getIcon('active') }}</div>
+    <div class="stat-content">
+      <span class="stat-value">{{ activeDays() }}</span>
+      <span class="stat-label">Dias ativos</span>
+    </div>
+  </div>
+
+  <!-- Porcentagem de atividade -->
+  <div class="stat-card">
+    <div class="stat-icon">{{ getIcon('percentage') }}</div>
+    <div class="stat-content">
+      <span class="stat-value">{{ activityPercentage() }}%</span>
+      <span class="stat-label">Atividade</span>
+    </div>
+  </div>
+
+  <!-- Achievements desbloqueados -->
+  <div class="stat-card">
+    <div class="stat-icon">{{ getIcon('achievements') }}</div>
+    <div class="stat-content">
+      <span class="stat-value">{{ unlockedAchievements() }}</span>
+      <span class="stat-label">Achievements</span>
+    </div>
+  </div>
+</section>

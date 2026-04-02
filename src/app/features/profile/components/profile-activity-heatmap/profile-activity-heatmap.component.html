@@ -1,0 +1,30 @@
+<div class="heatmap-container">
+  <!-- Legend -->
+  <div class="heatmap-legend">
+    <span class="legend-item">
+      <div class="legend-box inactive"></div>
+      Não completo
+    </span>
+    <span class="legend-item">
+      <div class="legend-box active"></div>
+      Completo
+    </span>
+  </div>
+
+  <!-- Heatmap Grid -->
+  <div class="heatmap-grid">
+    <div class="heatmap-week" *ngFor="let week of weeks">
+      <div
+        class="heatmap-day"
+        *ngFor="let day of week"
+        [ngClass]="getIntensityClass(day.completed)"
+        [title]="getTooltip(day.date, day.completed)"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="heatmap-info">
+    <p>Últimos 90 dias de atividade. Clique em um dia para mais detalhes.</p>
+  </div>
+</div>

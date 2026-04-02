@@ -1,0 +1,295 @@
+<div class="friends-container">
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- HEADER -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="friends-header">
+    <div class="header-content">
+      <h1 class="header-title">👥 Meus Amigos</h1>
+      <p class="header-subtitle">Gerencie suas amizades e descubra novos jogadores</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="header-stats">
+      <app-card variant="outlined" padding="md" rounded="md">
+        <div class="stat-item">
+          <span class="stat-icon">👥</span>
+          <span class="stat-value">{{ totalFriends() }}</span>
+          <span class="stat-label">Amigos</span>
+        </div>
+      </app-card>
+
+      <app-card variant="outlined" padding="md" rounded="md">
+        <div class="stat-item">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-value">{{ favoriteFriends().length }}</span>
+          <span class="stat-label">Favoritos</span>
+        </div>
+      </app-card>
+
+      <app-card variant="outlined" padding="md" rounded="md" [class.has-notification]="pendingCount() > 0">
+        <div class="stat-item">
+          <span class="stat-icon">📬</span>
+          <span class="stat-value">{{ pendingCount() }}</span>
+          <span class="stat-label">Requisições</span>
+          <span *ngIf="pendingCount() > 0" class="notification-badge">{{ pendingCount() }}</span>
+        </div>
+      </app-card>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- TABS -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="friends-tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTabSignal() === 'friends'"
+      (click)="setActiveTab('friends')"
+    >
+      👥 Amigos ({{ totalFriends() }})
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTabSignal() === 'requests'"
+      (click)="setActiveTab('requests')"
+      [class.has-notification]="pendingCount() > 0"
+    >
+      📬 Requisições
+      <span *ngIf="pendingCount() > 0" class="tab-badge">{{ pendingCount() }}</span>
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTabSignal() === 'discover'"
+      (click)="setActiveTab('discover')"
+    >
+      🔍 Descobrir
+    </button>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- TAB CONTENT: FRIENDS -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="tab-content friends-tab" *ngIf="activeTabSignal() === 'friends'">
+    <!-- Favoritos -->
+    <div *ngIf="favoriteFriends().length > 0" class="friends-section">
+      <h3 class="section-title">⭐ Amigos Favoritos</h3>
+      <div class="friends-grid">
+        <app-card
+          *ngFor="let friend of favoriteFriends()"
+          variant="elevated"
+          padding="md"
+          rounded="md"
+          class="friend-card"
+        >
+          <div class="friend-card-header">
+            <div class="avatar-with-status">
+              <span class="avatar">{{ friend.friendAvatar }}</span>
+              <span
+                class="online-indicator"
+                [class.online]="isOnline(friend.friendLastOnline)"
+              ></span>
+            </div>
+            <button
+              class="favorite-btn active"
+              (click)="toggleFavorite(friend.friendId)"
+              title="Remover dos favoritos"
+            >
+              ⭐
+            </button>
+          </div>
+
+          <h4 class="friend-name">{{ friend.friendName }}</h4>
+          <p class="friend-level">Nível {{ friend.friendLevel }}</p>
+          <p class="friend-status">{{ formatLastOnline(friend.friendLastOnline) }}</p>
+
+          <div class="friend-card-actions">
+            <button class="action-btn" (click)="goToProfile(friend.friendId)">Ver Perfil</button>
+            <button class="action-btn danger" (click)="removeFriend(friend.friendId)">Remover</button>
+          </div>
+        </app-card>
+      </div>
+    </div>
+
+    <!-- Todos os Amigos -->
+    <div class="friends-section">
+      <h3 class="section-title">{{ favoriteFriends().length > 0 ? 'Outros Amigos' : 'Seus Amigos' }}</h3>
+
+      <div *ngIf="friendsList().length === 0" class="empty-state">
+        <p>Você ainda não tem amigos. Comece a descobrir novos jogadores!</p>
+      </div>
+
+      <div class="friends-grid" *ngIf="friendsList().length > 0">
+        <app-card
+          *ngFor="let friend of friendsList()"
+          variant="outlined"
+          padding="md"
+          rounded="md"
+          class="friend-card"
+          [class.is-favorite]="friend.isFavorite"
+        >
+          <div class="friend-card-header">
+            <div class="avatar-with-status">
+              <span class="avatar">{{ friend.friendAvatar }}</span>
+              <span
+                class="online-indicator"
+                [class.online]="isOnline(friend.friendLastOnline)"
+              ></span>
+            </div>
+            <button
+              class="favorite-btn"
+              [class.active]="friend.isFavorite"
+              (click)="toggleFavorite(friend.friendId)"
+              [title]="friend.isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
+            >
+              ⭐
+            </button>
+          </div>
+
+          <h4 class="friend-name">{{ friend.friendName }}</h4>
+          <p class="friend-level">Nível {{ friend.friendLevel }}</p>
+          <p class="friend-status">{{ formatLastOnline(friend.friendLastOnline) }}</p>
+
+          <div class="friend-card-actions">
+            <button class="action-btn" (click)="goToProfile(friend.friendId)">Ver Perfil</button>
+            <button class="action-btn danger" (click)="removeFriend(friend.friendId)">Remover</button>
+          </div>
+        </app-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- TAB CONTENT: REQUESTS -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="tab-content requests-tab" *ngIf="activeTabSignal() === 'requests'">
+    <!-- Requisições Recebidas -->
+    <div class="requests-section">
+      <h3 class="section-title">📬 Requisições Recebidas</h3>
+
+      <div *ngIf="receivedRequests().length === 0" class="empty-state">
+        <p>Nenhuma requisição recebida no momento</p>
+      </div>
+
+      <div class="requests-list" *ngIf="receivedRequests().length > 0">
+        <app-card
+          *ngFor="let request of receivedRequests()"
+          variant="elevated"
+          padding="md"
+          rounded="md"
+          class="request-card"
+        >
+          <div class="request-header">
+            <span class="request-avatar">{{ request.senderAvatar }}</span>
+            <div class="request-info">
+              <h4 class="request-name">{{ request.senderName }}</h4>
+              <p class="request-date">{{ formatRequestDate(request.requestDate) }}</p>
+            </div>
+          </div>
+
+          <div class="request-actions">
+            <button
+              class="action-btn primary"
+              (click)="acceptRequest(request.id, request.senderId, request.senderName, request.senderAvatar)"
+            >
+              ✓ Aceitar
+            </button>
+            <button class="action-btn" (click)="declineRequest(request.id)">✕ Recusar</button>
+          </div>
+        </app-card>
+      </div>
+    </div>
+
+    <!-- Requisições Enviadas -->
+    <div class="requests-section">
+      <h3 class="section-title">📤 Requisições Enviadas</h3>
+
+      <div *ngIf="sentRequests().length === 0" class="empty-state">
+        <p>Nenhuma requisição enviada</p>
+      </div>
+
+      <div class="requests-list" *ngIf="sentRequests().length > 0">
+        <app-card
+          *ngFor="let request of sentRequests()"
+          variant="outlined"
+          padding="md"
+          rounded="md"
+          class="request-card sent"
+        >
+          <div class="request-header">
+            <span class="request-avatar">?</span>
+            <div class="request-info">
+              <h4 class="request-name">Requisição Pendente</h4>
+              <p class="request-date">Enviado há {{ formatRequestDate(request.requestDate) }}</p>
+            </div>
+          </div>
+
+          <div class="request-actions">
+            <button class="action-btn" (click)="cancelRequest(request.id)">Cancelar</button>
+          </div>
+        </app-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <!-- TAB CONTENT: DISCOVER -->
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+  <section class="tab-content discover-tab" *ngIf="activeTabSignal() === 'discover'">
+    <!-- Search Bar -->
+    <div class="discover-search">
+      <app-input
+        placeholder="🔍 Procurar jogadores por nome..."
+        [(ngModel)]="searchQueryText"
+        (change)="onSearchChange($event)"
+        type="text"
+      ></app-input>
+    </div>
+
+    <!-- Suggested Users -->
+    <div class="discover-grid">
+      <div *ngIf="getSuggestedUsers().length === 0" class="empty-state discover-empty">
+        <p>{{ searchQuerySignal() ? 'Nenhum usuário encontrado' : 'Sem mais usuários para descobrir' }}</p>
+      </div>
+
+      <app-card
+        *ngFor="let user of getSuggestedUsers()"
+        variant="elevated"
+        padding="md"
+        rounded="md"
+        class="discover-card"
+      >
+        <div class="discover-card-header">
+          <span class="avatar-large">{{ user.avatar }}</span>
+        </div>
+
+        <h4 class="user-name">{{ user.name }}</h4>
+        <p class="user-level">Nível {{ user.level }}</p>
+        <p class="user-bio" *ngIf="user.bio">{{ user.bio }}</p>
+
+        <div class="user-stats">
+          <div class="stat">
+            <span class="stat-label">XP</span>
+            <span class="stat-value">{{ (user.totalXP / 1000).toFixed(0) }}K</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Achievements</span>
+            <span class="stat-value">{{ user.achievements }}</span>
+          </div>
+        </div>
+
+        <div class="discover-actions">
+          <button class="action-btn primary" (click)="goToProfile(user.id)">Ver Perfil</button>
+          <button
+            class="action-btn"
+            [disabled]="
+              friendsService.isFriend(user.id) || friendsService.hasPendingRequest(user.id) === 'sent'
+            "
+            (click)="sendFriendRequest(user.id, user.name, user.avatar)"
+          >
+            {{ getActionButtonText(user.id) }}
+          </button>
+        </div>
+      </app-card>
+    </div>
+  </section>
+</div>

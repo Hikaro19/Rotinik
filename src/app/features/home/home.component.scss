@@ -1,0 +1,402 @@
+// 🏠 HOME COMPONENT STYLES - TELA DE ROTINAS (Pixel Perfect Figma Design)
+
+// ============================================================================
+// 🎬 ANIMATIONS
+// ============================================================================
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(168, 85, 247, 0);
+  }
+}
+
+// ============================================================================
+// CONTAINER
+// ============================================================================
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  padding: var(--spacing-4);
+  padding-bottom: var(--spacing-8);
+}
+
+// ============================================================================
+// 1. WELCOME CARD (Top Card)
+// ============================================================================
+
+.welcome-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-6);
+  
+  background: var(--brand-gradient);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-6);
+  
+  // Subtle shadow in the same purple tones
+  box-shadow: 
+    0 8px 24px rgba(168, 85, 247, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  min-height: 140px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: var(--spacing-4);
+    min-height: auto;
+    padding: var(--spacing-5);
+  }
+}
+
+.welcome-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.welcome-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.welcome-subtitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-regular);
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  line-height: var(--line-height-normal);
+}
+
+// ============================================================================
+// 2. PROGRESS CIRCLE (CSS Circular Progress)
+// ============================================================================
+
+.progress-circle {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.progress-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.progress-fill {
+  fill: none;
+  stroke: var(--text-primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 314; // Circumference = 2π * 50 ≈ 314
+  stroke-dashoffset: calc(314 * (1 - 0.6)); // 60% progress
+  transition: stroke-dashoffset var(--transition-base) ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  font-size: 20px;
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1;
+
+  @media (max-width: 480px) {
+    font-size: 16px;
+  }
+}
+
+// ============================================================================
+// 3. TAB TOGGLE (Tarefas / Rotinas)
+// ============================================================================
+
+.tab-container {
+  display: flex;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-1);
+  height: 44px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border-radius: calc(var(--radius-card) - var(--spacing-1));
+  transition: all var(--transition-base) ease;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  // Inactive state
+  border: 2px solid var(--purple-neon);
+  background: transparent;
+  color: var(--text-secondary);
+
+  &:hover:not(.active) {
+    color: var(--purple-neon);
+    background: rgba(217, 70, 239, 0.05);
+  }
+
+  &.active {
+    background: #3F1368;
+    color: var(--text-primary);
+    border: none;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ============================================================================
+// 4. EM ANDAMENTO SECTION
+// ============================================================================
+
+.in-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: var(--spacing-6) 0 0 0;
+  line-height: var(--line-height-tight);
+}
+
+// ============================================================================
+// 5. ROUTINE CARDS
+// ============================================================================
+
+.routine-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.routine-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  
+  background: var(--bg-input);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-4);
+  
+  // Critical visual detail: Left accent border + subtle glow
+  border-left: 3px solid var(--purple-neon);
+  box-shadow: 
+    inset 3px 0 8px rgba(217, 70, 239, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  // 🎬 Animação de entrada
+  animation: fadeInUp 0.5s ease-out forwards;
+  
+  // Efeito stagger para múltiplos cards
+  @for $i from 1 through 6 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+
+  &:hover {
+    background: var(--bg-hover);
+    box-shadow: 
+      inset 3px 0 12px rgba(217, 70, 239, 0.25),
+      0 8px 20px rgba(217, 70, 239, 0.25);
+    transform: translateX(8px) translateY(-2px);
+  }
+
+  &:active {
+    transform: translateX(4px) translateY(0px);
+  }
+}
+
+.card-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.routine-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.routine-subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-regular);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.card-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.xp-badge {
+  background: linear-gradient(135deg, rgba(255, 71, 182, 0.2), rgba(255, 71, 182, 0.1));
+  border: 1px solid rgba(255, 71, 182, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-2) var(--spacing-3);
+  
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-semibold);
+  color: var(--game-xp);
+  
+  white-space: nowrap;
+}
+
+// ============================================================================
+// RESPONSIVE BREAKPOINTS
+// ============================================================================
+
+@media (max-width: 480px) {
+  .home-container {
+    gap: var(--spacing-4);
+    padding: var(--spacing-3);
+  }
+
+  .routine-card {
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+  }
+
+  .section-title {
+    font-size: var(--font-size-sm);
+    margin: var(--spacing-4) 0 0 0;
+  }
+
+  .tab-container {
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .tab-btn {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 320px) {
+  .welcome-card {
+    padding: var(--spacing-4);
+  }
+
+  .welcome-title {
+    font-size: 16px;
+  }
+
+  .welcome-subtitle {
+    font-size: 11px;
+  }
+
+  .progress-circle {
+    width: 70px;
+    height: 70px;
+  }
+
+  .progress-text {
+    font-size: 14px;
+  }
+
+  .routine-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-right {
+    align-self: flex-end;
+  }
+}
+
+// ============================================================================
+// ANIMATION ENHANCEMENTS
+// ============================================================================
+
+.routine-card {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

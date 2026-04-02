@@ -1,0 +1,658 @@
+// Leaderboard Component Styles
+
+.leaderboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+// ───────────────────────────────────────────────────────────────────
+// HEADER
+// ───────────────────────────────────────────────────────────────────
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+
+  .header-content {
+    flex: 1;
+
+    .header-title {
+      margin: 0 0 0.5rem 0;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .header-subtitle {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+  }
+
+  .user-rank-widget {
+    min-width: 250px;
+
+    ::ng-deep .app-card {
+      background: linear-gradient(135deg, var(--game-coin) 0%, #ffaa00 100%);
+      color: #000;
+    }
+
+    .rank-widget-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+
+      .rank-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        opacity: 0.9;
+      }
+
+      .rank-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+
+      .rank-metric {
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
+    }
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────
+// FILTERS
+// ───────────────────────────────────────────────────────────────────
+
+.leaderboard-filters {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .filter-buttons {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .filter-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--purple-neon);
+      color: var(--purple-neon);
+      background: rgba(217, 70, 239, 0.1);
+    }
+
+    &.active {
+      background: var(--purple-neon);
+      color: #000;
+      border-color: var(--purple-neon);
+      font-weight: 700;
+    }
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────
+// TOP 3 SECTION
+// ───────────────────────────────────────────────────────────────────
+
+.top-3-section {
+  width: 100%;
+}
+
+.top-3-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.top-card-wrapper {
+  perspective: 1000px;
+  position: relative;
+
+  &.champion {
+    z-index: 10;
+    transform: scale(1);
+  }
+}
+
+.top-card {
+  position: relative;
+  height: 100%;
+  padding: 1px; // Border container
+
+  // Gradients for different medals
+  &.gold {
+    background: linear-gradient(135deg, var(--game-coin) 0%, #ffaa00 100%);
+
+    .top-card-inner {
+      background: var(--bg-card);
+      border: 2px solid transparent;
+    }
+  }
+
+  &.silver {
+    background: linear-gradient(135deg, #e8e8e8 0%, #c0c0c0 100%);
+
+    .top-card-inner {
+      background: var(--bg-card);
+      border: 2px solid transparent;
+    }
+  }
+
+  &.bronze {
+    background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%);
+
+    .top-card-inner {
+      background: var(--bg-card);
+      border: 2px solid transparent;
+    }
+  }
+
+  .top-card-inner {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+    min-height: 380px;
+    justify-content: space-between;
+  }
+
+  .top-card-medal {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 2rem;
+
+    &.champion-medal {
+      font-size: 2.5rem;
+    }
+
+    .medal-icon {
+      font-size: inherit;
+    }
+
+    .medal-rank {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-title);
+    }
+  }
+
+  .top-card-user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+
+    .avatar-large {
+      font-size: 4rem;
+      line-height: 1;
+      transition: transform 0.3s ease;
+
+      &.champion {
+        font-size: 5rem;
+      }
+    }
+
+    .user-name {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-title);
+
+      &.champion {
+        font-size: 1.5rem;
+      }
+    }
+
+    .user-level {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+
+      &.champion {
+        color: var(--game-coin);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .top-card-metrics {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    justify-content: center;
+
+    &.champion {
+      gap: 1.5rem;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .metric-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .metric-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--purple-neon);
+
+        &.champion {
+          font-size: 1.5rem;
+          color: var(--game-coin);
+        }
+      }
+    }
+  }
+
+  .top-card-action {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: var(--purple-neon);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(217, 70, 239, 0.3);
+    }
+
+    &.champion {
+      background: var(--game-coin);
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(255, 179, 61, 0.3);
+      }
+    }
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────
+// LEADERBOARD LIST
+// ───────────────────────────────────────────────────────────────────
+
+.leaderboard-list {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: 50px 1fr 80px 150px 100px;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(217, 70, 239, 0.05);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+}
+
+.list-col {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.rank-col {
+    justify-content: center;
+  }
+
+  &.user-col {
+    flex: 1;
+  }
+
+  &.level-col {
+    justify-content: center;
+  }
+
+  &.metric-col {
+    justify-content: flex-end;
+  }
+
+  &.action-col {
+    justify-content: center;
+  }
+}
+
+.list-item {
+  display: grid;
+  grid-template-columns: 50px 1fr 80px 150px 100px;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  align-items: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(217, 70, 239, 0.05);
+    border-left: 3px solid var(--purple-neon);
+    padding-left: calc(1.5rem - 3px);
+  }
+
+  &.is-current-user {
+    background: rgba(217, 70, 239, 0.1);
+    border-left: 3px solid var(--game-coin);
+    padding-left: calc(1.5rem - 3px);
+
+    .user-info .name {
+      color: var(--game-coin);
+      font-weight: 700;
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .rank-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(217, 70, 239, 0.15);
+    border-radius: 6px;
+    font-weight: 700;
+    color: var(--purple-neon);
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .user-avatar {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .user-names {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+
+      .name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bio {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .level-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 215, 0, 0.15);
+    border-radius: 6px;
+    font-weight: 700;
+    color: var(--game-xp);
+    font-size: 0.9rem;
+  }
+
+  .metric-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--purple-neon);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 2px solid rgba(255, 255, 255, 0.05);
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+
+      &.view-btn {
+        &:hover {
+          border-color: var(--purple-neon);
+          background: rgba(217, 70, 239, 0.1);
+        }
+      }
+
+      &.follow-btn {
+        &:hover {
+          border-color: var(--game-coin);
+          background: rgba(255, 179, 61, 0.1);
+        }
+
+        &.following {
+          background: var(--game-coin);
+          border-color: var(--game-coin);
+          color: #000;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────
+// RESPONSIVE
+// ───────────────────────────────────────────────────────────────────
+
+@media (max-width: 1024px) {
+  .top-3-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderboard-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .leaderboard-container {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .leaderboard-filters {
+    flex-direction: column;
+
+    .filter-buttons {
+      order: 2;
+    }
+
+    .search-box {
+      order: 1;
+    }
+  }
+
+  .top-3-grid {
+    gap: 1rem;
+  }
+
+  .top-card .top-card-inner {
+    padding: 1.5rem;
+    min-height: 320px;
+  }
+
+  .list-header,
+  .list-item {
+    grid-template-columns: 40px 1fr 60px 80px;
+    gap: 0.75rem;
+    padding: 0.75rem;
+
+    .action-col {
+      display: none;
+    }
+  }
+
+  .list-item .action-buttons {
+    display: none;
+  }
+
+  .list-item:hover {
+    padding-left: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container {
+    padding: 0.75rem;
+    gap: 1rem;
+  }
+
+  .leaderboard-header {
+    gap: 1rem;
+
+    .header-content {
+      .header-title {
+        font-size: 1.5rem;
+      }
+
+      .header-subtitle {
+        font-size: 0.85rem;
+      }
+    }
+
+    .user-rank-widget {
+      width: 100%;
+      min-width: auto;
+    }
+  }
+
+  .leaderboard-filters {
+    gap: 0.5rem;
+
+    .filter-buttons {
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  .top-card {
+    .top-card-inner {
+      padding: 1rem;
+      min-height: 280px;
+    }
+
+    .avatar-large {
+      font-size: 3rem;
+
+      &.champion {
+        font-size: 4rem;
+      }
+    }
+
+    .user-name {
+      font-size: 1rem;
+
+      &.champion {
+        font-size: 1.2rem;
+      }
+    }
+
+    .top-card-metrics .metric-value {
+      font-size: 1rem;
+
+      &.champion {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .list-header,
+  .list-item {
+    grid-template-columns: 40px 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem;
+
+    .level-col,
+    .metric-col,
+    .action-col {
+      display: none;
+    }
+  }
+
+  .list-item {
+    padding-left: 0.5rem;
+
+    &:hover {
+      padding-left: 0.5rem;
+    }
+  }
+}

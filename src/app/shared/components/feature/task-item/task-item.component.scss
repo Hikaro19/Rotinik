@@ -1,0 +1,186 @@
+@use '../../../../../styles.scss' as *;
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-sm);
+  background-color: rgba(0, 255, 136, 0.02);
+  border: 1px solid rgba(0, 255, 136, 0.1);
+  transition: all var(--transition-base);
+
+  &:hover {
+    background-color: rgba(0, 255, 136, 0.04);
+    border-color: var(--brand-neon);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // ✅ Completed State
+  // ─────────────────────────────────────────────────────────────────────
+
+  &--completed {
+    opacity: 0.6;
+    background-color: rgba(0, 255, 136, 0.05);
+
+    .task-item__checkbox {
+      border-color: var(--game-success);
+      background-color: var(--game-success);
+
+      &::after {
+        content: '✓';
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bg-card);
+        font-weight: bold;
+      }
+    }
+
+    .task-item__title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .task-item__delete {
+      display: none;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🔘 Checkbox
+  // ─────────────────────────────────────────────────────────────────────
+
+  &__checkbox {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--brand-neon);
+    border: 2px solid var(--brand-muted);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      border-color: var(--brand-neon);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--brand-neon);
+      outline-offset: 2px;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 📝 Content
+  // ─────────────────────────────────────────────────────────────────────
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0 0 var(--spacing-1) 0;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-title);
+    transition: all var(--transition-fast);
+  }
+
+  &__description {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🎁 Rewards
+  // ─────────────────────────────────────────────────────────────────────
+
+  &__rewards {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
+  }
+
+  &__reward {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    font-weight: var(--font-semibold);
+
+    &--xp {
+      background-color: rgba(255, 215, 0, 0.1);
+      color: var(--game-xp);
+    }
+
+    &--coin {
+      background-color: rgba(255, 179, 61, 0.1);
+      color: var(--game-coin);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🗑️ Delete Button
+  // ─────────────────────────────────────────────────────────────────────
+
+  &__delete {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--game-danger);
+    font-size: var(--font-size-lg);
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    opacity: 0;
+
+    &:hover {
+      background-color: rgba(255, 68, 68, 0.1);
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--game-danger);
+      outline-offset: 2px;
+      opacity: 1;
+    }
+  }
+
+  // On hover parent, show delete button
+  &:hover {
+    .task-item__delete {
+      opacity: 1;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 📱 Responsive
+// ─────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .task-item {
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+
+    &__rewards {
+      flex-direction: column;
+      gap: var(--spacing-1);
+    }
+
+    &__reward {
+      padding: var(--spacing-1);
+      font-size: var(--font-size-xs);
+    }
+  }
+}

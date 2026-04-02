@@ -1,0 +1,39 @@
+# EditorConfig - Configurar editor para padrões do projeto
+# https://editorconfig.org
+
+root = true
+
+# Arquivo padrão
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# TypeScript
+[*.ts]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# HTML
+[*.html]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# SCSS
+[*.scss]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# JSON
+[*.json]
+indent_style = space
+indent_size = 2
+
+# Markdown
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false

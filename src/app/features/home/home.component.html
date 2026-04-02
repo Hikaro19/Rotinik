@@ -1,0 +1,67 @@
+<div class="home-container">
+  <!-- Welcome Card -->
+  <div class="welcome-card">
+    <div class="welcome-content">
+      <h2 class="welcome-title">Olá, {{ nomeUsuario() }}!</h2>
+      <p class="welcome-subtitle">Nível {{ nivelUsuario() }} • {{ moedas() }} moedas</p>
+    </div>
+    
+    <div class="progress-circle">
+      <svg class="progress-svg" viewBox="0 0 120 120">
+        <!-- Background circle -->
+        <circle cx="60" cy="60" r="50" class="progress-bg"></circle>
+        <!-- Progress circle (conic-gradient via SVG) -->
+        <circle cx="60" cy="60" r="50" class="progress-fill" [style.stroke-dashoffset]="314 - (314 * progressoNivel()) / 100"></circle>
+      </svg>
+      <div class="progress-text">{{ progressoNivel() }}%</div>
+    </div>
+  </div>
+
+  <!-- Tab Toggle -->
+  <div class="tab-container">
+    <button 
+      class="tab-btn"
+      [ngClass]="{ active: activeTab() === 'tarefas' }"
+      (click)="switchTab('tarefas')">
+      Tarefas
+    </button>
+    <button 
+      class="tab-btn"
+      [ngClass]="{ active: activeTab() === 'rotinas' }"
+      (click)="switchTab('rotinas')">
+      Rotinas
+    </button>
+  </div>
+
+  <!-- Em Andamento Section -->
+  <div class="in-progress-section">
+    <h3 class="section-title">Em Andamento</h3>
+    
+    <!-- Routine Cards (Dinâmicos) -->
+    <div class="routine-cards" *ngIf="activeTab() === 'rotinas'">
+      <div 
+        *ngFor="let rotina of rotinasEmAndamento()"
+        class="routine-card" 
+        (click)="goToRoutineDetail(rotina.id)">
+        <div class="card-left">
+          <h4 class="routine-title">{{ rotina.icon }} {{ rotina.titulo }}</h4>
+          <p class="routine-subtitle">{{ rotina.tarefasCompletas }} de {{ rotina.totalTarefas }} tarefas concluídas</p>
+        </div>
+        <div class="card-right">
+          <span class="xp-badge">+{{ rotina.xpTotal }} XP</span>
+        </div>
+      </div>
+
+      <div *ngIf="rotinasEmAndamento().length === 0" class="empty-state">
+        <p>Nenhuma rotina em andamento. Crie uma para começar! 🚀</p>
+      </div>
+    </div>
+
+    <!-- Tasks Cards (Dinâmicos) -->
+    <div class="routine-cards" *ngIf="activeTab() === 'tarefas'">
+      <p class="empty-state" *ngIf="true">
+        Tarefas isoladas podem ser acessadas dentro de cada rotina. 📌
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+// ============================================================================
+// 🔘 BUTTON COMPONENT STYLES
+// ============================================================================
+
+@use '../../../../../styles.scss' as *;
+
+.app-button {
+  @include button-reset;
+  @include smooth-transition;
+
+  // ─ Base styles
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  font-family: var(--font-body);
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+  user-select: none;
+
+  // ─ Size: MD (default)
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: var(--font-size-base);
+  border-radius: var(--radius-pill);
+
+  // ─ Focus state
+  &:focus-visible {
+    outline: 2px solid var(--purple-neon);
+    outline-offset: 2px;
+  }
+
+  // ─ States
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // ─ Loading spinner
+  .button-spinner {
+    display: inline-flex;
+  }
+
+  .spinner {
+    width: 1em;
+    height: 1em;
+    animation: spin 1s linear infinite;
+
+    circle {
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke: currentColor;
+    }
+  }
+}
+
+// ============================================================================
+// 🎨 VARIANTS
+// ============================================================================
+
+// ─ Primary (Gradient Púrpura)
+.app-button--primary {
+  background: linear-gradient(135deg, #A855F7 0%, #5B21B6 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5);
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// ─ Secondary (Muted)
+.app-button--secondary {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid #3F1368;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--purple-neon);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--bg-active);
+  }
+}
+
+// ─ Danger (Red)
+.app-button--danger {
+  background: var(--game-danger);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: lighten(#ff4444, 5%);
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// ─ Ghost (Transparent)
+.app-button--ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid transparent;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: #3F1368;
+  }
+
+  &:active:not(:disabled) {
+    background: var(--bg-active);
+  }
+}
+
+// ============================================================================
+// 📏 SIZES
+// ============================================================================
+
+// ─ Small
+.app-button--sm {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-pill);
+}
+
+// ─ Large
+.app-button--lg {
+  padding: var(--spacing-4) var(--spacing-8);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-pill);
+}
+
+// ============================================================================
+// 📐 FULL WIDTH
+// ============================================================================
+
+.app-button--full {
+  width: 100%;
+}
+
+// ============================================================================
+// ♿ ACCESSIBILITY
+// ============================================================================
+
+.app-button--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+
+  &:hover,
+  &:active {
+    transform: none;
+  }
+}
+
+// ============================================================================
+// 📱 RESPONSIVE
+// ============================================================================
+
+@media (max-width: 480px) {
+  .app-button {
+    width: 100%;
+  }
+
+  .app-button--lg {
+    padding: var(--spacing-3) var(--spacing-5);
+    font-size: var(--font-size-base);
+  }
+}

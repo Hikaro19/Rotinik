@@ -1,0 +1,251 @@
+// ============================================================================
+// 📝 INPUT COMPONENT STYLES
+// ============================================================================
+
+@use '../../../../../styles.scss' as *;
+
+.app-input-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+// ============================================================================
+// 🏷️ LABEL
+// ============================================================================
+
+.app-input-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  .required {
+    color: var(--game-danger);
+    margin-left: var(--spacing-1);
+  }
+}
+
+// ============================================================================
+// 🎯 INPUT CONTAINER
+// ============================================================================
+
+.app-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+
+  // ─ Com ícone
+  &--has-icon {
+    .app-input {
+      padding-left: var(--spacing-10);
+    }
+  }
+}
+
+// ============================================================================
+// 🎨 INPUT BASE
+// ============================================================================
+
+.app-input {
+  @include input-base;
+
+  // ─ Estilos customizados
+  flex: 1;
+  padding: var(--spacing-3) var(--spacing-5);
+  background: var(--bg-input);
+  border: 1px solid #3F1368;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  border-radius: var(--radius-pill);
+  transition: all var(--transition-base);
+
+  // ─ Placeholder
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  // ─ Focus state
+  &:focus {
+    outline: none;
+    border-color: var(--purple-neon);
+    background: var(--bg-input);
+    box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.15);
+  }
+
+  // ─ Hover state
+  &:hover:not(:disabled):not(:focus) {
+    border-color: var(--text-secondary);
+  }
+
+  // ─ Disabled state
+  &:disabled {
+    background: var(--bg-hover);
+    color: var(--text-disabled);
+    border-color: #3F1368;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  // ─ Error state
+  &--error {
+    border-color: var(--game-danger);
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+  }
+
+  // ─ Focused state
+  &--focused {
+    border-color: var(--purple-neon);
+    box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.15);
+  }
+}
+
+// ============================================================================
+// 🎨 INPUT ICON
+// ============================================================================
+
+.app-input-icon {
+  position: absolute;
+  left: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+
+  // Ajustar quando input tem erro
+  .app-input-container {
+    .app-input--error ~ & {
+      color: var(--game-danger);
+    }
+  }
+}
+
+// ============================================================================
+// 👁️ PASSWORD TOGGLE
+// ============================================================================
+
+.app-input-password-toggle {
+  position: absolute;
+  right: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+
+  &:hover:not(:disabled) {
+    color: var(--purple-neon);
+    background: rgba(217, 70, 239, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .eye-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// ============================================================================
+// 📊 CHARACTER COUNT
+// ============================================================================
+
+.app-input-char-count {
+  position: absolute;
+  right: var(--spacing-4);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  pointer-events: none;
+  background: var(--bg-input);
+  padding: 0 var(--spacing-2);
+}
+
+// ============================================================================
+// ❌ ERROR MESSAGE
+// ============================================================================
+
+.app-input-error {
+  font-size: var(--font-size-xs);
+  color: var(--game-danger);
+  margin-top: var(--spacing-1);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  animation: slide-up 150ms ease-out;
+
+  &::before {
+    content: '⚠';
+    flex-shrink: 0;
+  }
+}
+
+// ============================================================================
+// ℹ️ HELP TEXT
+// ============================================================================
+
+.app-input-help {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin: 0;
+  margin-top: var(--spacing-1);
+}
+
+// ============================================================================
+// 📱 RESPONSIVE
+// ============================================================================
+
+@media (max-width: 480px) {
+  .app-input {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  .app-input-label {
+    font-size: var(--font-size-xs);
+  }
+}
+
+// ============================================================================
+// ♿ ACCESSIBILITY
+// ============================================================================
+
+.app-input:focus-visible {
+  outline: 2px solid var(--purple-neon);
+  outline-offset: 2px;
+}
+
+// High contrast mode
+@media (prefers-contrast: more) {
+  .app-input {
+    border-width: 2px;
+  }
+
+  .app-input--error {
+    border-color: var(--game-danger);
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .app-input,
+  .app-input-password-toggle {
+    transition: none;
+  }
+}

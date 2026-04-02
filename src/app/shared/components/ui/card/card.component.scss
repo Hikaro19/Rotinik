@@ -1,0 +1,255 @@
+@use '../../../../../styles.scss' as *;
+
+.app-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-card);
+  overflow: clip;
+  transition: all var(--transition-base);
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🎨 Variants
+  // ─────────────────────────────────────────────────────────────────────
+
+  &--default {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+      border-color: var(--purple-neon);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  &--elevated {
+    box-shadow: var(--shadow-lg);
+    border: none;
+
+    &:hover {
+      box-shadow: var(--shadow-xl);
+    }
+  }
+
+  &--outlined {
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    background-color: transparent;
+
+    &:hover {
+      border-color: var(--purple-neon);
+      background-color: rgba(217, 70, 239, 0.02);
+    }
+  }
+
+  &--ghost {
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+
+    &:hover {
+      background-color: var(--bg-hover);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 📏 Padding Variants
+  // ─────────────────────────────────────────────────────────────────────
+
+  &--padding-none {
+    .app-card__header,
+    .app-card__content,
+    .app-card__footer {
+      padding: 0;
+    }
+  }
+
+  &--padding-sm {
+    .app-card__header,
+    .app-card__content,
+    .app-card__footer {
+      padding: var(--spacing-3);
+    }
+  }
+
+  &--padding-md {
+    .app-card__header,
+    .app-card__content,
+    .app-card__footer {
+      padding: var(--spacing-4);
+    }
+  }
+
+  &--padding-lg {
+    .app-card__header,
+    .app-card__content,
+    .app-card__footer {
+      padding: var(--spacing-6);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🎯 Border Radius Variants
+  // ─────────────────────────────────────────────────────────────────────
+
+  &--radius-sm {
+    border-radius: var(--radius-sm);
+  }
+
+  &--radius-md {
+    border-radius: var(--radius-card);
+  }
+
+  &--radius-lg {
+    border-radius: var(--radius-lg);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 🔗 Clickable State
+  // ─────────────────────────────────────────────────────────────────────
+
+  &--clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 📋 Sections
+  // ─────────────────────────────────────────────────────────────────────
+
+  &__header {
+    @include flex-between;
+    gap: var(--spacing-4);
+
+    strong,
+    & > * {
+      color: var(--text-primary);
+      font-weight: var(--font-semibold);
+    }
+  }
+
+  &__header-content {
+    flex: 1;
+  }
+
+  &__header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
+  }
+
+  &__content {
+    flex: 1;
+    color: var(--text-primary);
+    line-height: var(--line-height-normal);
+
+    // Typography defaults
+    p {
+      margin: 0 0 var(--spacing-3) 0;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin: 0 0 var(--spacing-2) 0;
+      color: var(--text-primary);
+      font-weight: var(--font-semibold);
+    }
+
+    ul,
+    ol {
+      margin: 0 0 var(--spacing-3) var(--spacing-6);
+      padding: 0;
+
+      li {
+        margin-bottom: var(--spacing-2);
+      }
+    }
+
+    a {
+      color: var(--purple-neon);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+
+      &:hover {
+        color: var(--purple-neon);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin: 0;
+    opacity: 0.5;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 📱 Responsive
+// ─────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .app-card {
+    &--padding-lg {
+      .app-card__header,
+      .app-card__content,
+      .app-card__footer {
+        padding: var(--spacing-4);
+      }
+    }
+
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--spacing-2);
+    }
+
+    &__header-right {
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    &__footer {
+      flex-wrap: wrap;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 🌙 Dark Mode (já está na tema geral, mas enfatizar aqui)
+// ─────────────────────────────────────────────────────────────────────
+
+@media (prefers-color-scheme: dark) {
+  .app-card {
+    background-color: var(--bg-card);
+
+    &--outlined {
+      background-color: rgba(0, 255, 136, 0.01);
+    }
+  }
+}

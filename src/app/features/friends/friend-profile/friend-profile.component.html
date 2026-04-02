@@ -1,0 +1,219 @@
+<div class="friend-profile-container">
+  <!-- LOADING STATE -->
+  <div *ngIf="loadingSignal()" class="loading-state">
+    <app-spinner size="lg" [showText]="true" text="Carregando perfil..."></app-spinner>
+  </div>
+
+  <!-- PROFILE CONTENT -->
+  <div *ngIf="!loadingSignal() && userSignal()">
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <!-- HEADER: Informações do Usuário -->
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <section class="profile-header">
+      <button class="back-btn" (click)="goBack()">← Voltar</button>
+
+      <div class="header-content">
+        <!-- Avatar -->
+        <div class="avatar-section">
+          <div class="avatar">
+            <span class="avatar-icon">{{ userSignal()?.avatar }}</span>
+          </div>
+          <div class="info">
+            <h1 class="username">{{ userSignal()?.name }}</h1>
+            <p class="user-bio" *ngIf="userSignal()?.bio">{{ userSignal()?.bio }}</p>
+          </div>
+        </div>
+
+        <!-- Level Info -->
+        <div class="level-section">
+          <div class="level-badge">
+            <span class="level-number">{{ userSignal()?.level }}</span>
+          </div>
+          <div class="xp-info">
+            <p class="xp-label">Total XP</p>
+            <p class="xp-value">{{ (userSignal()?.totalXP ?? 0).toLocaleString('pt-BR') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="header-actions">
+        <div *ngIf="!isCurrentUser()" class="friend-actions">
+          <!-- Friend Button -->
+          <button
+            *ngIf="!isFriend() && pendingRequest() !== 'sent'"
+            class="action-btn primary"
+            (click)="sendFriendRequest()"
+          >
+            ➕ Adicionar Amigo
+          </button>
+
+          <!-- Requisição Enviada -->
+          <button
+            *ngIf="pendingRequest() === 'sent'"
+            class="action-btn"
+            disabled
+            title="Requisição enviada pendente"
+          >
+            ⏳ Requisição Enviada
+          </button>
+
+          <!-- Aceitar Requisição -->
+          <button
+            *ngIf="pendingRequest() === 'received'"
+            class="action-btn primary"
+            (click)="acceptRequest()"
+          >
+            ✓ Aceitar Requisição
+          </button>
+
+          <!-- Remover Amigo -->
+          <button *ngIf="isFriend()" class="action-btn danger" (click)="removeFriend()">
+            ❌ Remover Amigo
+          </button>
+        </div>
+
+        <!-- Seu Próprio Perfil -->
+        <div *ngIf="isCurrentUser()" class="own-profile-badge">
+          <p>Este é seu perfil</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <!-- STATS: Quadro de estatísticas -->
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <section class="stats-grid">
+      <app-card variant="outlined" padding="md" rounded="md">
+        <div class="stat-card">
+          <span class="stat-icon">👥</span>
+          <div class="stat-info">
+            <span class="stat-label">Amigos</span>
+            <span class="stat-value">{{ userSignal()?.achievements ?? 0 }}</span>
+          </div>
+        </div>
+      </app-card>
+
+      <app-card variant="outlined" padding="md" rounded="md">
+        <div class="stat-card">
+          <span class="stat-icon">🏆</span>
+          <div class="stat-info">
+            <span class="stat-label">Achievements</span>
+            <span class="stat-value">{{ userSignal()?.achievements ?? 0 }}</span>
+          </div>
+        </div>
+      </app-card>
+
+      <app-card variant="outlined" padding="md" rounded="md">
+        <div class="stat-card">
+          <span class="stat-icon">💰</span>
+          <div class="stat-info">
+            <span class="stat-label">Moedas</span>
+            <span class="stat-value">{{ (userSignal()?.coins ?? 0).toLocaleString('pt-BR') }}</span>
+          </div>
+        </div>
+      </app-card>
+
+      <app-card variant="outlined" padding="md" rounded="md">
+        <div class="stat-card">
+          <span class="stat-icon">📅</span>
+          <div class="stat-info">
+            <span class="stat-label">Membro desde</span>
+            <span class="stat-value">{{ formatDate(userSignal()?.joinDate || getTodayDate()) }}</span>
+          </div>
+        </div>
+      </app-card>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <!-- ACTIVITY: Heatmap de atividade -->
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <section class="section-box">
+      <div class="section-header">
+        <h2>📊 Atividade Recente</h2>
+        <span class="activity-summary">{{ activityPercentage() }}% ativo</span>
+      </div>
+
+      <div class="heatmap-container">
+        <div class="heatmap-grid">
+          <div
+            class="heatmap-week"
+            *ngFor="let weekIndex of getWeeksArray()"
+          >
+            <div
+              class="heatmap-day"
+              *ngFor="let day of mockActivityDays().slice(weekIndex * 7, (weekIndex + 1) * 7)"
+              [ngClass]="{ active: day.completed, inactive: !day.completed }"
+              [title]="day.date.toLocaleDateString('pt-BR') + ': ' + (day.completed ? '✓ Completo' : '✗ Não completo')"
+            ></div>
+          </div>
+        </div>
+        <div class="heatmap-legend">
+          <span class="legend-item">
+            <div class="legend-box inactive"></div>
+            Não completo
+          </span>
+          <span class="legend-item">
+            <div class="legend-box active"></div>
+            Completo
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <!-- ACHIEVEMENTS: Badges e conquistas -->
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <section class="section-box">
+      <div class="section-header">
+        <h2>🏆 Achievements ({{ mockAchievements.length }})</h2>
+      </div>
+
+      <div class="achievements-grid">
+        <div class="achievement-card" *ngFor="let achievement of mockAchievements">
+          <div class="card-inner unlocked" [attr.data-rarity]="achievement.rarity">
+            <!-- Badge/Icon -->
+            <div class="achievement-badge">
+              <span class="badge-icon">{{ achievement.icon }}</span>
+              <span class="rarity-indicator" [style.color]="getRarityColor(achievement.rarity)">
+                {{ translateRarity(achievement.rarity).charAt(0) }}
+              </span>
+            </div>
+
+            <!-- Content -->
+            <div class="achievement-content">
+              <h3 class="achievement-name">{{ achievement.name }}</h3>
+              <p class="achievement-description">{{ achievement.description }}</p>
+              <div class="unlock-date" *ngIf="achievement.unlockedDate">
+                ✓ {{ formatDate(achievement.unlockedDate) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state if no achievements -->
+      <div class="empty-state" *ngIf="mockAchievements.length === 0">
+        <p>Nenhum achievement desbloqueado ainda</p>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <!-- INFO BOX -->
+    <!-- ───────────────────────────────────────────────────────────────────── -->
+    <section class="section-box info-box">
+      <h3>ℹ️ Sobre Este Perfil</h3>
+      <p>Este é um perfil público. Você está visualizando as informações públicas de {{ userSignal()?.name }}.</p>
+      <p *ngIf="!isFriend()">
+        Adicione
+        <strong>{{ userSignal()?.name }}</strong> como amigo para acompanhar seu progresso e interagir mais!
+      </p>
+    </section>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="!loadingSignal() && !userSignal()" class="error-state">
+    <p>Usuário não encontrado</p>
+    <button class="back-btn" (click)="goBack()">← Voltar</button>
+  </div>
+</div>

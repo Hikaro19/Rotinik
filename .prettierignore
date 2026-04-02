@@ -1,0 +1,7 @@
+# Prettier ignore patterns
+node_modules
+dist
+.angular
+coverage
+*.min.js
+*.min.css
