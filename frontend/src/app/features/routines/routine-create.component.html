@@ -1,0 +1,97 @@
+<div class="routine-create-overlay" (click)="onBackdropClick($event)">
+  <div class="routine-create-card" role="dialog" aria-modal="true" aria-labelledby="routine-create-title">
+    <div class="routine-create-header">
+      <div>
+        <p class="routine-create-kicker">Novo checkpoint</p>
+        <h2 id="routine-create-title" class="routine-create-title">Criar Nova Rotina</h2>
+        <p class="routine-create-subtitle">Defina a missao, a categoria e o ritmo da sua proxima conquista.</p>
+      </div>
+
+      <button
+        type="button"
+        class="routine-create-close"
+        aria-label="Fechar criacao de rotina"
+        [disabled]="isSaving()"
+        (click)="onCancel()"
+      >
+        &times;
+      </button>
+    </div>
+
+    <form class="routine-create-form" [formGroup]="createForm" (ngSubmit)="onSaveRoutine()">
+      <div class="routine-create-grid">
+        <label class="field-shell">
+          <span class="field-label">Nome da Rotina</span>
+          <input
+            class="field-control"
+            type="text"
+            formControlName="nome"
+            placeholder="Ex: Ritual de energia matinal"
+          />
+          <span class="field-error" *ngIf="nomeControl.invalid && nomeControl.touched">
+            O nome e obrigatorio e precisa ter ao menos 3 caracteres.
+          </span>
+        </label>
+
+        <label class="field-shell">
+          <span class="field-label">Categoria</span>
+          <select class="field-control field-control--select" formControlName="categoria">
+            <option *ngFor="let categoria of categorias" [value]="categoria">{{ categoria }}</option>
+          </select>
+        </label>
+
+        <label class="field-shell field-shell--full">
+          <span class="field-label">Meta</span>
+          <textarea
+            class="field-control field-control--textarea"
+            formControlName="meta"
+            rows="3"
+            placeholder="Descreva em uma frase curta qual resultado essa rotina deve entregar."
+          ></textarea>
+          <span class="field-error" *ngIf="metaControl.invalid && metaControl.touched">
+            A meta e obrigatoria e precisa ser clara o suficiente para orientar a execucao.
+          </span>
+        </label>
+
+        <label class="field-shell field-shell--full">
+          <span class="field-label">Prazo / Frequencia</span>
+          <div class="frequency-group">
+            <button
+              *ngFor="let frequencia of frequencias"
+              type="button"
+              class="frequency-pill"
+              [class.frequency-pill--active]="prazoControl.value === frequencia.value"
+              (click)="prazoControl.setValue(frequencia.value)"
+            >
+              {{ frequencia.label }}
+            </button>
+          </div>
+        </label>
+      </div>
+
+      <div class="routine-create-summary">
+        <span class="summary-chip">{{ categoriaControl.value }}</span>
+        <span class="summary-dot"></span>
+        <span class="summary-text">{{ prazoControl.value }}</span>
+      </div>
+
+      <div class="submit-error" *ngIf="submitError() as error">
+        {{ error }}
+      </div>
+
+      <div class="routine-create-actions">
+        <button
+          type="button"
+          class="routine-create-cancel"
+          [disabled]="isSaving()"
+          (click)="onCancel()"
+        >
+          Cancelar
+        </button>
+        <app-button variant="primary" size="md" [loading]="isSaving()" (buttonClick)="onSaveRoutine()">
+          Salvar Rotina
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

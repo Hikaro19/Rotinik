@@ -193,7 +193,7 @@ export class HomeComponent {
    * Navega para detalhes de uma rotina
    */
   goToRoutineDetail(routineId: string): void {
-    this.router.navigate(['/routines', routineId]);
+    this.router.navigate(['/routine', routineId]);
   }
 
   /**

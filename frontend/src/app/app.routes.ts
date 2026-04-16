@@ -49,6 +49,13 @@ export const appRoutes: Routes = [
                 ],
             },
             {
+                path: 'routine/:id',
+                loadComponent: () =>
+                    import('@features/routines/routine-detail/routine-detail.component').then(
+                        (m) => m.RoutineDetailComponent
+                    ),
+            },
+            {
                 path: 'tasks',
                 children: [
                     {
