@@ -1,0 +1,45 @@
+<section class="onboarding-screen" aria-labelledby="onboarding-title">
+  <div class="onboarding-shell">
+    <header class="onboarding-header">
+      <button
+        type="button"
+        class="onboarding-back"
+        aria-label="Voltar para a splash"
+        (click)="goBack()"
+      >
+        &lt;
+      </button>
+    </header>
+
+    <main class="onboarding-content">
+      <div class="onboarding-illustration-wrap">
+        <img
+          class="onboarding-illustration"
+          src="assets/images/rocket3d.png"
+          alt="Foguete do Rotinik"
+        />
+      </div>
+
+      <div class="onboarding-copy">
+        <h1 id="onboarding-title" class="onboarding-title">
+          Não deixe para depois o que você pode fazer agora!
+        </h1>
+        <p class="onboarding-subtitle">
+          Organize suas rotinas, acompanhe seu progresso e transforme pequenas ações em conquistas diárias.
+        </p>
+      </div>
+    </main>
+
+    <footer class="onboarding-footer">
+      <app-button
+        variant="primary"
+        size="lg"
+        [fullWidth]="true"
+        ariaLabel="Vamos começar"
+        (buttonClick)="startJourney()"
+      >
+        VAMOS COMEÇAR
+      </app-button>
+    </footer>
+  </div>
+</section>

@@ -3,6 +3,17 @@ import { LayoutComponent } from './shared/components/feature/layout/layout.compo
 
 export const appRoutes: Routes = [
     {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+            import('@features/welcome/splash/splash.component').then((m) => m.SplashComponent),
+    },
+    {
+        path: 'onboarding',
+        loadComponent: () =>
+            import('@features/welcome/onboarding/onboarding.component').then((m) => m.OnboardingComponent),
+    },
+    {
         path: 'auth',
         children: [
             {
@@ -14,6 +25,11 @@ export const appRoutes: Routes = [
                 path: 'register',
                 loadComponent: () =>
                     import('@features/auth/register/register.component').then((m) => m.RegisterComponent),
+            },
+            {
+                path: 'success',
+                loadComponent: () =>
+                    import('./features/auth/register-success/register-success.component').then((m) => m.RegisterSuccessComponent),
             },
             {
                 path: '',
@@ -113,13 +129,13 @@ export const appRoutes: Routes = [
             },
             {
                 path: '',
-                redirectTo: '/home',
+                redirectTo: 'home',
                 pathMatch: 'full',
             },
         ],
     },
     {
         path: '**',
-        redirectTo: '/home',
+        redirectTo: '',
     },
 ];

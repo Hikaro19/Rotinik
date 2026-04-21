@@ -1,539 +1,133 @@
-# 🎮 Rotinik Frontend
+# Rotinik
 
-Bem-vindo ao Rotinik! Uma plataforma de **gamificação de rotinas** construída com Angular 17+ Standalone Components e Design System personalizado.
+![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)
 
-## ✨ Status da Sprint
+Rotinik e um MVP academico de produtividade com gamificacao, criado para transformar combate a procrastinacao em uma experiencia mais visual, motivadora e progressiva. O app recompensa consistencia com XP, moedas, streaks, loja, progresso de rotinas e elementos sociais.
 
-| Feature | Status | Localização |
-|---------|--------|-------------|
-| InputComponent | ✅ Concluído | `src/app/shared/components/ui/input/` |
-| ButtonComponent | ✅ Concluído | `src/app/shared/components/ui/button/` |
-| LoginComponent | ✅ Concluído | `src/app/features/auth/login/` |
-| RegisterComponent | ✅ Concluído | `src/app/features/auth/register/` |
-| HomeComponent | ✅ Concluído | `src/app/features/home/` |
-| Design System | ✅ Concluído | `src/styles.scss` |
-| Validators Customizados | ✅ Concluído | `src/app/shared/utils/` |
-| Helpers & Utilities | ✅ Concluído | `src/app/shared/utils/` |
+## Sobre o Projeto
 
-## 🚀 Quick Start
+O projeto foi desenvolvido no contexto da disciplina de Programacao Orientada a Objetos II da UVV. A proposta e aplicar conceitos de POO em um frontend moderno, usando o dominio do produto para representar rotinas, tarefas, recompensas, perfil e progresso do usuario.
 
-### 1. Instalar Dependências
+Na pratica, o Rotinik ajuda o usuario a quebrar objetivos em tarefas menores e acompanhaveis. Cada conclusao gera recompensas no ecossistema do app:
+
+- XP para evolucao de nivel
+- moedas para compras na loja
+- progresso de rotinas diarias, semanais e mensais
+- historico de atividade e sinais de consistencia
+- interacoes sociais como feed, amigos e leaderboard
+
+## Arquitetura e POO
+
+O frontend segue uma arquitetura organizada em `core`, `features` e `shared`, usando Angular com componentes standalone, lazy loading por rota, `signals` e `computed` para estado reativo e SCSS para o design system gamificado.
+
+### Como a POO aparece no projeto
+
+- Classes de dominio encapsulam regras de negocio em `src/app/core/models/domain`, com destaque para `Rotina`, `Tarefa`, `Usuario`, `Perfil`, `Recompensa` e itens de loja.
+- Services com `@Injectable({ providedIn: 'root' })` atuam como singletons da aplicacao, centralizando estado e comportamento em servicos como `GamificationService`, `RoutineService`, `ProfileService`, `ShopService` e `FriendsService`.
+- O padrao `State` aparece na modelagem de tarefas, onde `Tarefa` delega transicoes para estados como `TarefaPendente`, `TarefaEmAndamento` e `TarefaConcluida`.
+- O padrao `Strategy` aparece no calculo de progresso de rotinas, permitindo trocar algoritmos por meio de estrategias como `EstrategiaProgresoLinear`, `EstrategiaProgresoComPeso` e `EstrategiaProgresoExponencial`.
+- O app separa modelagem de dominio de modelos de apresentacao, por exemplo quando `RoutineService` mapeia a classe `Rotina` para um view model consumido pela UI.
+
+### Frontend
+
+- Angular standalone e rotas com `loadComponent`
+- estado local e derivado com `signal` e `computed`
+- SCSS com design system dark e linguagem visual gamificada
+- estrutura orientada a features para facilitar manutencao e evolucao
+
+Observacao importante: a base atual do repositorio esta em Angular `18.2.x`. A abordagem arquitetural, no entanto, continua alinhada ao que voces documentaram para Angular Standalone + Signals.
+
+## Features Principais
+
+- ✅ Autenticacao com telas de login e cadastro
+- ✅ Dashboard inicial com visao de progresso, rotinas e estatisticas
+- ✅ CRUD basico de rotinas no frontend
+- ✅ Detalhamento de rotina e tarefas
+- ✅ Sistema de XP, niveis, moedas e transacoes gamificadas
+- ✅ Loja com catalogo, compra de itens e inventario
+- ✅ Perfil com estatisticas, achievements, heatmap de atividade e historico
+- ✅ Modulos sociais com amigos, requisicoes, feed e leaderboard
+- ✅ Biblioteca de componentes reutilizaveis (`button`, `input`, `card`, `modal`, `toast`, `spinner`)
+- ✅ Validadores, helpers e constantes compartilhadas
+- ✅ Roteamento com layout principal e areas publicas/privadas
+
+## Stack Tecnologica
+
+- Angular 18 com arquitetura baseada em Standalone Components
+- TypeScript 5.5
+- SCSS com dark mode gamificado e design tokens globais
+- Angular Signals e `computed` para reatividade
+- RxJS na base do ecossistema Angular
+- Angular Router para lazy loading e navegacao por features
+- Vercel para publicacao
+
+## Estrutura Principal
+
+```text
+src/
+|-- app/
+|   |-- core/
+|   |   |-- models/domain/       # Entidades e regras de negocio
+|   |   `-- services/            # Estado global e casos de uso
+|   |-- features/
+|   |   |-- auth/                # Login e cadastro
+|   |   |-- home/                # Dashboard inicial
+|   |   |-- routines/            # Rotinas e detalhes
+|   |   |-- profile/             # Perfil e historico
+|   |   |-- shop/                # Loja e inventario
+|   |   `-- friends/             # Amigos, feed e ranking
+|   `-- shared/
+|       |-- components/ui/       # Componentes base reutilizaveis
+|       |-- components/feature/  # Componentes compostos da aplicacao
+|       `-- utils/               # Validators, helpers e constantes
+|-- environments/
+|-- main.ts
+`-- styles.scss
+```
+
+## Quick Start
+
+### 1. Instale as dependencias
+
 ```bash
 npm install
 ```
 
-### 2. Iniciar Servidor Dev
+### 2. Rode a aplicacao em desenvolvimento
+
 ```bash
 npm start
-# ou
-ng serve --open
 ```
 
-### 3. Acessar a Aplicação
-- **URL**: `http://localhost:4200`
-- **Login**: `http://localhost:4200/auth/login`
-- **Register**: `http://localhost:4200/auth/register`
-- **Home**: `http://localhost:4200/home`
+### 3. Acesse no navegador
 
-### 4. Demo Credentials
-```
-Email: demo@rotinik.com
-Senha: password123
+```text
+http://localhost:4200
 ```
 
----
+Rotas uteis:
 
-## 📚 Documentação Completa
+- `http://localhost:4200/auth/login`
+- `http://localhost:4200/auth/register`
+- `http://localhost:4200/home`
 
-### Guias
-- 📖 [ARCHITECTURE.md](./ARCHITECTURE.md) - Padrões e estrutura
-- 🚀 [QUICK_START.md](./QUICK_START.md) - Setup rápido
-- 📋 [SPRINT_1_FASE_2.md](./SPRINT_1_FASE_2.md) - Details desta sprint
-
-### Componentes Criados
-
-#### 🔘 AppButtonComponent
-```html
-<app-button 
-  variant="primary" 
-  size="lg" 
-  fullWidth
-  (buttonClick)="onAction()"
->
-  Clique em mim
-</app-button>
-```
-
-**Variantes**: `primary`, `secondary`, `danger`, `ghost`  
-**Tamanhos**: `sm`, `md`, `lg`  
-**Props**: `loading`, `disabled`, `fullWidth`
-
----
-
-#### 📝 AppInputComponent
-```html
-<app-input
-  label="Email"
-  placeholder="seu@email.com"
-  inputType="email"
-  formControlName="email"
-  [errors]="getFieldErrors('email')"
-  [showCharCount]="true"
-  required
-></app-input>
-```
-
-**Tipos**: `text`, `email`, `password`, `number`, `tel`, `url`, `date`, `time`  
-**Features**: 
-- ✅ Validação com mensagens de erro
-- ✅ Toggle de visibilidade para password
-- ✅ Contador de caracteres
-- ✅ Ícones opcionais
-- ✅ ReactiveFormsModule integrado
-
----
-
-#### 🔐 LoginComponent
-```typescript
-// Email: demo@rotinik.com
-// Password: password123
-```
-
-**Features**:
-- Validação de email e senha
-- Remember me checkbox
-- Forgot password link
-- Social login buttons (GitHub, Google)
-- Loading states
-- Error handling
-
----
-
-#### 📝 RegisterComponent
-
-**Features**:
-- Validação de força de senha
-- Confirmação de senha automática
-- Termos and conditions obrigatórios
-- Validadores customizados
-- Social signup
-
----
-
-## 🎨 Design System
-
-### Tokens Disponíveis
-
-#### Cores
-```scss
-// Backgrounds
---bg-app: #0a0e27;              // Dark navy
---bg-card: #131829;             // Cards
---bg-input: #1a1f3a;            // Inputs
-
-// Brand
---brand-neon: #00ff88;          // Accent principal
---brand-gradient: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
---brand-muted: #4a5f8f;         // Borders
-
-// Status
---game-success: #00ff88;
---game-danger: #ff4444;
---game-warning: #ffaa00;
-```
-
-#### Tipografia
-```scss
---font-size-base: 1rem;         // 16px
---font-size-lg: 1.125rem;       // 18px
---font-size-2xl: 1.5rem;        // 24px
---font-size-3xl: 1.875rem;      // 30px
---font-size-4xl: 2.25rem;       // 36px
-
---font-semibold: 600;
---font-bold: 700;
-```
-
-#### Espaçamento
-```scss
---spacing-2: 0.5rem;            // 8px
---spacing-3: 0.75rem;           // 12px
---spacing-4: 1rem;              // 16px
---spacing-5: 1.25rem;           // 20px
---spacing-6: 1.5rem;            // 24px
---spacing-8: 2rem;              // 32px
-```
-
-#### Arredondamentos
-```scss
---radius-sm: 0.5rem;            // 8px
---radius-card: 1rem;            // 16px
---radius-pill: 9999px;          // Pílula (inputs)
-```
-
----
-
-## 🎯 Validadores Customizados
-
-### Disponíveis em `src/app/shared/utils/validators.ts`
-
-```typescript
-// Força de senha (maiúsculas, minúsculas, números, símbolos)
-passwordStrengthValidator()
-
-// Verificar se as senhas correspondem
-passwordMatchValidator('password', 'confirmPassword')
-
-// Email rigoroso
-emailValidator()
-
-// Username (letras, números, -, _)
-usernameValidator()
-
-// URL válida
-urlValidator()
-
-// Telefone
-phoneValidator()
-
-// Email disponível (async simulation)
-emailAvailabilityValidator()
-```
-
----
-
-## 🛠️ Utilitários Disponíveis
-
-### Formatação
-```typescript
-import { 
-  formatCurrency, 
-  formatNumber, 
-  formatTime, 
-  formatDate, 
-  formatRelativeTime,
-  truncate,
-  capitalize,
-  titleCase
-} from '@shared/utils/helpers';
-
-formatCurrency(1000, 'BRL');        // R$ 1.000,00
-formatNumber(1000);                  // 1.000
-formatTime(3661000);                // 1h 1m 1s
-formatDate(new Date());         // 31 de março de 2026
-formatRelativeTime(new Date());      // agora
-truncate('Long text...', 10);    // Long te...
-capitalize('hello');                // Hello
-titleCase('hello world');           // Hello World
-```
-
-### Utilitários de Objetos
-```typescript
-generateUuid()              // Gera UUID
-deepClone(obj)              // Clone profundo
-mergeObjects(target, source) // Mescla objetos
-cleanObject(obj)            // Remove null/undefined
-sortBy(array, key, 'asc')   // Ordena array
-groupBy(array, key)         // Agrupa array
-```
-
-### Validações
-```typescript
-isValidEmail(email)          // Valida email
-isValidUrl(url)             // Valida URL
-isBetween(5, 1, 10)         // 5 está entre 1 e 10?
-clamp(15, 1, 10)            // Limita entre 1 e 10 (retorna 10)
-```
-
----
-
-## 📱 Responsividade
-
-### Breakpoints
-```scss
---breakpoint-xs: 320px;     // Phones
---breakpoint-sm: 480px;     // Small phones
---breakpoint-md: 768px;     // Tablets (aqui começa media query)
---breakpoint-lg: 1024px;    // Laptops
---breakpoint-xl: 1280px;    // Desktops
---breakpoint-2xl: 1536px;   // Large desktops
-```
-
-### Exemplo de Media Query
-```scss
-@media (max-width: 480px) {
-  // Mobile styles
-}
-
-@media (min-width: 768px) {
-  // Tablet and up
-}
-```
-
----
-
-## ♿ Acessibilidade
-
-Implementado WCAG 2.1 Level A:
-
-- ✅ Focus visible states
-- ✅ ARIA labels e roles
-- ✅ Keyboard navigation
-- ✅ Screen reader support
-- ✅ High contrast mode support
-- ✅ Reduced motion support
-- ✅ Color contrast ratios (WCAG AA)
-
----
-
-## 🔄 Angular 17+ Patterns
-
-### Standalone Components
-```typescript
-@Component({
-  selector: 'app-component',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  template: `...`,
-  styleUrl: './component.scss',
-})
-export class MyComponent {}
-```
-
-### Signals para Reatividade
-```typescript
-// State
-isLoading = signal(false);
-
-// Computed
-hasError = computed(() => {
-  return this.errors && Object.keys(this.errors).length > 0;
-});
-
-// Update
-this.isLoading.set(true);
-this.isLoading.update(v => !v);
-```
-
-### Dependency Injection Funcional
-```typescript
-private fb = inject(FormBuilder);
-private router = inject(Router);
-```
-
-### Reactive Forms
-```typescript
-form = this.fb.group({
-  email: ['', [Validators.required, Validators.email]],
-  password: ['', [Validators.required, Validators.minLength(8)]],
-}, { validators: passwordMatchValidator });
-```
-
----
-
-## 📊 Estrutura de Pastas
-
-```
-src/
-├── index.html
-├── main.ts
-├── styles.scss                    # Design System Global
-├── app/
-│   ├── app.component.ts          # Root
-│   ├── app.routes.ts             # Routing
-│   │
-│   ├── shared/
-│   │   ├── components/
-│   │   │   └── ui/
-│   │   │       ├── button/
-│   │   │       └── input/        # NEW ✨
-│   │   └── utils/
-│   │       ├── validators.ts     # NEW ✨
-│   │       ├── helpers.ts        # NEW ✨
-│   │       └── constants.ts      # NEW ✨
-│   │
-│   └── features/
-│       ├── auth/
-│       │   ├── login/            # NEW ✨
-│       │   └── register/         # NEW ✨
-│       └── home/                 # NEW ✨
-│
-├── environments/
-│   ├── environment.ts
-│   └── environment.prod.ts
-│
-└── [Config files]
-    ├── angular.json
-    ├── tsconfig.json
-    ├── package.json
-    └── .gitignore
-```
-
----
-
-## 🧪 Testando Componentes
-
-### Login Test
-```
-Email: demo@rotinik.com
-Senha: password123
-```
-
-Qualquer outra combinação retornará erro.
-
-### Register Test
-```
-Nome: João Silva
-Email: joao@example.com
-Senha: Password123! (requer maiúscula, minúscula, número, símbolo)
-Confirmação: Password123!
-Termos: ✓
-```
-
-### Input Validation Test
-```
-Email: teste@email.com (válido)
-Senha: abc123! (força mínima)
-Confirmação: abc123! (deve corresponder)
-```
-
----
-
-## 📦 Dependências
-
-```json
-{
-  "@angular/animations": "^17.0.0",
-  "@angular/common": "^17.0.0",
-  "@angular/compiler": "^17.0.0",
-  "@angular/core": "^17.0.0",
-  "@angular/forms": "^17.0.0",
-  "@angular/platform-browser": "^17.0.0",
-  "@angular/platform-browser-dynamic": "^17.0.0",
-  "@angular/router": "^17.0.0",
-  "rxjs": "^7.8.0"
-}
-```
-
----
-
-## 🔨 Scripts Disponíveis
+## Scripts Uteis
 
 ```bash
-# Development
-npm start                # Inicia dev server
-ng serve               # Alternative
-ng serve --open        # Abre no browser
-
-# Build
-npm run build          # Build para produção
-ng build --configuration production
-
-# Testing
-npm test              # Roda testes
-ng test
-
-# Linting & Formatting
-npm run lint          # Lint
-npm run format        # Prettier format
-npm run format:check  # Verifica formato
+npm start
+npm run build
+npm run build:prod
+npm test
+npm run format
+npm run format:check
 ```
 
----
+## Referencia Tecnica Complementar
 
-## 🎯 Próximas Features (Sprint 2)
+Para detalhes mais densos de arquitetura, padroes e organizacao historica do projeto, consulte [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
-- [ ] GamificationService
-- [ ] RoutineService
-- [ ] CardComponent
-- [ ] ModalComponent
-- [ ] Toasts/Notifications
-- [ ] Dashboard com rotinas
-- [ ] CRUD de rotinas
-- [ ] Integração com backend
-- [ ] HTTP interceptors
-- [ ] Auth guards
-- [ ] Social features
-- [ ] Leaderboard
+## Status
 
----
-
-## 💡 Best Practices
-
-### Componentes
-- ✅ Sempre use `standalone: true`
-- ✅ Use `CommonModule` para diretivas
-- ✅ Prefira `inject()` ao invés de constructor
-- ✅ Use `Signals` para estado local
-- ✅ Use `Computed` para valores derivados
-
-### Estilos
-- ✅ Use variáveis CSS do Design System
-- ✅ Sempre use `var(--spacing-*)` para espaçamento
-- ✅ Sempre use `var(--radius-*)` para arredondamentos
-- ✅ Use mixins SCSS para código reutilizável
-- ✅ Mobile-first approach
-
-### Validação
-- ✅ Use validadores padrão do Angular
-- ✅ Adicione validadores customizados em `utils/validators.ts`
-- ✅ Labels com asterisco (*) para campos obrigatórios
-- ✅ Mensagens de erro customizadas
-
-### UX/Acessibilidade
-- ✅ Sempre adicione `aria-label` em inputs
-- ✅ Use `role="alert"` em mensagens de erro
-- ✅ Estados focus visível em todos os elementos
-- ✅ Text contrast ratio mínimo 4.5:1
-- ✅ Suporte a keyboard navigation
-
----
-
-## 📞 Suporte e Referências
-
-### Documentação Interna
-- 📖 [ARCHITECTURE.md](./ARCHITECTURE.md) - Padrões detalhados
-- 🚀 [QUICK_START.md](./QUICK_START.md) - Setup passo a passo
-- 📋 [SPRINT_1_FASE_2.md](./SPRINT_1_FASE_2.md) - Sprint details
-
-### Links Úteis
-- [Angular Documentation](https://angular.io/docs)
-- [Angular Standalone API](https://angular.io/guide/standalone-components)
-- [Angular Signals](https://angular.io/guide/signals)
-- [SCSS Documentation](https://sass-lang.com/documentation)
-
----
-
-## 📝 Changelog
-
-### Sprint 1 - Fase 2 (Atual)
-- ✅ InputComponent criado com validação
-- ✅ LoginComponent com formulário reativo
-- ✅ RegisterComponent com validadores customizados
-- ✅ Design System global em SCSS
-- ✅ Validadores customizados em `utils/`
-- ✅ Helpers e utilities
-- ✅ Constants centralizadas
-- ✅ HomeComponent placeholder
-- ✅ Rotas configuradas
-- ✅ Documentação completa
-
----
-
-## 🎉 Status
-
-**Sprint 1 - Fase 2: COMPLETA ✅**
-
-Todos os requisitos implementados:
-- ✅ InputComponent com design gamificado
-- ✅ LoginComponent funcional
-- ✅ RegisterComponent com validação
-- ✅ Design System Dark/Gamificado
-- ✅ Padrões Angular 17+
-- ✅ Documentação e exemplos
-
-Pronto para integração com backend na próxima sprint!
-
----
-
-**Desenvolvido com ❤️ para Rotinik**
+O repositorio agora concentra a documentacao principal neste arquivo. A ideia e manter o `README.md` como porta de entrada unica para onboarding, entendimento do produto e setup local.

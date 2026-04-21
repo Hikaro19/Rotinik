@@ -22,7 +22,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   background-color: var(--bg-app);
   color: var(--text-primary);
   line-height: 1.6;
@@ -72,8 +72,8 @@ body {
   // ============================================================================
 
   // Font family
-  --font-title: 'Poppins', Arial, sans-serif;    // For headings
-  --font-body: 'Inter', Arial, sans-serif;       // For body text
+  --font-title: 'Montserrat', sans-serif;        // For headings
+  --font-body: 'Montserrat', sans-serif;        // For body text
   --font-mono: 'Fira Code', monospace;           // For code
 
   // Font sizes

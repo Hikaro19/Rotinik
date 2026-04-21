@@ -1,331 +1,159 @@
-// ============================================================================
-// 📝 REGISTER COMPONENT STYLES (Mesmo layout que Login com pequenas alterações)
-// ============================================================================
+﻿@use '../../../../styles.scss' as *;
 
-@use '../../../../styles.scss' as *;
-
-.auth-container {
+.register-screen {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-app);
-  position: relative;
-  overflow: hidden;
-  padding: var(--spacing-4);
+  background:
+    radial-gradient(circle at top, rgba(217, 70, 239, 0.16), transparent 28%),
+    var(--bg-app);
 }
 
-// ============================================================================
-// 📦 AUTH CONTENT
-// ============================================================================
-
-.auth-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 420px;
+.register-shell {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + var(--spacing-5))
+    var(--spacing-5)
+    calc(env(safe-area-inset-bottom, 0px) + var(--spacing-6));
   gap: var(--spacing-8);
+  width: min(100%, 29rem);
+  margin: 0 auto;
 }
 
-// ============================================================================
-// 🎯 AUTH HEADER
-// ============================================================================
+.register-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
 
-.auth-header {
-  text-align: center;
+.register-back {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.register-back:hover,
+.register-back:focus-visible {
+  border-color: var(--purple-neon);
+  box-shadow: var(--shadow-neon);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.register-copy {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
-  animation: slide-up 600ms ease-out;
 }
 
-.auth-title {
-  font-size: var(--font-size-4xl);
+.register-title {
+  margin: 0;
+  color: var(--purple-neon);
+  font-family: var(--font-title);
+  font-size: clamp(2rem, 6vw, 2.5rem);
   font-weight: var(--font-bold);
-  color: var(--text-primary);
-  letter-spacing: var(--letter-spacing-tight);
-  margin: 0;
-
-  @media (max-width: 480px) {
-    font-size: var(--font-size-3xl);
-  }
+  line-height: 1.1;
 }
 
-.auth-subtitle {
-  font-size: var(--font-size-base);
-  color: var(--text-muted);
+.register-subtitle {
   margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
   line-height: var(--line-height-relaxed);
 }
 
-// ============================================================================
-// 📋 AUTH FORM
-// ============================================================================
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
 
-.auth-form {
+.register-form ::ng-deep .app-input-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  padding-left: var(--spacing-2);
+}
+
+.register-form ::ng-deep .app-input {
+  min-height: 56px;
+  border-radius: 9999px;
+  background: var(--bg-input);
+}
+
+.register-form ::ng-deep .app-input-help {
+  display: none;
+}
+
+.register-alt {
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-5);
-  animation: slide-up 600ms ease-out 100ms both;
 }
 
-// ============================================================================
-// ✅ TERMS CHECKBOX
-// ============================================================================
-
-.terms-checkbox {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-2);
-  color: var(--text-primary);
-  cursor: pointer;
-  user-select: none;
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-normal);
-
-  input[type='checkbox'] {
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
-    margin-top: 2px;
-    cursor: pointer;
-    accent-color: var(--purple-neon);
-    border-radius: var(--radius-sm);
-  }
-
-  &:hover input[type='checkbox'] {
-    filter: brightness(1.1);
-  }
-}
-
-.terms-link {
-  color: var(--purple-neon);
-  text-decoration: underline;
-  transition: color var(--transition-base);
-
-  &:hover {
-    color: #D946EF;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--purple-neon);
-    outline-offset: 2px;
-    border-radius: var(--radius-sm);
-  }
-}
-
-// ============================================================================
-// ⚠️ ERROR ALERT
-// ============================================================================
-
-.auth-error-alert {
-  background: rgba(255, 68, 68, 0.1);
-  border: 1px solid var(--game-danger);
-  border-radius: var(--radius-card);
-  padding: var(--spacing-4);
-  color: var(--game-danger);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-normal);
-  animation: slide-up 300ms ease-out;
-}
-
-// ============================================================================
-// 📍 DIVIDER
-// ============================================================================
-
-.auth-divider {
+.register-divider {
   display: flex;
   align-items: center;
   gap: var(--spacing-4);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: var(--font-size-sm);
-  animation: slide-up 600ms ease-out 200ms both;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.05),
-      transparent
-    );
-  }
-}
-
-// ============================================================================
-// 🌐 SOCIAL SIGNUP
-// ============================================================================
-
-.auth-social {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-4);
-  animation: slide-up 600ms ease-out 300ms both;
-}
-
-.social-button {
-  @include button-reset;
-  @include flex-center;
-  gap: var(--spacing-2);
-
-  padding: var(--spacing-3) var(--spacing-4);
-  background: var(--bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-card);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-semibold);
-  transition: all var(--transition-base);
-
-  &:hover:not(:disabled) {
-    background: var(--bg-hover);
-    border-color: var(--purple-neon);
-    color: var(--purple-neon);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(217, 70, 239, 0.2);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.social-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-// ============================================================================
-// 🔗 AUTH FOOTER
-// ============================================================================
-
-.auth-footer-text {
   text-align: center;
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  margin: 0;
-  animation: slide-up 600ms ease-out 400ms both;
 }
 
-.auth-link {
-  color: var(--purple-neon);
-  text-decoration: none;
-  font-weight: var(--font-semibold);
-  transition: color var(--transition-base);
-
-  &:hover {
-    color: #D946EF;
-    text-decoration: underline;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--purple-neon);
-    outline-offset: 2px;
-    border-radius: var(--radius-sm);
-  }
+.register-divider::before,
+.register-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
 }
 
-// ============================================================================
-// 🎨 BACKGROUND DECORATION
-// ============================================================================
+.register-socials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-5);
+}
 
-.auth-background-decoration {
-  position: absolute;
-  bottom: -50%;
-  left: -50%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(
-    circle,
-    rgba(168, 85, 247, 0.1) 0%,
-    rgba(168, 85, 247, 0.05) 40%,
-    transparent 70%
-  );
+.social-circle {
+  width: 56px;
+  height: 56px;
+  border: none;
   border-radius: 50%;
-  z-index: 1;
-  animation: float 8s ease-in-out infinite;
-  pointer-events: none;
+  background: #ffffff;
+  color: #111111;
+  font-size: 1.25rem;
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-20px) translateX(10px);
-  }
+.social-circle:hover,
+.social-circle:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(217, 70, 239, 0.22);
+  outline: none;
 }
-
-// ============================================================================
-// 📱 RESPONSIVE
-// ============================================================================
 
 @media (max-width: 480px) {
-  .auth-container {
-    padding: var(--spacing-4);
-    min-height: auto;
-    padding-top: var(--spacing-4);
-    padding-bottom: var(--spacing-4);
-  }
-
-  .auth-content {
-    max-width: 100%;
+  .register-shell {
     gap: var(--spacing-6);
   }
 
-  .auth-social {
-    grid-template-columns: 1fr;
+  .register-socials {
+    gap: var(--spacing-4);
   }
 
-  .auth-background-decoration {
-    width: 400px;
-    height: 400px;
-    bottom: -200px;
-    left: -200px;
-  }
-}
-
-// ============================================================================
-// ♿ ACCESSIBILITY
-// ============================================================================
-
-@media (prefers-reduced-motion: reduce) {
-  .auth-container,
-  .auth-content,
-  .auth-header,
-  .auth-form,
-  .auth-divider,
-  .auth-social,
-  .auth-footer-text {
-    animation: none;
-  }
-
-  .auth-background-decoration {
-    animation: none;
-  }
-}
-
-@media (prefers-contrast: more) {
-  .auth-divider {
-    &::before,
-    &::after {
-      background: rgba(255, 255, 255, 0.05);
-    }
-  }
-
-  .social-button {
-    border-width: 2px;
+  .social-circle {
+    width: 52px;
+    height: 52px;
   }
 }
