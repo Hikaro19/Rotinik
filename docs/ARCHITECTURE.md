@@ -2,6 +2,11 @@
 
 # 🚀 ROTINIK - Frontend Architecture Guide
 
+### Demo Credentials
+```
+Email: demo@rotinik.com
+Senha: password123
+
 ## 📁 Estrutura do Projeto
 
 ```

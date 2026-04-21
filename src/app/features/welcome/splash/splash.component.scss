@@ -1,0 +1,14 @@
+.splash-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--spacing-8);
+  background-color: var(--bg-app);
+}
+.splash-logo {
+  width: min(68vw, 260px);
+  max-width: 100%;
+  height: auto;
+  animation: fade-in 320ms ease-out;
+}

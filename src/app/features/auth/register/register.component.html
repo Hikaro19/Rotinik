@@ -1,0 +1,87 @@
+﻿<section class="register-screen" aria-labelledby="register-title">
+  <div class="register-shell">
+    <header class="register-header">
+      <button
+        type="button"
+        class="register-back"
+        aria-label="Voltar para login"
+        (click)="goBack()"
+      >
+        &lt;
+      </button>
+
+      <div class="register-copy">
+        <h1 id="register-title" class="register-title">Crie uma conta</h1>
+        <p class="register-subtitle">
+          Preencha suas informações abaixo ou registre-se com sua rede social
+        </p>
+      </div>
+    </header>
+
+    <form class="register-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <app-input
+        label="Nome Completo"
+        placeholder="Digite seu nome completo"
+        inputType="text"
+        formControlName="fullName"
+        [errors]="getFieldErrors('fullName') || undefined"
+        [disabled]="isLoading()"
+        [required]="true"
+      ></app-input>
+
+      <app-input
+        label="Email"
+        placeholder="Digite seu email"
+        inputType="email"
+        formControlName="email"
+        [errors]="getFieldErrors('email') || undefined"
+        [disabled]="isLoading()"
+        [required]="true"
+      ></app-input>
+
+      <app-input
+        label="Número de Telefone"
+        placeholder="(27) 99999-9999"
+        inputType="tel"
+        formControlName="phone"
+        [errors]="getFieldErrors('phone') || undefined"
+        [disabled]="isLoading()"
+        [required]="true"
+      ></app-input>
+
+      <app-input
+        label="Senha"
+        placeholder="Digite sua senha"
+        inputType="password"
+        formControlName="password"
+        [errors]="getFieldErrors('password') || undefined"
+        [disabled]="isLoading()"
+        [required]="true"
+      ></app-input>
+
+      <app-button
+        variant="primary"
+        size="lg"
+        [fullWidth]="true"
+        [loading]="isLoading()"
+        [disabled]="registerForm.invalid"
+        ariaLabel="Registrar conta"
+        (buttonClick)="onSubmit()"
+      >
+        REGISTRAR
+      </app-button>
+    </form>
+
+    <section class="register-alt" aria-label="Outras formas de cadastro">
+      <div class="register-divider">
+        <span>Outras formas</span>
+      </div>
+
+      <div class="register-socials">
+        <button type="button" class="social-circle" aria-label="Cadastrar com Apple">A</button>
+        <button type="button" class="social-circle" aria-label="Cadastrar com Google">G</button>
+        <button type="button" class="social-circle" aria-label="Cadastrar com Facebook">f</button>
+      </div>
+    </section>
+  </div>
+</section>
