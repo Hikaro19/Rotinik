@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -9,7 +9,7 @@ type ToastType = 'success' | 'error' | 'warning' | 'info';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div [class]="toastClasses()" role="alert" [@slideIn]>
+    <div [class]="toastClasses()" role="alert" aria-live="polite" [@slideIn]>
       <div class="app-toast__icon">
         <svg *ngIf="type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <polyline points="20 6 9 17 4 12"></polyline>
@@ -36,7 +36,7 @@ type ToastType = 'success' | 'error' | 'warning' | 'info';
         <p class="app-toast__message">{{ message }}</p>
       </div>
 
-      <button type="button" class="app-toast__close" aria-label="Fechar notificação" (click)="onClose()">
+      <button *ngIf="closeable" type="button" class="app-toast__close" aria-label="Fechar notificacao" (click)="onClose()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -73,14 +73,6 @@ export class AppToastComponent {
     const typeClass = `app-toast--${this.type}`;
     return [base, typeClass].filter(Boolean).join(' ');
   });
-
-  constructor() {
-    if (this.duration && this.duration > 0) {
-      setTimeout(() => {
-        this.onClose();
-      }, this.duration);
-    }
-  }
 
   onClose(): void {
     this.close.emit();

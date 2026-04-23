@@ -1,8 +1,16 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, inject, computed, signal } from '@angular/core';
+import { take } from 'rxjs/operators';
+import { environment } from '@environments/environment';
+import { ProfileSnapshotDto } from '@core/models/api';
+import {
+  createMockAchievements,
+  createMockHistoryItems,
+  createMockMemberSinceDate,
+  createMockProfileStats,
+  generateMockActivityHistory,
+} from '@core/mocks/profile.mock';
+import { ProfileApiService } from './profile-api.service';
 
-/**
- * Achievement interface
- */
 export interface Achievement {
   id: string;
   name: string;
@@ -14,9 +22,6 @@ export interface Achievement {
   target?: number;
 }
 
-/**
- * ProfileStats interface
- */
 export interface ProfileStats {
   totalXpEarned: number;
   totalCoinsEarned: number;
@@ -27,158 +32,49 @@ export interface ProfileStats {
   currentStreak: number;
   longestStreak: number;
   daysSinceStart: number;
-  achievements: Achievement[];
 }
 
-/**
- * ActivityDay interface - para heatmap
- */
 export interface ActivityDay {
   date: Date;
   completed: boolean;
 }
 
-/**
- * ProfileService: Gerencia dados do perfil do usuário
- */
+export interface ProfileHistoryItem {
+  id: string;
+  type: 'purchase' | 'achievement' | 'level-up';
+  title: string;
+  description: string;
+  icon: string;
+  date: Date;
+  details?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  /**
-   * Achievements do usuário
-   */
-  achievementsSignal = signal<Achievement[]>([
-    {
-      id: 'ach-1',
-      name: 'Primeira Tarefa',
-      description: 'Complete sua primeira tarefa',
-      icon: '🎯',
-      rarity: 'common',
-      unlockedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: 'ach-2',
-      name: 'Streak de 7 Dias',
-      description: 'Mantenha a rotina por 7 dias consecutivos',
-      icon: '🔥',
-      rarity: 'rare',
-      unlockedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: 'ach-3',
-      name: 'Colecionador',
-      description: 'Compre 5 itens na loja',
-      icon: '🎁',
-      rarity: 'rare',
-      progress: 1,
-      target: 5,
-    },
-    {
-      id: 'ach-4',
-      name: 'Mestre da Produtividade',
-      description: 'Complete 100 tarefas',
-      icon: '👑',
-      rarity: 'epic',
-      progress: 15,
-      target: 100,
-    },
-    {
-      id: 'ach-5',
-      name: 'Lendário',
-      description: 'Chegue ao nível 50',
-      icon: '⭐',
-      rarity: 'legendary',
-      progress: 5,
-      target: 50,
-    },
-  ]);
+  private readonly profileApi = inject(ProfileApiService);
 
-  /**
-   * Histórico de atividade (últimos 90 dias)
-   */
-  activityHistorySignal = signal<ActivityDay[]>(this.generateActivityHistory());
+  readonly achievementsSignal = signal<Achievement[]>(createMockAchievements() as Achievement[]);
+  readonly activityHistorySignal = signal<ActivityDay[]>(generateMockActivityHistory());
+  readonly memberSinceSignal = signal<Date>(createMockMemberSinceDate());
+  readonly historyItemsSignal = signal<ProfileHistoryItem[]>(createMockHistoryItems() as ProfileHistoryItem[]);
+  readonly profileStatsSignal = signal<ProfileStats>(createMockProfileStats());
+  readonly isInitializedSignal = signal(false);
+  readonly isLoadingSignal = signal(false);
 
-  /**
-   * Membros desde (data de criação)
-   */
-  memberSinceSignal = signal<Date>(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
-
-  // ───────────────────────────────────────────────────────────────
-  // 📊 COMPUTED
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Total de achievements desbloqueados
-   */
-  unlockedAchievements = computed(() => {
-    return this.achievementsSignal().filter((a) => a.unlockedDate).length;
-  });
-
-  /**
-   * Total de achievements
-   */
-  totalAchievements = computed(() => {
-    return this.achievementsSignal().length;
-  });
-
-  /**
-   * Dias com atividade completada
-   */
-  activeDays = computed(() => {
-    return this.activityHistorySignal().filter((day) => day.completed).length;
-  });
-
-  /**
-   * Percentual de atividade
-   */
-  activityPercentage = computed(() => {
+  readonly unlockedAchievements = computed(() => this.achievementsSignal().filter((achievement) => achievement.unlockedDate).length);
+  readonly totalAchievements = computed(() => this.achievementsSignal().length);
+  readonly activeDays = computed(() => this.activityHistorySignal().filter((day) => day.completed).length);
+  readonly activityPercentage = computed(() => {
     const total = this.activityHistorySignal().length;
     const active = this.activeDays();
-    return Math.round((active / total) * 100);
+    return total > 0 ? Math.round((active / total) * 100) : 0;
   });
-
-  // ───────────────────────────────────────────────────────────────
-  // 🛠️ PRIVATE HELPERS
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Gera histórico de atividade de 90 dias
-   */
-  private generateActivityHistory(): ActivityDay[] {
-    const days: ActivityDay[] = [];
-    const today = new Date();
-
-    for (let i = 89; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      days.push({
-        date,
-        completed: Math.random() > 0.6, // 40% de chance de ter completado
-      });
-    }
-    return days;
-  }
-
-  /**
-   * Dias desde o início
-   */
-  daysSinceStart = computed(() => {
-    const today = new Date();
-    const start = this.memberSinceSignal();
-    const diff = today.getTime() - start.getTime();
+  readonly daysSinceStart = computed(() => {
+    const diff = Date.now() - this.memberSinceSignal().getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   });
-
-  /**
-   * Atividade da últimas 7 dias
-   */
-  last7DaysActivity = computed(() => {
-    return this.activityHistorySignal().slice(-7);
-  });
-
-  /**
-   * Atividade do mês corrente
-   */
-  currentMonthActivity = computed(() => {
+  readonly last7DaysActivity = computed(() => this.activityHistorySignal().slice(-7));
+  readonly currentMonthActivity = computed(() => {
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -188,94 +84,134 @@ export class ProfileService {
     });
   });
 
-  // ───────────────────────────────────────────────────────────────
-  // 🎯 ACHIEVEMENT METHODS
-  // ───────────────────────────────────────────────────────────────
+  initialize(): void {
+    if (this.isInitializedSignal()) {
+      return;
+    }
 
-  /**
-   * Obter todos os achievements
-   */
+    this.isInitializedSignal.set(true);
+
+    if (environment.enableMockData) {
+      return;
+    }
+
+    this.loadSnapshotFromApi();
+  }
+
+  hydrateFromApi(snapshot: ProfileSnapshotDto): void {
+    this.memberSinceSignal.set(new Date(snapshot.memberSince));
+    this.achievementsSignal.set(
+      snapshot.achievements.map((achievement) => ({
+        id: achievement.id,
+        name: achievement.name,
+        description: achievement.description,
+        icon: achievement.icon,
+        rarity: achievement.rarity,
+        unlockedDate: achievement.unlockedAt ? new Date(achievement.unlockedAt) : undefined,
+        progress: achievement.progress,
+        target: achievement.target,
+      })),
+    );
+    this.activityHistorySignal.set(
+      snapshot.activityHistory.map((day) => ({
+        date: new Date(day.date),
+        completed: day.completed,
+      })),
+    );
+    this.historyItemsSignal.set(
+      snapshot.historyItems.map((item) => ({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        icon: item.icon,
+        date: new Date(item.date),
+        details: item.details,
+      })),
+    );
+    this.profileStatsSignal.set({
+      totalXpEarned: snapshot.stats.totalXpEarned,
+      totalCoinsEarned: snapshot.stats.totalCoinsEarned,
+      totalCoinsSpent: snapshot.stats.totalCoinsSpent,
+      routinesCreated: snapshot.stats.routinesCreated,
+      routinesCompleted: snapshot.stats.routinesCompleted,
+      tasksCompleted: snapshot.stats.tasksCompleted,
+      currentStreak: snapshot.stats.currentStreak,
+      longestStreak: snapshot.stats.longestStreak,
+      daysSinceStart: snapshot.stats.daysSinceStart,
+    });
+  }
+
   getAchievements(): Achievement[] {
     return this.achievementsSignal();
   }
 
-  /**
-   * Obter achievements desbloqueados
-   */
   getUnlockedAchievements(): Achievement[] {
-    return this.achievementsSignal().filter((a) => a.unlockedDate);
+    return this.achievementsSignal().filter((achievement) => achievement.unlockedDate);
   }
 
-  /**
-   * Obter achievements em progresso
-   */
   getInProgressAchievements(): Achievement[] {
-    return this.achievementsSignal().filter((a) => !a.unlockedDate && a.progress);
+    return this.achievementsSignal().filter((achievement) => !achievement.unlockedDate && achievement.progress);
   }
 
-  /**
-   * Desbloquear achievement
-   */
   unlockAchievement(achievementId: string): void {
-    this.achievementsSignal.update((achievements) => {
-      return achievements.map((a) => {
-        if (a.id === achievementId && !a.unlockedDate) {
-          return { ...a, unlockedDate: new Date() };
-        }
-        return a;
-      });
-    });
+    this.achievementsSignal.update((achievements) =>
+      achievements.map((achievement) =>
+        achievement.id === achievementId && !achievement.unlockedDate
+          ? { ...achievement, unlockedDate: new Date() }
+          : achievement,
+      ),
+    );
   }
 
-  /**
-   * Atualizar progresso de achievement
-   */
   updateAchievementProgress(achievementId: string, progress: number): void {
-    this.achievementsSignal.update((achievements) => {
-      return achievements.map((a) => {
-        if (a.id === achievementId) {
-          const updated = { ...a, progress };
-          // Auto-unlock se atingir o target
-          if (a.target && progress >= a.target && !a.unlockedDate) {
-            updated.unlockedDate = new Date();
-          }
-          return updated;
+    this.achievementsSignal.update((achievements) =>
+      achievements.map((achievement) => {
+        if (achievement.id !== achievementId) {
+          return achievement;
         }
-        return a;
-      });
-    });
+
+        const updatedAchievement: Achievement = { ...achievement, progress };
+        if (achievement.target && progress >= achievement.target && !achievement.unlockedDate) {
+          updatedAchievement.unlockedDate = new Date();
+        }
+
+        return updatedAchievement;
+      }),
+    );
   }
 
-  // ───────────────────────────────────────────────────────────────
-  // 📅 ACTIVITY METHODS
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Obter histórico de atividade
-   */
   getActivityHistory(): ActivityDay[] {
     return this.activityHistorySignal();
   }
 
-  /**
-   * Marcar dia como completo
-   */
   completeDay(date: Date): void {
-    this.activityHistorySignal.update((history) => {
-      return history.map((day) => {
-        if (day.date.toDateString() === date.toDateString()) {
-          return { ...day, completed: true };
-        }
-        return day;
-      });
-    });
+    this.activityHistorySignal.update((history) =>
+      history.map((day) => (day.date.toDateString() === date.toDateString() ? { ...day, completed: true } : day)),
+    );
   }
 
-  /**
-   * Reset do perfil (desenvolvimento)
-   */
   resetProfile(): void {
     this.achievementsSignal.set([]);
     this.activityHistorySignal.set([]);
+    this.historyItemsSignal.set([]);
+    this.profileStatsSignal.set(createMockProfileStats());
+    this.isInitializedSignal.set(false);
+  }
+
+  private loadSnapshotFromApi(): void {
+    this.isLoadingSignal.set(true);
+    this.profileApi
+      .getSnapshot()
+      .pipe(take(1))
+      .subscribe({
+        next: (snapshot) => {
+          this.hydrateFromApi(snapshot);
+          this.isLoadingSignal.set(false);
+        },
+        error: () => {
+          this.isLoadingSignal.set(false);
+        },
+      });
   }
 }

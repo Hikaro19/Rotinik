@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProfileService } from '../../../../core/services/profile.service';
 
-/**
- * ProfileActivityHeatmapComponent: Heatmap de atividade (últimos 90 dias)
- */
+interface HeatmapDay {
+  date: Date;
+  completed: boolean;
+  dayOfWeek: number;
+  dayName: string;
+}
+
 @Component({
   selector: 'app-profile-activity-heatmap',
   standalone: true,
@@ -15,22 +19,12 @@ import { ProfileService } from '../../../../core/services/profile.service';
 export class ProfileActivityHeatmapComponent {
   readonly activityHistory = this.profileService.activityHistorySignal;
 
-  // Grid de atividade (7 colunas, X linhas = 90 dias)
-  readonly weeks: any[][] = [];
+  readonly weeks = computed(() => {
+    const activity = this.activityHistory();
+    const weeks: HeatmapDay[][] = [];
+    let week: HeatmapDay[] = [];
 
-  constructor(private profileService: ProfileService) {
-    this.generateWeeks();
-  }
-
-  /**
-   * Gerar matriz de semanas para o heatmap
-   */
-  private generateWeeks(): void {
-    const activity = this.profileService.getActivityHistory();
-    let week: any[] = [];
-
-    for (let i = 0; i < activity.length; i++) {
-      const day = activity[i];
+    activity.forEach((day) => {
       const dayOfWeek = day.date.getDay();
 
       week.push({
@@ -41,29 +35,27 @@ export class ProfileActivityHeatmapComponent {
       });
 
       if (dayOfWeek === 6) {
-        this.weeks.push([...week]);
+        weeks.push([...week]);
         week = [];
       }
-    }
+    });
 
     if (week.length > 0) {
-      this.weeks.push([...week]);
+      weeks.push([...week]);
     }
-  }
 
-  /**
-   * Obter classe de intensidade para a célula
-   */
+    return weeks;
+  });
+
+  constructor(private profileService: ProfileService) {}
+
   getIntensityClass(completed: boolean): string {
     return completed ? 'active' : 'inactive';
   }
 
-  /**
-   * Obter título para a célula (tooltip)
-   */
   getTooltip(date: Date, completed: boolean): string {
     const dateStr = date.toLocaleDateString('pt-BR');
-    const status = completed ? '✓ Completo' : '✗ Não completo';
+    const status = completed ? 'Completo' : 'Nao completo';
     return `${dateStr}: ${status}`;
   }
 }
