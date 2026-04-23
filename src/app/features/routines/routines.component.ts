@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Rotina } from '@core/models/domain';
-import { GamificationService } from '@core/services/gamification.service';
 import { RoutineService, type Routine } from '@core/services/routine.service';
+import { AppRoutineCardComponent } from '@shared/components/feature/routine-card/routine-card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppCardComponent } from '@shared/components/ui/card/card.component';
 import { AppSpinnerComponent } from '@shared/components/ui/spinner/spinner.component';
@@ -15,6 +15,7 @@ import { RoutineCreateComponent } from './routine-create.component';
   standalone: true,
   imports: [
     CommonModule,
+    AppRoutineCardComponent,
     AppCardComponent,
     AppButtonComponent,
     AppSpinnerComponent,
@@ -102,21 +103,11 @@ import { RoutineCreateComponent } from './routine-create.component';
 
           <div class="routine-cards">
             @for (rotina of filteredRoutines(); track rotina.id) {
-              <div
-                class="routine-card"
-                (click)="goToRoutineDetail(rotina.id)"
-              >
-                <div class="card-left">
-                  <h3 class="routine-title">{{ rotina.icon }} {{ rotina.titulo }}</h3>
-                  <p class="routine-subtitle">
-                    {{ rotina.tarefasCompletas }} de {{ rotina.totalTarefas }} tarefas concluidas
-                  </p>
-                </div>
-
-                <div class="card-right">
-                  <span class="xp-badge">+{{ rotina.xpTotal }} XP</span>
-                </div>
-              </div>
+              <app-routine-card
+                [routine]="rotina"
+                (start)="goToRoutineDetail($event)"
+                (edit)="goToRoutineDetail($event)"
+              ></app-routine-card>
             }
           </div>
         </div>
@@ -159,7 +150,6 @@ import { RoutineCreateComponent } from './routine-create.component';
 export class RoutinesComponent {
   private router = inject(Router);
   readonly routineService = inject(RoutineService);
-  readonly gamificationService = inject(GamificationService);
 
   readonly showCreateModal = signal(false);
   readonly successToastMessage = signal<string | null>(null);
@@ -175,18 +165,9 @@ export class RoutinesComponent {
 
     return visibleRoutines
       .filter((routine) => !routine.isCompleted && routine.tasks.length > 0)
-      .map((routine) => ({
-        id: routine.id,
-        titulo: routine.title,
-        icon: routine.icon,
-        totalTarefas: routine.tasks.length,
-        tarefasCompletas: routine.tasks.filter((task) => task.completed).length,
-        xpTotal: routine.totalXP,
-        frequency: routine.frequency,
-      }))
       .sort((a, b) => {
-        const progressA = a.totalTarefas > 0 ? a.tarefasCompletas / a.totalTarefas : 0;
-        const progressB = b.totalTarefas > 0 ? b.tarefasCompletas / b.totalTarefas : 0;
+        const progressA = a.tasks.length > 0 ? a.tasks.filter((task) => task.completed).length / a.tasks.length : 0;
+        const progressB = b.tasks.length > 0 ? b.tasks.filter((task) => task.completed).length / b.tasks.length : 0;
         return progressB - progressA;
       });
   });

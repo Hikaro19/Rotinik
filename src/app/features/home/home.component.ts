@@ -2,7 +2,6 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RoutineService, type Routine } from '../../core/services/routine.service';
-import { RotatinaRepository, GamificationRepository } from '../../core/services';
 
 /**
  * 🏠 HomeComponent - TELA DE ROTINAS
@@ -28,8 +27,6 @@ import { RotatinaRepository, GamificationRepository } from '../../core/services'
 export class HomeComponent {
   private router = inject(Router);
   private routineService = inject(RoutineService);
-  private rotinaRepo = inject(RotatinaRepository);
-  private gamificationRepo = inject(GamificationRepository);
 
   // ─────────────────────────────────────────────────────────────
   // SIGNALS - Estado Local
@@ -89,7 +86,7 @@ export class HomeComponent {
   /**
    * Usuário atual (compatível com RotatinaRepository)
    */
-  usuarioAtual = this.rotinaRepo.usuarioAtual;
+  usuarioAtual = this.routineService.currentUserSignal;
 
   /**
    * Nome do usuário
@@ -102,17 +99,17 @@ export class HomeComponent {
   /**
    * Nível do usuário
    */
-  nivelUsuario = computed(() => this.gamificationRepo.usuarioNivel());
+  nivelUsuario = computed(() => this.routineService.userLevel());
 
   /**
    * Progresso do nível (0-100)
    */
-  progressoNivel = computed(() => this.gamificationRepo.progressoNivel());
+  progressoNivel = computed(() => this.routineService.userLevelProgress());
 
   /**
    * Moedas do usuário
    */
-  moedas = computed(() => this.gamificationRepo.usuarioMoedas());
+  moedas = computed(() => this.routineService.userCoins());
 
   /**
    * Progresso médio de rotinas (0-100%)

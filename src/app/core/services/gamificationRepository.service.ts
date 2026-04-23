@@ -1,39 +1,19 @@
-/**
- * 🎮 GamificationRepository (Singleton)
- * Gerencia XP, moedas, níveis e achievements
- * Funciona em sintonia com RotatinaRepository
- */
-
-import { Injectable, inject } from '@angular/core';
-import { signal, computed } from '@angular/core';
-import { RotatinaRepository } from './rotinaRepository.service';
+import { Injectable, computed, inject } from '@angular/core';
+import { RoutineService } from './routine.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GamificationRepository {
-  private rotinaRepo = inject(RotatinaRepository);
+  private readonly routineService = inject(RoutineService);
 
-  // ─────────────────────────────────────────────────────────────
-  // COMPUTED - Dados Derivados do Usuário
-  // ─────────────────────────────────────────────────────────────
+  readonly usuarioNivel = computed(() => this.routineService.userLevel());
+  readonly usuarioXP = computed(() => this.routineService.userXP());
+  readonly usuarioMoedas = computed(() => this.routineService.userCoins());
+  readonly progressoNivel = computed(() => this.routineService.userLevelProgress());
+  readonly xpParaProximo = computed(() => this.routineService.xpToNextLevel());
 
-  usuarioNivel = computed(() => this.rotinaRepo.usuarioAtual()?.getNivel() ?? 0);
-
-  usuarioXP = computed(() => this.rotinaRepo.usuarioAtual()?.getExperiencia() ?? 0);
-
-  usuarioMoedas = computed(() => this.rotinaRepo.usuarioAtual()?.getMoedas() ?? 0);
-
-  progressoNivel = computed(() => this.rotinaRepo.usuarioAtual()?.calcularProgressoNivel() ?? 0);
-
-  xpParaProximo = computed(() => {
-    const usuario = this.rotinaRepo.usuarioAtual();
-    if (!usuario) return 0;
-    const nivel = usuario.getNivel();
-    return Math.floor(100 * Math.pow(nivel, 1.5));
-  });
-
-  nivelStatus = computed(() => {
+  readonly nivelStatus = computed(() => {
     const nivel = this.usuarioNivel();
     if (nivel === 1) return 'Iniciante';
     if (nivel <= 5) return 'Aprendiz';
@@ -42,46 +22,31 @@ export class GamificationRepository {
     return 'Elite';
   });
 
-  nivelCor = computed(() => {
+  readonly nivelCor = computed(() => {
     const status = this.nivelStatus();
     const cores: Record<string, string> = {
-      'Iniciante': 'var(--text-muted)',
-      'Aprendiz': 'var(--brand-neon)',
-      'Experiente': 'var(--game-coin)',
-      'Mestre': '#FFD700', // Gold
-      'Elite': 'var(--brand-neon)',
+      Iniciante: 'var(--text-muted)',
+      Aprendiz: 'var(--brand-neon)',
+      Experiente: 'var(--game-coin)',
+      Mestre: '#FFD700',
+      Elite: 'var(--brand-neon)',
     };
     return cores[status] || 'var(--text-primary)';
   });
 
-  // ─────────────────────────────────────────────────────────────
-  // MÉTODOS - GAMIFICAÇÃO
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * Calcula reward por rotina completa
-   * Baseado em XP total e dificuldade
-   */
   calcularRewardRotina(rotinaId: string): { xp: number; moedas: number } {
-    const rotina = this.rotinaRepo.obterRotina(rotinaId);
-    if (!rotina) return { xp: 0, moedas: 0 };
+    const rotina = this.routineService.getRoutineById(rotinaId);
+    if (!rotina) {
+      return { xp: 0, moedas: 0 };
+    }
 
-    const xpTotal = rotina.calcularXPTotal();
-    const moedasTotal = rotina.calcularMoedasTotal();
-    const sequencia = rotina.getSequenciaCompletamento();
-
-    // Bonus por sequência (streak multiplier)
-    const multiplicador = 1 + Math.floor(sequencia / 5) * 0.1; // +10% a cada 5 completamentos
-
+    const multiplicador = 1 + Math.floor(rotina.completionStreak / 5) * 0.1;
     return {
-      xp: Math.floor(xpTotal * multiplicador),
-      moedas: Math.floor(moedasTotal * multiplicador),
+      xp: Math.floor(rotina.totalXP * multiplicador),
+      moedas: Math.floor(rotina.totalCoins * multiplicador),
     };
   }
 
-  /**
-   * Calcula pontos de reputação ganhos
-   */
   calcularReputacao(tipoAcao: 'tarefa_completa' | 'rotina_completa' | 'consecutivos'): number {
     const mapa = {
       tarefa_completa: 5,
@@ -91,9 +56,6 @@ export class GamificationRepository {
     return mapa[tipoAcao];
   }
 
-  /**
-   * Retorna stats para display
-   */
   obterStats() {
     return {
       nivel: this.usuarioNivel(),
@@ -105,16 +67,10 @@ export class GamificationRepository {
     };
   }
 
-  /**
-   * Simula completamento de todas as tarefas para teste visual
-   */
   completarTodasAsTarefas(): void {
-    const rotinas = this.rotinaRepo.rotinas();
-    rotinas.forEach(rotina => {
-      rotina.getTarefas().forEach(tarefa => {
-        if (!tarefa.ehCompleta()) {
-          this.rotinaRepo.concluirTarefa(rotina.getId(), tarefa.getId());
-        }
+    this.routineService.routinesSignal().forEach((routine) => {
+      routine.tasks.filter((task) => !task.completed).forEach((task) => {
+        this.routineService.completeTask(routine.id, task.id);
       });
     });
   }

@@ -1,7 +1,8 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { RoutineService } from './routine.service';
 
 /**
- * Interface de usuário com stats gamificados
+ * Interface de usuario com stats gamificados.
  */
 export interface GamePlayer {
   id: string;
@@ -16,7 +17,7 @@ export interface GamePlayer {
 }
 
 /**
- * Interface de transação de moedas/XP
+ * Interface de transacao de moedas/XP.
  */
 export interface GameTransaction {
   id: string;
@@ -26,59 +27,32 @@ export interface GameTransaction {
   timestamp: Date;
 }
 
-/**
- * GamificationService: Gerencia XP, moedas, níveis e achievements
- * Usa Signals para reatividade em tempo real
- */
 @Injectable({ providedIn: 'root' })
 export class GamificationService {
-  // ───────────────────────────────────────────────────────────────
-  // 🎮 SIGNALS (Estado)
-  // ───────────────────────────────────────────────────────────────
+  private readonly routineService = inject(RoutineService);
+  private readonly achievementIdsSignal = signal<string[]>([]);
 
-  // Player state
-  playerSignal = signal<GamePlayer>({
-    id: 'user-001',
-    name: 'Jogador',
-    email: 'player@rotinik.com',
-    level: 1,
-    currentXP: 0,
-    totalXP: 0,
-    coins: 100, // Moedas iniciais
-    achievements: [],
-    lastActivityDate: new Date(),
+  readonly playerSignal = computed<GamePlayer>(() => {
+    const user = this.routineService.currentUserSignal();
+
+    return {
+      id: user?.getId() ?? 'user-001',
+      name: user?.getNome() ?? 'Jogador',
+      email: user?.getEmail() ?? 'player@rotinik.com',
+      level: user?.getNivel() ?? 1,
+      currentXP: user?.getExperiencia() ?? 0,
+      totalXP: user?.getExperienciaTotal() ?? 0,
+      coins: user?.getMoedas() ?? 0,
+      achievements: this.achievementIdsSignal(),
+      lastActivityDate: user?.getUltimaAtividade() ?? new Date(),
+    };
   });
 
-  // Transaction history
-  transactionsSignal = signal<GameTransaction[]>([]);
+  readonly transactionsSignal = signal<GameTransaction[]>([]);
 
-  // ───────────────────────────────────────────────────────────────
-  // 📊 COMPUTED (Dados Derivados)
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * XP necessário para passar de nível
-   * Fórmula: 100 * nível^1.5
-   */
-  xpToNextLevel = computed(() => {
-    const level = this.playerSignal().level;
-    return Math.floor(100 * Math.pow(level, 1.5));
-  });
-
-  /**
-   * Progresso da barra de XP (0-100)
-   */
-  xpProgress = computed(() => {
-    const player = this.playerSignal();
-    const nextLevel = this.xpToNextLevel();
-    const progress = (player.currentXP / nextLevel) * 100;
-    return Math.min(100, progress);
-  });
-
-  /**
-   * Status do nível (compatível com design system)
-   */
-  levelStatus = computed(() => {
+  readonly xpToNextLevel = computed(() => this.routineService.xpToNextLevel());
+  readonly xpProgress = computed(() => this.routineService.userLevelProgress());
+  readonly levelStatus = computed(() => {
     const level = this.playerSignal().level;
     if (level === 1) return 'starter';
     if (level <= 5) return 'apprentice';
@@ -86,11 +60,7 @@ export class GamificationService {
     if (level <= 20) return 'master';
     return 'elite';
   });
-
-  /**
-   * Cor do nível baseado em rarity
-   */
-  levelColor = computed(() => {
+  readonly levelColor = computed(() => {
     const status = this.levelStatus();
     const colorMap: Record<string, string> = {
       starter: 'var(--text-muted)',
@@ -102,145 +72,47 @@ export class GamificationService {
     return colorMap[status] || 'var(--text-body)';
   });
 
-  // ───────────────────────────────────────────────────────────────
-  // 🎯 XP & LEVEL METHODS
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Adiciona XP ao player
-   * Verifica se passou de nível
-   */
-  addXP(amount: number, reason: string = 'Tarefa completada'): void {
-    const player = this.playerSignal();
-    const nextLevelXP = this.xpToNextLevel();
-
-    let newXP = player.currentXP + amount;
-    let newLevel = player.level;
-    let newTotalXP = player.totalXP + amount;
-
-    // Verificar se passou de nível
-    while (newXP >= nextLevelXP && newLevel < 100) {
-      newXP -= nextLevelXP;
-      newLevel++;
-    }
-
-    // Atualizar player
-    this.playerSignal.set({
-      ...player,
-      level: newLevel,
-      currentXP: newXP,
-      totalXP: newTotalXP,
-      lastActivityDate: new Date(),
-    });
-
-    // Registrar transação
-    this.logTransaction('earn_xp', amount, reason);
-
-    // Efeito sonoro (simulado)
-    if (newLevel > player.level) {
-      console.log(`🎉 LEVEL UP! Você é nível ${newLevel}!`);
-    } else {
-      console.log(`⭐ +${amount} XP`);
-    }
+  addXP(_amount: number, _reason: string = 'Tarefa completada'): void {
+    // XP agora e aplicado pela fonte unica de rotinas ao concluir tarefas.
   }
 
-  /**
-   * Reseta XP do nível atual
-   */
   resetLevelXP(): void {
-    const player = this.playerSignal();
-    this.playerSignal.set({
-      ...player,
-      currentXP: 0,
-    });
+    // Mantido por compatibilidade; a regra real passa a vir da fonte unica.
   }
 
-  // ───────────────────────────────────────────────────────────────
-  // 💰 COIN METHODS
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Adiciona moedas
-   */
   addCoins(amount: number, reason: string = 'Ganho'): void {
-    const player = this.playerSignal();
-    this.playerSignal.set({
-      ...player,
-      coins: player.coins + amount,
-      lastActivityDate: new Date(),
-    });
-
+    this.routineService.addCoins(amount);
     this.logTransaction('earn_coin', amount, reason);
-    console.log(`💰 +${amount} moedas`);
   }
 
-  /**
-   * Gasta moedas
-   * Retorna true se conseguiu gastar, false se insuficiente
-   */
   spendCoins(amount: number, reason: string = 'Gasto'): boolean {
-    const player = this.playerSignal();
+    const success = this.routineService.spendCoins(amount);
 
-    if (player.coins < amount) {
-      console.warn('❌ Moedas insuficientes');
+    if (!success) {
+      console.warn('Moedas insuficientes');
       return false;
     }
 
-    this.playerSignal.set({
-      ...player,
-      coins: player.coins - amount,
-      lastActivityDate: new Date(),
-    });
-
     this.logTransaction('spend_coin', amount, reason);
-    console.log(`💸 -${amount} moedas`);
     return true;
   }
 
-  /**
-   * Retorna disponibilidade de moedas para compra
-   */
   canAfford(cost: number): boolean {
     return this.playerSignal().coins >= cost;
   }
 
-  // ───────────────────────────────────────────────────────────────
-  // 🏆 ACHIEVEMENTS METHODS
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Desbloqueia um achievement
-   */
   unlockAchievement(achievementId: string): void {
-    const player = this.playerSignal();
-
-    if (player.achievements.includes(achievementId)) {
-      return; // Já desbloqueado
+    if (this.hasAchievement(achievementId)) {
+      return;
     }
 
-    this.playerSignal.set({
-      ...player,
-      achievements: [...player.achievements, achievementId],
-      lastActivityDate: new Date(),
-    });
-
-    console.log(`🏅 Achievement desbloqueado: ${achievementId}`);
+    this.achievementIdsSignal.update((ids) => [...ids, achievementId]);
   }
 
-  /**
-   * Verifica se tem achievement
-   */
   hasAchievement(achievementId: string): boolean {
-    return this.playerSignal().achievements.includes(achievementId);
+    return this.achievementIdsSignal().includes(achievementId);
   }
 
-  // ───────────────────────────────────────────────────────────────
-  // 📝 TRANSACTION HISTORY
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Registra transação no histórico
-   */
   private logTransaction(type: GameTransaction['type'], amount: number, reason: string): void {
     const transaction: GameTransaction = {
       id: `tx-${Date.now()}`,
@@ -250,26 +122,16 @@ export class GamificationService {
       timestamp: new Date(),
     };
 
-    this.transactionsSignal.update((txs) => {
-      const updated = [transaction, ...txs];
+    this.transactionsSignal.update((transactions) => {
+      const updated = [transaction, ...transactions];
       return updated.length > 100 ? updated.slice(0, 100) : updated;
     });
   }
 
-  /**
-   * Retorna últimas transações
-   */
   getTransactionHistory(limit: number = 10): GameTransaction[] {
     return this.transactionsSignal().slice(0, limit);
   }
 
-  // ───────────────────────────────────────────────────────────────
-  // 📊 STATS METHODS
-  // ───────────────────────────────────────────────────────────────
-
-  /**
-   * Retorna stats resumidos para display
-   */
   getPlayerStats() {
     const player = this.playerSignal();
     return {
@@ -284,21 +146,10 @@ export class GamificationService {
     };
   }
 
-  /**
-   * Reset completo (para desenvolvimento)
-   */
   resetPlayer(): void {
-    this.playerSignal.set({
-      id: 'user-001',
-      name: 'Jogador',
-      email: 'player@rotinik.com',
-      level: 1,
-      currentXP: 0,
-      totalXP: 0,
-      coins: 100,
-      achievements: [],
-      lastActivityDate: new Date(),
-    });
+    this.achievementIdsSignal.set([]);
     this.transactionsSignal.set([]);
+    this.routineService.resetState();
+    this.routineService.seedData();
   }
 }

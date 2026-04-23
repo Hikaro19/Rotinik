@@ -1,366 +1,170 @@
-<!-- markdownlint-disable -->
+# Rotinik Architecture
 
-# 🚀 ROTINIK - Frontend Architecture Guide
+## Objetivo
 
-### Demo Credentials
-```
-Email: demo@rotinik.com
-Senha: password123
+Preparar o frontend Angular para operar como cliente de uma API ASP.NET Core sem carregar regra de negocio autoritativa, mocks embutidos e duplicacao de responsabilidades entre UI, estado e dominio.
 
-## 📁 Estrutura do Projeto
+## Arquitetura Alvo
 
-```
-src/
-├── app/
-│   ├── core/
-│   │   ├── layout/
-│   │   │   ├── layout.component.ts      # Shell principal com navegação
-│   │   │   ├── layout.component.scss
-│   │   │   └── layout.component.html
-│   │   ├── services/
-│   │   │   ├── gamification.service.ts  # Gerenciamento de pontos/XP/moedas
-│   │   │   ├── routine.service.ts       # CRUD de rotinas e tarefas
-│   │   │   ├── auth.service.ts          # (TODO) Autenticação
-│   │   │   └── api.service.ts           # (TODO) Cliente HTTP base
-│   │   └── interceptors/
-│   │       ├── auth.interceptor.ts      # (TODO) JWT/Bearer tokens
-│   │       └── error.interceptor.ts     # (TODO) Tratamento global de erros
-│   │
-│   ├── shared/
-│   │   ├── components/
-│   │   │   ├── ui/
-│   │   │   │   ├── button/              # Botão reutilizável
-│   │   │   │   ├── input/               # (TODO) Input com validação
-│   │   │   │   ├── card/                # (TODO) Card genérico
-│   │   │   │   ├── modal/               # (TODO) Modal dialog
-│   │   │   │   ├── spinner/             # (TODO) Loading spinner
-│   │   │   │   └── toast/               # (TODO) Toast notifications
-│   │   │   └── feature/
-│   │   │       ├── task-item/           # (TODO) Componente de tarefa
-│   │   │       ├── routine-card/        # (TODO) Card de rotina
-│   │   │       └── leaderboard/         # (TODO) Ranking social
-│   │   ├── pipes/
-│   │   │   ├── time-format.pipe.ts      # (TODO) Formatar tempo
-│   │   │   └── xp-format.pipe.ts        # (TODO) Formatar XP
-│   │   ├── directives/
-│   │   │   ├── focus-trap.directive.ts  # (TODO) Acessibilidade
-│   │   │   └── loading.directive.ts     # (TODO) Loading state
-│   │   └── utils/
-│   │       ├── constants.ts             # (TODO) Constantes da app
-│   │       ├── validators.ts            # (TODO) Validadores customizados
-│   │       └── helpers.ts               # (TODO) Funções utilitárias
-│   │
-│   ├── features/
-│   │   ├── home/
-│   │   │   ├── home.component.ts        # ✅ Dashboard principal
-│   │   │   ├── home.component.scss
-│   │   │   └── home.component.html
-│   │   ├── routines/
-│   │   │   ├── routines.component.ts    # (TODO) Lista de rotinas
-│   │   │   ├── routine-detail/          # (TODO) Detalhe de rotina
-│   │   │   └── routine-create/          # (TODO) Criar/editar rotina
-│   │   ├── shop/
-│   │   │   ├── shop.component.ts        # (TODO) Loja de itens
-│   │   │   ├── shop-item/               # (TODO) Item da loja
-│   │   │   └── inventory/               # (TODO) Inventário do usuário
-│   │   ├── friends/
-│   │   │   ├── friends.component.ts     # (TODO) Lista de amigos
-│   │   │   ├── friend-profile/          # (TODO) Perfil do amigo
-│   │   │   └── feed/                    # (TODO) Feed social
-│   │   ├── profile/
-│   │   │   ├── profile.component.ts     # (TODO) Perfil do usuário
-│   │   │   ├── profile-edit/            # (TODO) Editar perfil
-│   │   │   └── achievements/            # (TODO) Achievements/Medalhas
-│   │   └── auth/
-│   │       ├── login/                   # (TODO) Login
-│   │       ├── register/                # (TODO) Registro
-│   │       └── password-reset/          # (TODO) Reset de senha
-│   │
-│   ├── app.config.ts                    # (TODO) Configuração da app
-│   ├── app.routes.ts                    # (TODO) Rotas da app
-│   └── app.component.ts                 # Root component
-│
-├── styles.scss                          # ✅ Design System global
-├── main.ts                              # Bootstrap da app
-├── environments/
-│   ├── environment.ts                   # Dev
-│   └── environment.prod.ts              # Production
-└── index.html
-
+```text
+Angular UI
+  -> Feature Facades / Stores
+    -> Api Services (HttpClient)
+      -> ASP.NET Core Web API
+        -> Application + Domain + Persistence
 ```
 
-## 🎨 Design System
+## Camadas do Frontend
 
-### Tokens de Design
+### 1. UI
 
-Todos os tokens estão definidos em `src/styles.scss`:
+- Componentes standalone
+- Views por feature em `src/app/features`
+- Componentes reutilizaveis em `src/app/shared/components`
+- Regra: componentes recebem dados prontos e emitem eventos; nao conhecem contrato HTTP
 
-#### Cores
-- **Backgrounds**: `--bg-app`, `--bg-card`, `--bg-input`
-- **Brand**: `--brand-neon`, `--brand-gradient`, `--brand-muted`
-- **Gamificação**: `--game-xp`, `--game-coin`, `--game-success`, `--game-warning`, `--game-danger`
-- **Tipografia**: `--text-title`, `--text-body`, `--text-muted`
+### 2. Facades / Stores
 
-#### Tipografia
-- **Fontes**: Poppins (titles), Inter (body)
-- **Tamanhos**: `--font-size-xs` até `--font-size-4xl`
-- **Pesos**: regular, medium, semibold, bold
+- Responsaveis por `loading`, `error`, `data` e comandos assinc
+- Expostos via `signal`, `computed` e, quando necessario, `Observable`
+- Devem ser o ponto de contato das telas com a feature
 
-#### Espaçamento
-- **Escala**: 4px base (spacing-1 = 4px até spacing-16 = 64px)
-- **Uso**: Padding, margin, gaps
+Exemplos de responsabilidades:
 
-#### Sombras
-- **Profundidade**: shadow-sm até shadow-2xl
-- **Neon**: shadow-neon, shadow-neon-lg
+- `loadSnapshot()`
+- `createRoutine()`
+- `completeTask()`
+- `refreshProfile()`
 
-#### Arredondamentos
-- **Pequeno**: `--radius-sm` (8px)
-- **Card**: `--radius-card` (16px)
-- **Grande**: `--radius-lg` (24px)
-- **Pill**: `--radius-pill` (9999px)
+### 3. Api Services
 
-### Mixins SCSS Disponíveis
+- Wrappers finos de `HttpClient`
+- Sem estado de tela
+- Sem transformacoes de UI
+- Sem mock embutido
 
-```scss
-@include flex-center;              // Flexbox centered
-@include flex-between;             // Flexbox space-between
-@include button-reset;             // Reset de botão
-@include card;                     // Card base com sombra
-@include input-base;               // Input base
-@include text-truncate;            // Text ellipsis
-@include smooth-transition();      // Transition smoothing
-@include gradient-text;            // Gradient text
-@include neon-glow;                // Efeito neon
-@include container-mobile;         // Container responsivo
-@include container-tablet;
-@include container-desktop;
+Exemplo:
+
+```ts
+getSnapshot(): Observable<RoutinesSnapshotDto>
+create(payload: CreateRoutineRequestDto): Observable<RoutineDto>
 ```
 
-## 🔧 Padrões de Desenvolvimento
+### 4. Mappers
 
-### Componentes Standalone
+- Convertem DTOs da API em view models
+- Convertem formularios em payloads
+- Opcionalmente adaptam modelos de dominio leves para a UI
 
-Todos os componentes usam o padrão Standalone (Angular 17+):
+## Dominio no Frontend
 
-```typescript
-@Component({
-  selector: 'app-button',
-  standalone: true,
-  imports: [CommonModule],
-  template: `...`,
-  styleUrl: './button.component.scss',
-})
-export class AppButtonComponent {
-  // ...
-}
+As classes `Usuario`, `Rotina` e `Tarefa` continuam uteis para demonstrar modelagem e encapsulamento, mas deixam de ser a autoridade final sobre:
+
+- XP
+- moedas
+- streak
+- progressao de nivel
+- conclusao oficial de rotina
+
+Essas regras passam a ser responsabilidade do backend C#.
+
+No frontend, o dominio fica restrito a:
+
+- validacoes locais
+- comportamento de apoio a interface
+- composicao de estado derivado
+
+## Estrutura Recomendada
+
+```text
+src/app/
+|-- core/
+|   |-- models/
+|   |   |-- api/
+|   |   `-- domain/
+|   |-- mocks/
+|   |-- mappers/
+|   `-- services/
+|       |-- api/
+|       `-- facade/
+|-- features/
+|-- shared/
 ```
 
-**Benefícios:**
-- Menor bundle size
-- Melhor tree-shaking
-- Composição mais fácil
+## Estado e Assincronia
 
-### Signals para Reatividade
+### Convencao
 
-Usar Angular Signals para estado local (desde o Home Component):
+- `ApiService`: retorna `Observable`
+- `Facade/Store`: consome observables, atualiza `signal`
+- `Component`: le `signal` e dispara eventos
 
-```typescript
-// Signal simples
-count = signal(0);
+### Exemplo
 
-// Computed signal (reactivo)
-doubleCount = computed(() => this.count() * 2);
-
-// Atualizar
-this.count.set(5);
-this.count.update(prev => prev + 1);
+```text
+Component -> facade.createRoutine(payload)
+Facade -> api.create(payload)
+Api -> backend
+Facade -> atualiza state
+Component -> renderiza novo state
 ```
 
-**Quando usar:**
-- Estado local de componente
-- Computed values
-- State management simples
+## Estrategia de Integracao com Backend
 
-**Quando usar RxJS:**
-- Compartilhar dados entre componentes
-- Efeitos assíncronos complexos
-- Integração com backend
+### Contratos
 
-### Injeção de Dependência
+- DTOs versionados por recurso
+- erros padronizados
+- datas em ISO-8601
+- ids opacos controlados pelo backend
 
-```typescript
-private gamificationService = inject(GamificationService);
-private router = inject(Router);
-```
+### Infraestrutura
 
-Preferir `inject()` funcional ao invés de constructor.
+- `provideHttpClient()`
+- interceptors para auth e erro
+- environment por ambiente
+- `apiBaseUrl` e `apiVersion`
 
-### Gerenciamento de Subscrições
+## Design System
 
-Usar `takeUntil` pattern:
+### Regras
 
-```typescript
-private destroy$ = new Subject<void>();
+- Montserrat como fonte global
+- tokens em `src/styles.scss`
+- sem CSS inline em features
+- sem hardcode de cor quando houver token equivalente
+- sem `transition: all`
 
-ngOnInit() {
-  this.service.data$
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(data => { ... });
-}
+## Diretrizes de Componentizacao
 
-ngOnDestroy() {
-  this.destroy$.next();
-  this.destroy$.complete();
-}
-```
+Priorizar extração de:
 
-## 📱 Responsividade
+- cards de rotina
+- filtros pill/tab
+- paineis de secao
+- badges de recompensa
+- estados vazios
+- hero de perfil
 
-### Breakpoints (Mobile-first)
+## Decisoes de Refatoracao
 
-- **Mobile**: < 640px (base)
-- **Tablet**: 640px - 1023px
-- **Desktop**: ≥ 1024px
+1. Remover mocks embutidos dos services principais
+2. Preservar a API publica usada pelas telas durante a transicao
+3. Introduzir mappers dedicados onde a complexidade justificar
+4. Consolidar componentes compartilhados antes de expandir novas features
 
-### Layout Responsivo
+## Riscos Atuais
 
-**Mobile:**
-- Bottom Navigation
-- Full-width content
+- Services com responsabilidade excessiva
+- divergencia entre documentacao e implementacao real
+- duplicacao de HTML/SCSS entre Home e Routines
+- uso de bindings de estilo e transicoes genericas
+- acessibilidade parcial em modal/toast
 
-**Tablet/Desktop:**
-- Sidebar Navigation
-- Content com max-width
+## Proximos Passos
 
-Exemplo no `layout.component.scss`:
-
-```scss
-@media (max-width: 767px) {
-  .layout__sidebar { display: none; }
-  .layout__bottom-nav { display: block; }
-}
-
-@media (min-width: 768px) {
-  .layout__sidebar { display: block; }
-  .layout__bottom-nav { display: none; }
-}
-```
-
-## 🔐 Acessibilidade
-
-### Práticas Implementadas
-
-1. **Semantic HTML**: `<button>`, `<nav>`, `<main>`, `<section>`
-2. **ARIA Labels**: `aria-label`, `aria-current`, `aria-disabled`
-3. **Focus Management**: `:focus-visible` outline
-4. **Contrast**: WCAG AA compliant
-5. **Screen Reader Text**: `.sr-only` class
-
-### Exemplo:
-
-```html
-<nav role="navigation" aria-label="Navegação principal">
-  <a [attr.aria-current]="isActive ? 'page' : null">
-    Link
-  </a>
-</nav>
-```
-
-## 🚀 Performance
-
-### Otimizações Implementadas
-
-1. **Standalone Components**: Menor bundle
-2. **OnPush Change Detection**: (implementar em componentes filhos)
-3. **Lazy Loading Routes**: (implementar em routing)
-4. **Image Optimization**: (usar format moderno, lazy-loading)
-5. **CSS Purging**: Tailwind-like approach com SCSS
-
-### Recomendações
-
-```typescript
-@Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  // ... resto da config
-})
-```
-
-## 📡 Integração com Backend
-
-### GamificationService
-
-**Endpoints esperados:**
-
-```
-POST   /api/gamification/addCoins
-POST   /api/gamification/addXP
-POST   /api/gamification/spendCoins
-POST   /api/gamification/unlockAchievement
-```
-
-**WebSocket (SignalR):**
-
-```
-connection.on('pointsEarned', (data) => {
-  this.addXP(data.xp, data.source);
-});
-```
-
-### RoutineService
-
-**Endpoints esperados:**
-
-```
-GET    /api/routines
-GET    /api/routines/:id
-POST   /api/routines
-PUT    /api/routines/:id
-DELETE /api/routines/:id
-
-GET    /api/tasks
-PUT    /api/tasks/:id/complete
-POST   /api/tasks
-
-GET    /api/users/profile
-```
-
-## 📚 Next Steps
-
-### Curto Prazo (Sprint 1)
-1. ✅ Design System base
-2. ✅ Layout responsivo
-3. ✅ Home component
-4. [ ] Componentes UI (Input, Modal, Card, Spinner)
-5. [ ] Autenticação (Login/Register)
-6. [ ] Integração com backend real
-
-### Médio Prazo (Sprint 2-3)
-1. [ ] Feature de Rotinas (CRUD)
-2. [ ] Feature de Tarefas
-3. [ ] Sistema de Loja
-4. [ ] Feed Social
-5. [ ] Perfil do usuário
-
-### Longo Prazo (Sprint 4+)
-1. [ ] PWA (Service Workers)
-2. [ ] Offline support
-3. [ ] Push notifications
-4. [ ] i18n (Internacionalização)
-5. [ ] Dark/Light theme toggle
-6. [ ] E2E tests (Cypress)
-7. [ ] Unit tests (Jasmine/Karma)
-
-## 🔗 Recursos
-
-- [Angular Docs](https://angular.io/docs)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [SCSS Documentation](https://sass-lang.com/documentation)
-- [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
-- [Mobile-first Design](https://www.nngroup.com/articles/mobile-first-web-design/)
-
----
-
-**Versão**: 1.0
-**Atualizado**: 2024
-**Mantido por**: Equipe Rotinik Frontend
+1. Isolar mocks
+2. Refatorar rotina para `Api + Facade + Mapper`
+3. Migrar profile/shop/friends/feed para o mesmo padrao
+4. Reaproveitar componentes compartilhados nas views principais
+5. Adicionar interceptors, auth e tratamento global de erros

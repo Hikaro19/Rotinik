@@ -2,66 +2,68 @@
 
 ![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)
-![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)
+![Backend Target](https://img.shields.io/badge/API-ASP.NET%20Core-512BD4?logo=dotnet&logoColor=white)
 
-Rotinik e um MVP academico de produtividade com gamificacao, criado para transformar combate a procrastinacao em uma experiencia mais visual, motivadora e progressiva. O app recompensa consistencia com XP, moedas, streaks, loja, progresso de rotinas e elementos sociais.
+Rotinik transforma rotina em progresso visivel. O produto usa gamificacao para combater a procrastinacao com loops claros de recompensa: tarefas geram XP, moedas, streaks, historico e motivacao para manter consistencia no dia a dia.
 
-## Sobre o Projeto
+Hoje o repositorio representa o frontend em Angular da plataforma. A base foi iniciada como prototipo academico, mas esta sendo evoluida para uma arquitetura real de integracao com backend em C#.
 
-O projeto foi desenvolvido no contexto da disciplina de Programacao Orientada a Objetos II da UVV. A proposta e aplicar conceitos de POO em um frontend moderno, usando o dominio do produto para representar rotinas, tarefas, recompensas, perfil e progresso do usuario.
+## Proposta de Valor
 
-Na pratica, o Rotinik ajuda o usuario a quebrar objetivos em tarefas menores e acompanhaveis. Cada conclusao gera recompensas no ecossistema do app:
+- Quebra objetivos grandes em tarefas pequenas e acompanhaveis
+- Recompensa execucao com XP, moedas e progresso de nivel
+- Usa rotina, loja, perfil e elementos sociais para reforcar consistencia
+- Converte um problema subjetivo, procrastinacao, em feedback visual e mensuravel
 
-- XP para evolucao de nivel
-- moedas para compras na loja
-- progresso de rotinas diarias, semanais e mensais
-- historico de atividade e sinais de consistencia
-- interacoes sociais como feed, amigos e leaderboard
-
-## Arquitetura e POO
-
-O frontend segue uma arquitetura organizada em `core`, `features` e `shared`, usando Angular com componentes standalone, lazy loading por rota, `signals` e `computed` para estado reativo e SCSS para o design system gamificado.
-
-### Como a POO aparece no projeto
-
-- Classes de dominio encapsulam regras de negocio em `src/app/core/models/domain`, com destaque para `Rotina`, `Tarefa`, `Usuario`, `Perfil`, `Recompensa` e itens de loja.
-- Services com `@Injectable({ providedIn: 'root' })` atuam como singletons da aplicacao, centralizando estado e comportamento em servicos como `GamificationService`, `RoutineService`, `ProfileService`, `ShopService` e `FriendsService`.
-- O padrao `State` aparece na modelagem de tarefas, onde `Tarefa` delega transicoes para estados como `TarefaPendente`, `TarefaEmAndamento` e `TarefaConcluida`.
-- O padrao `Strategy` aparece no calculo de progresso de rotinas, permitindo trocar algoritmos por meio de estrategias como `EstrategiaProgresoLinear`, `EstrategiaProgresoComPeso` e `EstrategiaProgresoExponencial`.
-- O app separa modelagem de dominio de modelos de apresentacao, por exemplo quando `RoutineService` mapeia a classe `Rotina` para um view model consumido pela UI.
+## Visao de Arquitetura
 
 ### Frontend
 
-- Angular standalone e rotas com `loadComponent`
-- estado local e derivado com `signal` e `computed`
-- SCSS com design system dark e linguagem visual gamificada
-- estrutura orientada a features para facilitar manutencao e evolucao
+- Angular 18 com Standalone Components
+- Signals e computed para estado de leitura e derivacoes de UI
+- HttpClient para integracao com API REST
+- SCSS com design system dark gamificado e fonte Montserrat
 
-Observacao importante: a base atual do repositorio esta em Angular `18.2.x`. A abordagem arquitetural, no entanto, continua alinhada ao que voces documentaram para Angular Standalone + Signals.
+### Backend Alvo
 
-## Features Principais
+- ASP.NET Core Web API
+- DTOs versionados por recurso
+- JWT para autenticacao
+- Regras oficiais de XP, moedas, streaks e progresso executadas no servidor
 
-- ✅ Autenticacao com telas de login e cadastro
-- ✅ Dashboard inicial com visao de progresso, rotinas e estatisticas
-- ✅ CRUD basico de rotinas no frontend
-- ✅ Detalhamento de rotina e tarefas
-- ✅ Sistema de XP, niveis, moedas e transacoes gamificadas
-- ✅ Loja com catalogo, compra de itens e inventario
-- ✅ Perfil com estatisticas, achievements, heatmap de atividade e historico
-- ✅ Modulos sociais com amigos, requisicoes, feed e leaderboard
-- ✅ Biblioteca de componentes reutilizaveis (`button`, `input`, `card`, `modal`, `toast`, `spinner`)
-- ✅ Validadores, helpers e constantes compartilhadas
-- ✅ Roteamento com layout principal e areas publicas/privadas
+### Contrato Arquitetural
 
-## Stack Tecnologica
+O frontend deixa de ser a fonte de verdade do dominio e passa a atuar em quatro camadas:
 
-- Angular 18 com arquitetura baseada em Standalone Components
-- TypeScript 5.5
-- SCSS com dark mode gamificado e design tokens globais
-- Angular Signals e `computed` para reatividade
-- RxJS na base do ecossistema Angular
-- Angular Router para lazy loading e navegacao por features
-- Vercel para publicacao
+1. `ApiServices`: clientes HTTP puros
+2. `Stores/Facades`: carregamento, cache local, loading/error e exposicao para a UI
+3. `Mappers`: conversao entre DTOs, view models e modelos de dominio leves
+4. `Shared/UI`: componentes de apresentacao reutilizaveis
+
+## O que o Projeto Demonstra
+
+- Organizacao por `core`, `features` e `shared`
+- Modelagem orientada a objetos no frontend para explorar regras de dominio
+- Uso de Signals para compor dashboards e estados derivados
+- Preparacao para migrar de mock local para integracao real com API C#
+
+## Features Atuais
+
+- Autenticacao com telas de login e cadastro
+- Dashboard inicial com progresso do usuario
+- CRUD local de rotinas e tarefas
+- Sistema gamificado de XP, niveis e moedas
+- Loja, inventario e historico
+- Perfil com estatisticas, heatmap, achievements e historico
+- Modulos sociais com amigos, feed e leaderboard
+
+## Roadmap de Evolucao
+
+- Reposicionar a documentacao para avaliadores tecnicos e recrutadores
+- Isolar mocks do codigo de producao
+- Refatorar services para `HttpClient + facade/store`
+- Componentizar blocos repetidos de Home, Routines e Profile
+- Padronizar acessibilidade, estados assinc e design system
 
 ## Estrutura Principal
 
@@ -69,51 +71,30 @@ Observacao importante: a base atual do repositorio esta em Angular `18.2.x`. A a
 src/
 |-- app/
 |   |-- core/
-|   |   |-- models/domain/       # Entidades e regras de negocio
-|   |   `-- services/            # Estado global e casos de uso
-|   |-- features/
-|   |   |-- auth/                # Login e cadastro
-|   |   |-- home/                # Dashboard inicial
-|   |   |-- routines/            # Rotinas e detalhes
-|   |   |-- profile/             # Perfil e historico
-|   |   |-- shop/                # Loja e inventario
-|   |   `-- friends/             # Amigos, feed e ranking
-|   `-- shared/
-|       |-- components/ui/       # Componentes base reutilizaveis
-|       |-- components/feature/  # Componentes compostos da aplicacao
-|       `-- utils/               # Validators, helpers e constantes
+|   |   |-- models/             # DTOs e modelos de dominio
+|   |   |-- services/           # API clients, facades e stores
+|   |   `-- mocks/              # Dados temporarios enquanto a API nao assume a fonte oficial
+|   |-- features/               # Views e fluxos por dominio
+|   `-- shared/                 # Componentes UI e feature components reutilizaveis
 |-- environments/
 |-- main.ts
 `-- styles.scss
 ```
 
-## Quick Start
-
-### 1. Instale as dependencias
+## Como Rodar
 
 ```bash
 npm install
-```
-
-### 2. Rode a aplicacao em desenvolvimento
-
-```bash
 npm start
 ```
 
-### 3. Acesse no navegador
+App local:
 
 ```text
 http://localhost:4200
 ```
 
-Rotas uteis:
-
-- `http://localhost:4200/auth/login`
-- `http://localhost:4200/auth/register`
-- `http://localhost:4200/home`
-
-## Scripts Uteis
+## Scripts
 
 ```bash
 npm start
@@ -124,10 +105,12 @@ npm run format
 npm run format:check
 ```
 
-## Referencia Tecnica Complementar
+## Documentacao Complementar
 
-Para detalhes mais densos de arquitetura, padroes e organizacao historica do projeto, consulte [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+- [Visao de Produto](./docs/PRODUCT_OVERVIEW.md)
+- [Arquitetura](./docs/ARCHITECTURE.md)
+- [Plano de Integracao com API](./docs/API_INTEGRATION_PLAN.md)
 
-## Status
+## Status Atual
 
-O repositorio agora concentra a documentacao principal neste arquivo. A ideia e manter o `README.md` como porta de entrada unica para onboarding, entendimento do produto e setup local.
+O frontend esta em transicao de prototipo para arquitetura integrada com backend real. O foco atual da refatoracao e remover mocks embutidos dos services, consolidar componentes compartilhados e formalizar o contrato Angular + C#.

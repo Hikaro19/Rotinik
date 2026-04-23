@@ -7,6 +7,8 @@ export * from './gamificationRepository.service';
 // ─ LEGADO: Serviços anteriores (deprecados)
 export * from './gamification.service';
 export * from './routine.service';
+export * from './routine-api.service';
+export * from './profile-api.service';
 export * from './shop.service';
 export * from './profile.service';
 export * from './user.service';

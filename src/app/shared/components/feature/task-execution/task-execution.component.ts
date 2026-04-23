@@ -2,7 +2,6 @@ import { Component, Input, OnInit, inject, signal, computed } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate, stagger } from '@angular/animations';
 import { RoutineService, Task, Routine } from '@core/services/routine.service';
-import { GamificationService } from '@core/services/gamification.service';
 import { AppCardComponent } from '../../ui/card/card.component';
 import { AppButtonComponent } from '../../ui/button/button.component';
 import { AppSpinnerComponent } from '../../ui/spinner/spinner.component';
@@ -490,7 +489,6 @@ export class AppTaskExecutionComponent implements OnInit {
   @Input() onCloseCallback?: () => void;
 
   routineService = inject(RoutineService);
-  gamificationService = inject(GamificationService);
 
   currentTaskIndexSignal = signal(0);
   isProcessingSignal = signal(false);
@@ -539,9 +537,6 @@ export class AppTaskExecutionComponent implements OnInit {
     // Add small delay for visual feedback
     setTimeout(() => {
       const reward = this.routineService.completeTask(this.routine.id, task.id);
-      this.gamificationService.addXP(reward.xp, `Tarefa concluída: ${task.title}`);
-      this.gamificationService.addCoins(reward.coins, `Recompensa de tarefa`);
-
       this.lastRewardSignal.set({
         xp: reward.xp,
         coins: reward.coins,

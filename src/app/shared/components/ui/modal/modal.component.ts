@@ -23,7 +23,13 @@ type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
     <div *ngIf="isOpen()" class="app-modal__container" [class.app-modal__container--open]="isOpen()">
       <div class="app-modal__dialog" [class]="dialogClasses()">
         <!-- Use Card as wrapper -->
-        <app-card variant="elevated" [padding]="'none'" role="dialog" [attr.aria-labelledby]="headerId">
+        <app-card
+          variant="elevated"
+          [padding]="'none'"
+          role="dialog"
+          aria-modal="true"
+          [attr.aria-labelledby]="headerId"
+        >
           <!-- Modal Header -->
           <div appCardHeader class="app-modal__header">
             <h2 [id]="headerId" class="app-modal__title">

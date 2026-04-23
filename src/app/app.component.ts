@@ -1,7 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { RotatinaRepository } from './core/services';
+import { RoutineService } from './core/services/routine.service';
+import { ProfileService } from './core/services/profile.service';
 
 @Component({
   selector: 'app-root',
@@ -15,11 +16,11 @@ import { RotatinaRepository } from './core/services';
 export class AppComponent implements OnInit {
   title = 'Rotinik';
 
-  // Injeta repositório para inicializar seed data
-  private rotinaRepo = inject(RotatinaRepository);
+  private readonly routineService = inject(RoutineService);
+  private readonly profileService = inject(ProfileService);
 
   ngOnInit(): void {
-    // Popula o banco de dados em memória com dados iniciais
-    this.rotinaRepo.seedData();
+    this.routineService.initialize();
+    this.profileService.initialize();
   }
 }
