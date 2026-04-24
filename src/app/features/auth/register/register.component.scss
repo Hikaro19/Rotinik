@@ -102,7 +102,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-4);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: var(--font-size-sm);
   text-align: center;
 }
@@ -112,48 +112,60 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
 }
 
-.register-socials {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-5);
+.auth-social {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-4);
+  animation: slide-up 600ms ease-out 300ms both;
 }
 
-.social-circle {
-  width: 56px;
-  height: 56px;
-  border: none;
-  border-radius: 50%;
-  background: #ffffff;
-  color: #111111;
-  font-size: 1.25rem;
-  font-weight: var(--font-bold);
-  cursor: pointer;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+.auth-social {
+    grid-template-columns: 1fr;
+  }
+
+.social-button {
+  @include button-reset;
+  @include flex-center;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-card);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
+  transition: all var(--transition-base);
 }
 
-.social-circle:hover,
-.social-circle:focus-visible {
+.social-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--purple-neon);
+  color: var(--purple-neon);
   transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(217, 70, 239, 0.22);
-  outline: none;
+  box-shadow: 0 4px 12px rgba(217, 70, 239, 0.2);
+}
+
+.social-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.social-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 @media (max-width: 480px) {
   .register-shell {
     gap: var(--spacing-6);
-  }
-
-  .register-socials {
-    gap: var(--spacing-4);
-  }
-
-  .social-circle {
-    width: 52px;
-    height: 52px;
   }
 }

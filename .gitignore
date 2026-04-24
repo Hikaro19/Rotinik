@@ -30,3 +30,10 @@ coverage/
 build/
 out/
 *.jar
+
+# Arquivos temporários de compilação
+.tmp-build-*/
+.tmp-build-routine-card/
+.tmp-build-routine-card-highlight/
+.tmp-build-routine-card-shadow/
+.tmp-build-toast-safe-area/
