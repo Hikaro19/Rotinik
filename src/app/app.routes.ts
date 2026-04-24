@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './shared/components/feature/layout/layout.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 
 export const appRoutes: Routes = [
     {
@@ -16,6 +17,11 @@ export const appRoutes: Routes = [
     {
         path: 'auth',
         children: [
+            {
+              path: 'forgot-password',
+              loadComponent: () =>
+                    import('@features/auth/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent),
+            },
             {
                 path: 'login',
                 loadComponent: () =>
