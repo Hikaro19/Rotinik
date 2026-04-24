@@ -1,38 +1,33 @@
 import { Injectable, computed, inject } from '@angular/core';
+import { GamificationService } from './gamification.service';
 import { RoutineService } from './routine.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GamificationRepository {
+  private readonly gamificationService = inject(GamificationService);
   private readonly routineService = inject(RoutineService);
 
-  readonly usuarioNivel = computed(() => this.routineService.userLevel());
-  readonly usuarioXP = computed(() => this.routineService.userXP());
-  readonly usuarioMoedas = computed(() => this.routineService.userCoins());
-  readonly progressoNivel = computed(() => this.routineService.userLevelProgress());
-  readonly xpParaProximo = computed(() => this.routineService.xpToNextLevel());
+  readonly usuarioNivel = computed(() => this.gamificationService.playerSignal().level);
+  readonly usuarioXP = computed(() => this.gamificationService.playerSignal().currentXP);
+  readonly usuarioMoedas = computed(() => this.gamificationService.playerSignal().coins);
+  readonly progressoNivel = this.gamificationService.xpProgress;
+  readonly xpParaProximo = this.gamificationService.xpToNextLevel;
 
   readonly nivelStatus = computed(() => {
-    const nivel = this.usuarioNivel();
-    if (nivel === 1) return 'Iniciante';
-    if (nivel <= 5) return 'Aprendiz';
-    if (nivel <= 10) return 'Experiente';
-    if (nivel <= 20) return 'Mestre';
-    return 'Elite';
+    const status = this.gamificationService.levelStatus();
+    const labels: Record<string, string> = {
+      starter: 'Iniciante',
+      apprentice: 'Aprendiz',
+      expert: 'Experiente',
+      master: 'Mestre',
+      elite: 'Elite',
+    };
+    return labels[status] || 'Iniciante';
   });
 
-  readonly nivelCor = computed(() => {
-    const status = this.nivelStatus();
-    const cores: Record<string, string> = {
-      Iniciante: 'var(--text-muted)',
-      Aprendiz: 'var(--brand-neon)',
-      Experiente: 'var(--game-coin)',
-      Mestre: '#FFD700',
-      Elite: 'var(--brand-neon)',
-    };
-    return cores[status] || 'var(--text-primary)';
-  });
+  readonly nivelCor = this.gamificationService.levelColor;
 
   calcularRewardRotina(rotinaId: string): { xp: number; moedas: number } {
     const rotina = this.routineService.getRoutineById(rotinaId);

@@ -1,5 +1,6 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { EFrequencia, EDificuldadeTarefa, Rotina, Tarefa, Usuario } from '../models/domain';
+import { EFrequencia, EDificuldadeTarefa, Rotina, Tarefa } from '../models/domain';
+import { HomeFacadeService } from './home-facade.service';
 import { RoutineService } from './routine.service';
 
 /**
@@ -10,16 +11,15 @@ import { RoutineService } from './routine.service';
   providedIn: 'root',
 })
 export class RotatinaRepository {
+  private readonly homeFacade = inject(HomeFacadeService);
   private readonly routineService = inject(RoutineService);
 
-  readonly usuarioAtual = computed(() => this.routineService.currentUserSignal());
+  readonly usuarioAtual = this.homeFacade.usuarioAtual;
   readonly rotinas = computed(() => this.routineService.routinesSignal().map((routine) => routine.domainModel!).filter(Boolean));
-  readonly totalRotinas = this.routineService.totalRoutines;
-  readonly rotinasCompletas = this.routineService.completedRoutines;
-  readonly totalTarefas = computed(() => this.routineService.routinesSignal().reduce((sum, routine) => sum + routine.tasks.length, 0));
-  readonly tarefasCompletas = computed(() =>
-    this.routineService.routinesSignal().reduce((sum, routine) => sum + routine.tasks.filter((task) => task.completed).length, 0),
-  );
+  readonly totalRotinas = this.homeFacade.totalRotinas;
+  readonly rotinasCompletas = this.homeFacade.rotinasCompletas;
+  readonly totalTarefas = this.homeFacade.totalTarefas;
+  readonly tarefasCompletas = this.homeFacade.tarefasCompletas;
 
   seedData(): void {
     this.routineService.seedData();
@@ -101,11 +101,10 @@ export class RotatinaRepository {
 
   obterSumario() {
     const usuario = this.usuarioAtual();
-    const rotinas = this.routineService.routinesSignal();
 
     return {
       usuario: usuario?.toString() || 'Nenhum usuario',
-      totalRotinas: rotinas.length,
+      totalRotinas: this.totalRotinas(),
       totalTarefas: this.totalTarefas(),
       tarefasCompletas: this.tarefasCompletas(),
       progressoMedio: usuario?.calcularProgressoMedio() || 0,

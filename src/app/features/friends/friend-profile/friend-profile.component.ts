@@ -1,53 +1,43 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserService, User } from '@core/services/user.service';
-import { FriendsService } from '@core/services/friends.service';
-import { ProfileService } from '@core/services/profile.service';
+import { User } from '@core/services/user.service';
+import { SocialFacadeService } from '@core/services/social-facade.service';
 import { AppCardComponent } from '@shared/components/ui/card/card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppSpinnerComponent } from '@shared/components/ui/spinner/spinner.component';
-import { signal, computed } from '@angular/core';
+import { AppSectionPanelComponent } from '@shared/components/ui/section-panel/section-panel.component';
 
-/**
- * FriendProfileComponent: Read-only public profile view
- * Mostra perfil de outro usuário com opções de amizade
- */
 @Component({
   selector: 'app-friend-profile',
   standalone: true,
-  imports: [CommonModule, AppCardComponent, AppButtonComponent, AppSpinnerComponent],
+  imports: [CommonModule, AppCardComponent, AppButtonComponent, AppSpinnerComponent, AppSectionPanelComponent],
   templateUrl: './friend-profile.component.html',
   styleUrl: './friend-profile.component.scss',
 })
 export class FriendProfileComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private userService = inject(UserService);
-  private friendsService = inject(FriendsService);
-  private profileService = inject(ProfileService);
+  private socialFacade = inject(SocialFacadeService);
 
-  // Sinal do usuário exibido
   userSignal = signal<User | null>(null);
   loadingSignal = signal(true);
 
-  // Computed para status de amizade
   isFriend = computed(() => {
     const user = this.userSignal();
-    return user !== null && this.friendsService.isFriend(user.id);
+    return user !== null && this.socialFacade.isFriend(user.id);
   });
 
   pendingRequest = computed(() => {
     const user = this.userSignal();
-    return user !== null ? this.friendsService.hasPendingRequest(user.id) : null;
+    return user !== null ? this.socialFacade.pendingRequestStatus(user.id) : null;
   });
 
   isCurrentUser = computed(() => {
     const user = this.userSignal();
-    return user !== null && user.id === this.userService.currentUserSignal().id;
+    return user !== null && this.socialFacade.isCurrentUser(user.id);
   });
 
-  // Mock achievements para o usuário
   mockAchievements = [
     {
       id: 'ach-1',
@@ -60,7 +50,7 @@ export class FriendProfileComponent implements OnInit {
     {
       id: 'ach-2',
       name: 'Elite',
-      description: 'Alcançou nível 25',
+      description: 'Alcancou nivel 25',
       icon: '👑',
       rarity: 'epic' as const,
       unlockedDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
@@ -75,7 +65,6 @@ export class FriendProfileComponent implements OnInit {
     },
   ];
 
-  // Mock activity (similar ao profile)
   mockActivityDays = computed(() => {
     const days = [];
     const today = new Date();
@@ -88,17 +77,17 @@ export class FriendProfileComponent implements OnInit {
         completed: Math.random() > 0.5,
       });
     }
+
     return days;
   });
 
   activityPercentage = computed(() => {
     const total = this.mockActivityDays().length;
-    const active = this.mockActivityDays().filter((d) => d.completed).length;
+    const active = this.mockActivityDays().filter((day) => day.completed).length;
     return Math.round((active / total) * 100);
   });
 
   ngOnInit(): void {
-    // Get user ID from route params
     this.route.paramMap.subscribe((params) => {
       const userId = params.get('id');
       if (userId) {
@@ -109,14 +98,11 @@ export class FriendProfileComponent implements OnInit {
     });
   }
 
-  /**
-   * Carregar perfil do usuário
-   */
   private loadUserProfile(userId: string): void {
     this.loadingSignal.set(true);
-    // Simular delay de loading
+
     setTimeout(() => {
-      const user = this.userService.getUserById(userId);
+      const user = this.socialFacade.getUserById(userId);
       if (user) {
         this.userSignal.set(user);
       } else {
@@ -126,42 +112,27 @@ export class FriendProfileComponent implements OnInit {
     }, 300);
   }
 
-  /**
-   * Enviar requisição de amizade
-   */
   sendFriendRequest(): void {
     const user = this.userSignal();
     if (user) {
-      this.friendsService.sendFriendRequest(user.id, user.name, user.avatar);
+      this.socialFacade.sendFriendRequest(user.id, user.name, user.avatar);
     }
   }
 
-  /**
-   * Aceitar requisição
-   */
   acceptRequest(): void {
     const user = this.userSignal();
     if (user) {
-      const request = this.friendsService.getAllRequests().find((r) => r.senderId === user.id);
-      if (request) {
-        this.friendsService.acceptFriendRequest(request.id, user.id, user.name, user.avatar);
-      }
+      this.socialFacade.acceptPendingRequestForUser(user);
     }
   }
 
-  /**
-   * Remover amigo
-   */
   removeFriend(): void {
     const user = this.userSignal();
     if (user && confirm('Tem certeza que deseja remover este amigo?')) {
-      this.friendsService.removeFriend(user.id);
+      this.socialFacade.removeFriend(user.id);
     }
   }
 
-  /**
-   * Obter ícone para raridade
-   */
   getRarityColor(rarity: string): string {
     const colors: Record<string, string> = {
       common: '#888',
@@ -172,22 +143,16 @@ export class FriendProfileComponent implements OnInit {
     return colors[rarity] || '#888';
   }
 
-  /**
-   * Traduzir raridade
-   */
   translateRarity(rarity: string): string {
     const translations: Record<string, string> = {
       common: 'Comum',
       rare: 'Raro',
-      epic: 'Épico',
-      legendary: 'Lendário',
+      epic: 'Epico',
+      legendary: 'Lendario',
     };
     return translations[rarity] || rarity;
   }
 
-  /**
-   * Formatar data
-   */
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('pt-BR', {
       day: 'numeric',
@@ -196,27 +161,17 @@ export class FriendProfileComponent implements OnInit {
     });
   }
 
-  /**
-   * Voltar
-   */
   goBack(): void {
     this.router.navigate(['/friends']);
   }
 
-  /**
-   * Gerar array de semanas para o heatmap
-   */
   getWeeksArray(): number[] {
     const totalDays = this.mockActivityDays().length;
     const totalWeeks = Math.ceil(totalDays / 7);
-    return Array.from({ length: totalWeeks }, (_, i) => i);
+    return Array.from({ length: totalWeeks }, (_, index) => index);
   }
 
-  /**
-   * Obter data padrão (data de hoje)
-   */
   getTodayDate(): Date {
     return new Date();
   }
 }
-

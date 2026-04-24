@@ -1,48 +1,43 @@
 <div class="routine-detail-container">
-  <!-- Loading State -->
   <div *ngIf="loading()" class="loading-state">
     <p>Carregando rotina...</p>
   </div>
 
-  <!-- Content -->
   <ng-container *ngIf="!loading()">
-    <!-- Info do Usuário -->
-    <div class="user-info">
-      <span>{{ nomeUsuario() }} • Nível {{ nivelUsuario() }} • {{ moedasUsuario() }} moedas</span>
+    <div *ngIf="isBusy()" class="loading-state">
+      <p>Sincronizando alteracoes...</p>
     </div>
 
-    <!-- Progress Bar -->
+    <div *ngIf="errorMessage() as message" class="loading-state">
+      <p>{{ message }}</p>
+      <button class="add-task-btn" (click)="clearError()">Fechar aviso</button>
+    </div>
+
+    <div class="user-info">
+      <span>{{ nomeUsuario() }} • Nivel {{ nivelUsuario() }} • {{ moedasUsuario() }} moedas</span>
+    </div>
+
     <div class="progress-container">
-      <div class="progress-text">
-        {{ tarefasCompletas() }}/{{ totalTarefas() }} tarefas
-      </div>
+      <div class="progress-text">{{ tarefasCompletas() }}/{{ totalTarefas() }} tarefas</div>
       <div class="progress-bar">
         <div class="progress-fill" [style.width.%]="progresso()"></div>
       </div>
       <div class="progress-percent">{{ progresso() }}%</div>
     </div>
 
-    <!-- Ação Imediata + Streak -->
     <div class="header-section">
-      <h3 class="action-title">Ação Imediata</h3>
-      <div class="streak-badge">
-        🔥 {{ seqenciaCompletamento() }} Sequência
-      </div>
+      <h3 class="action-title">Acao Imediata</h3>
+      <div class="streak-badge">🔥 {{ seqenciaCompletamento() }} Sequencia</div>
     </div>
 
-    <!-- Tarefas Iniciais (Ação Imediata) -->
     <div class="tasks-section">
-      <div 
-        *ngFor="let tarefa of tarefasIniciais()"
-        class="task-card primary">
+      <div *ngFor="let tarefa of tarefasIniciais()" class="task-card primary">
         <div class="task-left">
           <h4 class="task-title">{{ tarefa.title }}</h4>
-          <p class="task-description" *ngIf="tarefa.description">
-            {{ tarefa.description }}
-          </p>
+          <p class="task-description" *ngIf="tarefa.description">{{ tarefa.description }}</p>
           <div class="task-meta">
             <span class="task-state" [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')">
-              {{ tarefa.completed ? '✅ Concluída' : '⏳ Pendente' }}
+              {{ tarefa.completed ? '✅ Concluida' : '⏳ Pendente' }}
             </span>
           </div>
         </div>
@@ -51,38 +46,26 @@
         </div>
       </div>
 
-      <!-- Botões de Ação para Tarefa Inicial -->
       <div *ngIf="tarefasIniciais().length > 0" class="task-actions">
-        <button 
-          class="btn-action btn-iniciar"
-          (click)="completeTask(tarefasIniciais()[0].id)">
+        <button class="btn-action btn-iniciar" [disabled]="isCompletingTask() || isDeletingTask()" (click)="completeTask(tarefasIniciais()[0].id)">
           ✅ Concluir
         </button>
-        <button 
-          class="btn-action btn-small"
-          (click)="deleteTask(tarefasIniciais()[0].id)">
+        <button class="btn-action btn-small" [disabled]="isCompletingTask() || isDeletingTask()" (click)="deleteTask(tarefasIniciais()[0].id)">
           🗑️
         </button>
       </div>
     </div>
 
-    <!-- Restante Section -->
     <h3 class="restante-title" *ngIf="tarefasRestante().length > 0">Restante</h3>
 
-    <!-- Tarefas Restantes -->
     <div class="tasks-section" *ngIf="tarefasRestante().length > 0">
-      <div 
-        *ngFor="let tarefa of tarefasRestante()"
-        class="task-card secondary"
-        [ngClass]="{ 'task-completed': tarefa.completed }">
+      <div *ngFor="let tarefa of tarefasRestante()" class="task-card secondary" [ngClass]="{ 'task-completed': tarefa.completed }">
         <div class="task-left">
           <h4 class="task-title">{{ tarefa.title }}</h4>
-          <p class="task-description" *ngIf="tarefa.description">
-            {{ tarefa.description }}
-          </p>
+          <p class="task-description" *ngIf="tarefa.description">{{ tarefa.description }}</p>
           <div class="task-meta">
             <span class="task-state" [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')">
-              {{ tarefa.completed ? '✅ Concluída' : '⏳ Pendente' }}
+              {{ tarefa.completed ? '✅ Concluida' : '⏳ Pendente' }}
             </span>
           </div>
         </div>
@@ -91,18 +74,13 @@
         </div>
       </div>
 
-      <!-- Botões de Ação para Tarefas Restantes -->
       <div class="tasks-actions-grid">
         <ng-container *ngFor="let tarefa of tarefasRestante()">
           <div class="task-action-group" *ngIf="!tarefa.completed">
-            <button 
-              class="btn-action btn-small"
-              (click)="completeTask(tarefa.id)">
+            <button class="btn-action btn-small" [disabled]="isCompletingTask() || isDeletingTask()" (click)="completeTask(tarefa.id)">
               ✅
             </button>
-            <button 
-              class="btn-action btn-small"
-              (click)="deleteTask(tarefa.id)">
+            <button class="btn-action btn-small" [disabled]="isCompletingTask() || isDeletingTask()" (click)="deleteTask(tarefa.id)">
               🗑️
             </button>
           </div>
@@ -110,21 +88,14 @@
       </div>
     </div>
 
-    <!-- Completas Section -->
     <h3 class="completas-title" *ngIf="tarefasCompletas() > 0">✅ Completas</h3>
-    <div class="completas-count" *ngIf="tarefasCompletas() > 0">
-      {{ tarefasCompletas() }} tarefa(s) concluída(s)
-    </div>
+    <div class="completas-count" *ngIf="tarefasCompletas() > 0">{{ tarefasCompletas() }} tarefa(s) concluida(s)</div>
 
-    <!-- Rewards Summary -->
     <div class="rewards-summary" *ngIf="rotinaCompleta()">
       <h3>🎉 Rotina Completa!</h3>
       <p>XP Total: +{{ xpTotal() }} | Moedas: +{{ moedasTotal() }}</p>
     </div>
 
-    <!-- Add New Task Button -->
-    <button class="add-task-btn" (click)="backToRoutines()">
-      ← Voltar
-    </button>
+    <button class="add-task-btn" (click)="backToRoutines()">← Voltar</button>
   </ng-container>
 </div>

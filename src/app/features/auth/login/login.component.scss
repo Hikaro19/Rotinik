@@ -105,12 +105,12 @@
 }
 
 .forgot-password-link {
-  color: var(--purple-neon);
+  color: var(--text-secondary);
   text-decoration: none;
   transition: color var(--transition-base);
 
   &:hover {
-    color: #D946EF;
+    color: var(--purple-neon);
     text-decoration: underline;
   }
 
@@ -153,12 +153,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.05),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
   }
 }
 
@@ -230,7 +225,7 @@
   transition: color var(--transition-base);
 
   &:hover {
-    color: #D946EF;
+    color: #d946ef;
     text-decoration: underline;
   }
 

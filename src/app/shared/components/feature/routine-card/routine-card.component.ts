@@ -1,12 +1,9 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Routine } from '@core/services/routine.service';
 import { AppCardComponent } from '../../ui/card/card.component';
 import { AppButtonComponent } from '../../ui/button/button.component';
 
-/**
- * RoutineCardComponent: Card que exibe uma rotina com progresso
- */
 @Component({
   selector: 'app-routine-card',
   standalone: true,
@@ -20,7 +17,6 @@ import { AppButtonComponent } from '../../ui/button/button.component';
       role="article"
       [attr.aria-label]="routine.title"
     >
-      <!-- Header com ícone e título -->
       <div appCardHeader class="routine-card__header">
         <div class="routine-card__icon" [style.color]="routine.color">
           {{ routine.icon }}
@@ -33,13 +29,11 @@ import { AppButtonComponent } from '../../ui/button/button.component';
         </div>
       </div>
 
-      <!-- Progresso -->
       <div class="routine-card__content">
         <p *ngIf="routine.description" class="routine-card__description">
           {{ routine.description }}
         </p>
 
-        <!-- Barra de Progresso -->
         <div class="routine-card__progress">
           <div class="routine-card__progress-bar">
             <div
@@ -53,7 +47,6 @@ import { AppButtonComponent } from '../../ui/button/button.component';
           </p>
         </div>
 
-        <!-- Stats -->
         <div class="routine-card__stats">
           <div class="routine-card__stat">
             <span class="routine-card__stat-icon">⭐</span>
@@ -70,15 +63,14 @@ import { AppButtonComponent } from '../../ui/button/button.component';
         </div>
       </div>
 
-      <!-- Footer com ações -->
-      <div appCardFooter class="routine-card__footer">
+      <div *ngIf="showActions" appCardFooter class="routine-card__footer">
         <app-button
           variant="ghost"
           size="sm"
           (buttonClick)="onEdit()"
           [attr.aria-label]="'Editar rotina ' + routine.title"
         >
-          ✏️ Editar
+          Editar
         </app-button>
         <app-button
           variant="primary"
@@ -86,7 +78,7 @@ import { AppButtonComponent } from '../../ui/button/button.component';
           (buttonClick)="onStart()"
           [attr.aria-label]="'Iniciar rotina ' + routine.title"
         >
-          ► Iniciar
+          Iniciar
         </app-button>
       </div>
     </app-card>
@@ -95,8 +87,9 @@ import { AppButtonComponent } from '../../ui/button/button.component';
 })
 export class AppRoutineCardComponent {
   @Input() routine!: Routine;
-  @Output() edit = new EventEmitter<string>(); // routineId
-  @Output() start = new EventEmitter<string>(); // routineId
+  @Input() showActions = true;
+  @Output() edit = new EventEmitter<string>();
+  @Output() start = new EventEmitter<string>();
 
   frequencyLabel = () => {
     const labels: Record<Routine['frequency'], string> = {
@@ -107,13 +100,11 @@ export class AppRoutineCardComponent {
     return labels[this.routine.frequency];
   };
 
-  completedTaskCount = () => {
-    return this.routine.tasks.filter((t) => t.completed).length;
-  };
+  completedTaskCount = () => this.routine.tasks.filter((task) => task.completed).length;
 
   progressPercentage = () => {
     if (this.routine.tasks.length === 0) return 0;
-    const completed = this.routine.tasks.filter((t) => t.completed).length;
+    const completed = this.routine.tasks.filter((task) => task.completed).length;
     return (completed / this.routine.tasks.length) * 100;
   };
 
