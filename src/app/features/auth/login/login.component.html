@@ -3,7 +3,7 @@
         <div class="auth-header">
           <h1 class="auth-title">Bem-vindo ao Rotinik</h1>
           <p class="auth-subtitle">
-            Gamifique suas rotinas e transforme hÃ¡bitos em diversÃ£o
+            Gamifique suas rotinas e transforme hábitos em diversão
           </p>
         </div>
 
@@ -34,7 +34,7 @@
               <input type="checkbox" formControlName="rememberMe" />
               <span>Lembrar de mim</span>
             </label>
-            <a href="#" class="forgot-password-link">Esqueceu a senha?</a>
+            <a routerLink="/auth/forgot-password" class="forgot-password-link">Esqueceu a senha?</a>
           </div>
 
           <div *ngIf="formErrorMessage()" class="auth-error-alert" role="alert">
@@ -79,7 +79,7 @@
         </div>
 
         <p class="auth-footer-text">
-          NÃ£o tem conta?
+          Não tem conta?
           <a routerLink="/auth/register" class="auth-link">Crie uma conta agora</a>
         </p>
       </div>
