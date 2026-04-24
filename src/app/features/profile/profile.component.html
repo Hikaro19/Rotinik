@@ -1,23 +1,16 @@
 <div class="profile-container">
-  <!-- ───────────────────────────────────────────────────────────────────── -->
-  <!-- HEADER: Informações do Usuário -->
-  <!-- ───────────────────────────────────────────────────────────────────── -->
   <section class="profile-header">
     <div class="header-content">
-      <!-- Avatar -->
       <div class="avatar-section">
         <div class="avatar">
           <span class="avatar-icon">👤</span>
         </div>
         <div class="info">
           <h1 class="username">Jogador #{{ playerSignal().level }}</h1>
-          <p class="member-since">
-            Membro desde {{ formatDate(memberSince()) }}
-          </p>
+          <p class="member-since">Membro desde {{ formatDate(memberSince()) }}</p>
         </div>
       </div>
 
-      <!-- Level Progress -->
       <div class="level-progress">
         <div class="level-badge">
           <span class="level-number">{{ playerSignal().level }}</span>
@@ -30,41 +23,21 @@
           <div class="progress-bar">
             <div class="progress-fill" [style.width.%]="xpProgress()"></div>
           </div>
-          <p class="xp-to-next">{{ xpToNextLevel() }} XP para o próximo nível</p>
+          <p class="xp-to-next">{{ xpToNextLevel() }} XP para o proximo nivel</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ───────────────────────────────────────────────────────────────────── -->
-  <!-- STATS: Quadro de estatísticas rápidas -->
-  <!-- ───────────────────────────────────────────────────────────────────── -->
   <app-profile-stats></app-profile-stats>
 
-  <!-- ───────────────────────────────────────────────────────────────────── -->
-  <!-- ACTITIVITY: Heatmap de atividade -->
-  <!-- ───────────────────────────────────────────────────────────────────── -->
-  <section class="section-box">
-    <div class="section-header">
-      <h2>📊 Atividade do Último Mês</h2>
-      <span class="activity-summary">{{ activityPercentage() }}% ativo</span>
-    </div>
+  <app-section-panel title="Atividade do Ultimo Mes" [badge]="activitySummary()">
     <app-profile-activity-heatmap></app-profile-activity-heatmap>
-  </section>
+  </app-section-panel>
 
-  <!-- ───────────────────────────────────────────────────────────────────── -->
-  <!-- ACHIEVEMENTS: Badges e conquistas -->
-  <!-- ───────────────────────────────────────────────────────────────────── -->
-  <section class="section-box">
-    <div class="section-header">
-      <h2>🏆 Achievements</h2>
-      <span class="achievement-counter">{{ unlockedAchievements() }}/{{ totalAchievements() }}</span>
-    </div>
+  <app-section-panel title="Achievements" [badge]="achievementSummary()">
     <app-profile-achievements></app-profile-achievements>
-  </section>
+  </app-section-panel>
 
-  <!-- ───────────────────────────────────────────────────────────────────── -->
-  <!-- HISTORY: Histórico de compras/atividades recentes -->
-  <!-- ───────────────────────────────────────────────────────────────────── -->
   <app-profile-history></app-profile-history>
 </div>

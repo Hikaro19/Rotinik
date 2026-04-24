@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject, output, signal } from '@angular/core';
+import { Component, HostListener, effect, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EFrequencia, Rotina } from '@core/models/domain';
-import { RoutineService } from '@core/services/routine.service';
+import { RoutinesFacadeService } from '@core/services/routines-facade.service';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 
 @Component({
@@ -14,12 +14,13 @@ import { AppButtonComponent } from '@shared/components/ui/button/button.componen
 })
 export class RoutineCreateComponent {
   private fb = inject(FormBuilder);
-  private routineService = inject(RoutineService);
+  private routinesFacade = inject(RoutinesFacadeService);
 
   readonly routineCreated = output<Rotina>();
   readonly cancelled = output<void>();
 
-  readonly isSaving = signal(false);
+  private readonly pendingCreatedRoutine = signal<Rotina | null>(null);
+  readonly isSaving = this.routinesFacade.createPending;
   readonly submitError = signal<string | null>(null);
   readonly frequencias = [
     { label: 'Diaria', value: EFrequencia.DIARIA },
@@ -34,6 +35,27 @@ export class RoutineCreateComponent {
     meta: ['', [Validators.required, Validators.minLength(5)]],
     prazo: [EFrequencia.DIARIA, Validators.required],
   });
+
+  constructor() {
+    effect(() => {
+      const pendingRoutine = this.pendingCreatedRoutine();
+      const isSaving = this.isSaving();
+      const error = this.routinesFacade.errorMessage();
+
+      if (!pendingRoutine || isSaving) {
+        return;
+      }
+
+      if (error) {
+        this.submitError.set(error);
+        return;
+      }
+
+      this.routineCreated.emit(pendingRoutine);
+      this.pendingCreatedRoutine.set(null);
+      this.resetForm();
+    });
+  }
 
   get nomeControl() {
     return this.createForm.controls.nome;
@@ -70,26 +92,36 @@ export class RoutineCreateComponent {
       return;
     }
 
-    this.isSaving.set(true);
     this.submitError.set(null);
+    this.routinesFacade.clearError();
 
     try {
       const { nome, categoria, meta, prazo } = this.createForm.getRawValue();
       const novaRotina = new Rotina(nome, categoria, meta, prazo);
-      this.routineService.adicionarRotina(novaRotina);
-      this.routineCreated.emit(novaRotina);
-      this.resetForm();
+      this.pendingCreatedRoutine.set(novaRotina);
+      this.routinesFacade.createRoutine(novaRotina);
+
+      if (!this.isSaving()) {
+        this.routineCreated.emit(novaRotina);
+        this.pendingCreatedRoutine.set(null);
+        this.resetForm();
+      }
     } catch (error) {
+      this.pendingCreatedRoutine.set(null);
       const message = error instanceof Error ? error.message : 'Nao foi possivel criar a rotina.';
       this.submitError.set(message);
-    } finally {
-      this.isSaving.set(false);
     }
   }
 
   onCancel(): void {
+    if (this.isSaving()) {
+      return;
+    }
+
+    this.pendingCreatedRoutine.set(null);
     this.resetForm();
     this.submitError.set(null);
+    this.routinesFacade.clearError();
     this.cancelled.emit();
   }
 

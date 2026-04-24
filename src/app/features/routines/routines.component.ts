@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Rotina } from '@core/models/domain';
-import { RoutineService, type Routine } from '@core/services/routine.service';
+import { RoutinesFacadeService } from '@core/services/routines-facade.service';
 import { AppRoutineCardComponent } from '@shared/components/feature/routine-card/routine-card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppCardComponent } from '@shared/components/ui/card/card.component';
@@ -27,13 +27,11 @@ import { RoutineCreateComponent } from './routine-create.component';
       <div class="routines-header">
         <div class="routines-header-content">
           <h1 class="routines-title">Minhas Rotinas</h1>
-          <p class="routines-subtitle">
-            Crie e acompanhe suas rotinas diarias para ganhar XP e moedas
-          </p>
+          <p class="routines-subtitle">Crie e acompanhe suas rotinas diarias para ganhar XP e moedas</p>
         </div>
 
         <div class="routines-actions">
-          <app-button variant="primary" size="lg" (buttonClick)="onCreateRoutine()">
+          <app-button variant="primary" size="lg" [disabled]="isBusy()" (buttonClick)="onCreateRoutine()">
             + Nova Rotina
           </app-button>
         </div>
@@ -44,31 +42,36 @@ import { RoutineCreateComponent } from './routine-create.component';
           <div class="routines-stats-content">
             <div class="stat-item">
               <span class="stat-label">Total de Rotinas</span>
-              <span class="stat-value">{{ routineService.totalRoutines() }}</span>
+              <span class="stat-value">{{ routinesFacade.totalRoutines() }}</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">Completas Hoje</span>
-              <span class="stat-value">{{ routineService.completedRoutines() }}</span>
+              <span class="stat-value">{{ routinesFacade.completedRoutines() }}</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">XP Disponivel</span>
-              <span class="stat-value">{{ routineService.totalPossibleXP() }}</span>
+              <span class="stat-value">{{ routinesFacade.totalPossibleXP() }}</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">Tarefas Pendentes</span>
-              <span class="stat-value">{{ routineService.totalPendingTasks() }}</span>
+              <span class="stat-value">{{ routinesFacade.totalPendingTasks() }}</span>
             </div>
           </div>
         </app-card>
       </div>
 
+      <div class="routines-toast-layer" *ngIf="errorMessage() as message">
+        <app-toast
+          type="error"
+          title="Falha na sincronizacao"
+          [message]="message"
+          [duration]="5000"
+          (close)="clearError()"
+        ></app-toast>
+      </div>
+
       <div class="time-filter-container">
-        <button
-          type="button"
-          class="time-filter-btn"
-          [class.active]="activeFilter() === 'all'"
-          (click)="setFilter('all')"
-        >
+        <button type="button" class="time-filter-btn" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
           Todos
         </button>
         <button
@@ -112,20 +115,18 @@ import { RoutineCreateComponent } from './routine-create.component';
           </div>
         </div>
       } @else {
-      <div class="routines-empty">
-        <app-card variant="outlined" padding="lg" rounded="md" class="empty-card">
-          <div class="empty-state">
-            <div class="empty-icon">+</div>
-            <h2>Nenhuma rotina encontrada</h2>
-            <p>
-              {{ activeFilter() === 'all' ? 'Crie sua primeira rotina para comecar.' : 'Nao ha rotinas deste tipo.' }}
-            </p>
-            <app-button *ngIf="activeFilter() === 'all'" variant="primary" size="md" (buttonClick)="onCreateRoutine()">
-              Criar Primeira Rotina
-            </app-button>
-          </div>
-        </app-card>
-      </div>
+        <div class="routines-empty">
+          <app-card variant="outlined" padding="lg" rounded="md" class="empty-card">
+            <div class="empty-state">
+              <div class="empty-icon">+</div>
+              <h2>Nenhuma rotina encontrada</h2>
+              <p>{{ activeFilter() === 'all' ? 'Crie sua primeira rotina para comecar.' : 'Nao ha rotinas deste tipo.' }}</p>
+              <app-button *ngIf="activeFilter() === 'all'" variant="primary" size="md" [disabled]="isBusy()" (buttonClick)="onCreateRoutine()">
+                Criar Primeira Rotina
+              </app-button>
+            </div>
+          </app-card>
+        </div>
       }
 
       <div class="routines-toast-layer" *ngIf="successToastMessage() as message">
@@ -149,31 +150,17 @@ import { RoutineCreateComponent } from './routine-create.component';
 })
 export class RoutinesComponent {
   private router = inject(Router);
-  readonly routineService = inject(RoutineService);
+  readonly routinesFacade = inject(RoutinesFacadeService);
 
   readonly showCreateModal = signal(false);
   readonly successToastMessage = signal<string | null>(null);
-  readonly routines = this.routineService.routinesSignal;
-  readonly activeFilter = signal<'all' | Routine['frequency']>('all');
-
-  readonly filteredRoutines = computed(() => {
-    const filter = this.activeFilter();
-    const routines = this.routines();
-    const visibleRoutines = filter === 'all'
-      ? routines
-      : routines.filter((routine) => routine.frequency === filter);
-
-    return visibleRoutines
-      .filter((routine) => !routine.isCompleted && routine.tasks.length > 0)
-      .sort((a, b) => {
-        const progressA = a.tasks.length > 0 ? a.tasks.filter((task) => task.completed).length / a.tasks.length : 0;
-        const progressB = b.tasks.length > 0 ? b.tasks.filter((task) => task.completed).length / b.tasks.length : 0;
-        return progressB - progressA;
-      });
-  });
+  readonly activeFilter = this.routinesFacade.activeFilter;
+  readonly filteredRoutines = this.routinesFacade.filteredRoutines;
+  readonly isBusy = this.routinesFacade.isBusy;
+  readonly errorMessage = this.routinesFacade.errorMessage;
 
   setFilter(filter: 'all' | 'daily' | 'weekly' | 'monthly'): void {
-    this.activeFilter.set(filter);
+    this.routinesFacade.setFilter(filter);
   }
 
   onCreateRoutine(): void {
@@ -191,6 +178,10 @@ export class RoutinesComponent {
 
   closeSuccessToast(): void {
     this.successToastMessage.set(null);
+  }
+
+  clearError(): void {
+    this.routinesFacade.clearError();
   }
 
   goToRoutineDetail(id: string | number): void {

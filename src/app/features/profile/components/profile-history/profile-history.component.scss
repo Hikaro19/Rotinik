@@ -3,27 +3,6 @@
 // 📜 PROFILE HISTORY - TIMELINE
 // ═════════════════════════════════════════════════════════════════════
 
-.section-box {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-
-    h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-  }
-}
-
 .history-timeline {
   display: flex;
   flex-direction: column;
@@ -69,7 +48,7 @@
   padding: 1rem;
   flex: 1;
   border-left: 3px solid var(--item-color, #667eea);
-  transition: all 0.3s ease;
+  transition: background var(--transition-base), box-shadow var(--transition-base);
 
   &:hover {
     background: rgba(168, 85, 247, 0.08);
@@ -141,7 +120,7 @@
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background var(--transition-base), color var(--transition-base);
 
     &:hover {
       background: var(--purple-neon);
@@ -185,11 +164,4 @@
     }
   }
 
-  .section-box {
-    padding: 1.5rem;
-
-    .section-header h2 {
-      font-size: 1.1rem;
-    }
-  }
 }

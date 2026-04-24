@@ -1,15 +1,12 @@
-import { Component, Input, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { trigger, transition, style, animate, stagger } from '@angular/animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { RoutineService, Task, Routine } from '@core/services/routine.service';
 import { AppCardComponent } from '../../ui/card/card.component';
 import { AppButtonComponent } from '../../ui/button/button.component';
 import { AppSpinnerComponent } from '../../ui/spinner/spinner.component';
 import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
 
-/**
- * TaskExecutionComponent: Execução passo-a-passo de tarefas com feedback visual
- */
 @Component({
   selector: 'app-task-execution',
   standalone: true,
@@ -22,31 +19,27 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
   ],
   template: `
     <div class="task-execution">
+      <div *ngIf="errorMessage() as message" class="task-execution__error">
+        <app-card variant="outlined" padding="md" rounded="md">
+          <div class="task-execution__error-content">
+            <p>{{ message }}</p>
+            <app-button variant="ghost" size="sm" (buttonClick)="clearError()">Fechar</app-button>
+          </div>
+        </app-card>
+      </div>
+
       <div *ngIf="currentTask(); else completedView" class="task-execution__container">
-        <!-- Progress Header -->
         <div class="task-execution__progress">
           <div class="progress-item">
             <span class="progress-label">Tarefa</span>
             <span class="progress-value">{{ currentTaskIndex() + 1 }} / {{ routine.tasks.length }}</span>
           </div>
           <div class="progress-bar">
-            <div
-              class="progress-fill"
-              [style.width.%]="progressPercentage()"
-              [@expandWidth]
-            ></div>
+            <div class="progress-fill" [style.width.%]="progressPercentage()" [@expandWidth]></div>
           </div>
         </div>
 
-        <!-- Current Task Card -->
-        <app-card
-          variant="elevated"
-          padding="lg"
-          rounded="lg"
-          role="region"
-          aria-label="Tarefa atual"
-          [@fadeIn]
-        >
+        <app-card variant="elevated" padding="lg" rounded="lg" role="region" aria-label="Tarefa atual" [@fadeIn]>
           <div class="task-execution__header">
             <h2 class="task-execution__title">{{ currentTask().title }}</h2>
             <p *ngIf="currentTask().description" class="task-execution__description">
@@ -54,7 +47,6 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
             </p>
           </div>
 
-          <!-- Reward Preview -->
           <div class="task-execution__rewards" [@slideIn]>
             <div class="reward-badge">
               <span class="reward-badge__icon">⭐</span>
@@ -66,7 +58,6 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
             </div>
           </div>
 
-          <!-- Completion Checkbox -->
           <div class="task-execution__completion">
             <label class="completion-checkbox">
               <input
@@ -81,7 +72,6 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
             </label>
           </div>
 
-          <!-- Action Buttons -->
           <div class="task-execution__actions">
             <app-button
               *ngIf="!currentTask().completed"
@@ -92,26 +82,15 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
             >
               {{ isProcessing() ? 'Processando...' : '✓ Completar Tarefa' }}
             </app-button>
-            <app-button
-              *ngIf="currentTask().completed"
-              variant="primary"
-              size="lg"
-              [disabled]="true"
-            >
-              ✓ Tarefa Concluída
+            <app-button *ngIf="currentTask().completed" variant="primary" size="lg" [disabled]="true">
+              ✓ Tarefa Concluida
             </app-button>
-            <app-button
-              variant="ghost"
-              size="md"
-              (buttonClick)="onSkip()"
-              [disabled]="isProcessing()"
-            >
-              Próxima
+            <app-button variant="ghost" size="md" (buttonClick)="onSkip()" [disabled]="isProcessing()">
+              Proxima
             </app-button>
           </div>
         </app-card>
 
-        <!-- Task List Preview -->
         <app-card variant="outlined" padding="md" rounded="md" class="task-execution__preview">
           <h3 class="task-execution__preview-title">Tarefas Pendentes</h3>
           <div class="task-execution__task-list">
@@ -130,22 +109,14 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
       </div>
 
       <ng-template #completedView>
-        <app-card
-          variant="elevated"
-          padding="lg"
-          rounded="lg"
-          class="task-execution__completion-view"
-          [@bounceIn]
-        >
+        <app-card variant="elevated" padding="lg" rounded="lg" class="task-execution__completion-view" [@bounceIn]>
           <div class="completion-banner">
             <div class="completion-banner__icon">🎉</div>
-            <h2 class="completion-banner__title">Todas as Tarefas Concluídas!</h2>
+            <h2 class="completion-banner__title">Todas as Tarefas Concluidas!</h2>
             <p class="completion-banner__subtitle">
-              Você completou todas as tarefas de
-              <strong>{{ routine.title }}</strong>
+              Voce completou todas as tarefas de <strong>{{ routine.title }}</strong>
             </p>
 
-            <!-- Stats -->
             <div class="completion-stats">
               <div class="stat-item">
                 <span class="stat-icon">⭐</span>
@@ -170,20 +141,13 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
               </div>
             </div>
 
-            <!-- Action -->
-            <app-button
-              variant="primary"
-              size="lg"
-              (buttonClick)="onClose()"
-              class="completion-banner__button"
-            >
+            <app-button variant="primary" size="lg" (buttonClick)="onClose()" class="completion-banner__button">
               ← Voltar Para Rotinas
             </app-button>
           </div>
         </app-card>
       </ng-template>
 
-      <!-- Reward Notification -->
       <app-task-reward
         *ngIf="lastReward() as reward"
         [xp]="reward.xp"
@@ -207,6 +171,13 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
         display: flex;
         flex-direction: column;
         gap: 24px;
+      }
+
+      .task-execution__error-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
       }
 
       .task-execution__progress {
@@ -454,6 +425,11 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
         .task-execution__actions {
           grid-template-columns: 1fr;
         }
+
+        .task-execution__error-content {
+          flex-direction: column;
+          align-items: stretch;
+        }
       }
     `,
   ],
@@ -491,66 +467,50 @@ export class AppTaskExecutionComponent implements OnInit {
   routineService = inject(RoutineService);
 
   currentTaskIndexSignal = signal(0);
-  isProcessingSignal = signal(false);
   lastRewardSignal = signal<{ xp: number; coins: number; streakBonus: number } | null>(null);
 
   currentTaskIndex = () => this.currentTaskIndexSignal();
-  currentTask = computed(() => {
-    return this.routine.tasks[this.currentTaskIndexSignal()];
-  });
-  isProcessing = () => this.isProcessingSignal();
+  currentTask = computed(() => this.routine.tasks[this.currentTaskIndexSignal()]);
+  isProcessing = () => this.routineService.isCompletingTaskSignal() || this.routineService.isDeletingTaskSignal();
   lastReward = () => this.lastRewardSignal();
+  errorMessage = this.routineService.operationErrorSignal;
 
-  remainingTasks = computed(() => {
-    return this.routine.tasks.slice(this.currentTaskIndexSignal() + 1);
-  });
+  remainingTasks = computed(() => this.routine.tasks.slice(this.currentTaskIndexSignal() + 1));
 
   progressPercentage = computed(() => {
-    const completed = this.routine.tasks.filter((t) => t.completed).length;
+    const completed = this.routine.tasks.filter((task) => task.completed).length;
     return (completed / this.routine.tasks.length) * 100;
   });
 
-  totalXpEarned = computed(() => {
-    return this.routine.tasks.reduce((sum, task) => (task.completed ? sum + task.xpReward : sum), 0);
-  });
+  totalXpEarned = computed(() =>
+    this.routine.tasks.reduce((sum, task) => (task.completed ? sum + task.xpReward : sum), 0),
+  );
 
-  totalCoinsEarned = computed(() => {
-    return this.routine.tasks.reduce((sum, task) => (task.completed ? sum + task.coinReward : sum), 0);
-  });
+  totalCoinsEarned = computed(() =>
+    this.routine.tasks.reduce((sum, task) => (task.completed ? sum + task.coinReward : sum), 0),
+  );
 
   ngOnInit(): void {
-    // Advance to first incomplete task
-    const firstIncompleteIndex = this.routine.tasks.findIndex((t) => !t.completed);
-    if (firstIncompleteIndex !== -1) {
-      this.currentTaskIndexSignal.set(firstIncompleteIndex);
-    } else {
-      this.currentTaskIndexSignal.set(0);
-    }
+    const firstIncompleteIndex = this.routine.tasks.findIndex((task) => !task.completed);
+    this.currentTaskIndexSignal.set(firstIncompleteIndex !== -1 ? firstIncompleteIndex : 0);
   }
 
   onCompleteTask(): void {
     const task = this.currentTask();
-    if (!task || task.completed) return;
+    if (!task || task.completed || this.isProcessing()) return;
 
-    this.isProcessingSignal.set(true);
-
-    // Add small delay for visual feedback
-    setTimeout(() => {
-      const reward = this.routineService.completeTask(this.routine.id, task.id);
-      this.lastRewardSignal.set({
-        xp: reward.xp,
-        coins: reward.coins,
-        streakBonus: 0,
-      });
-
-      this.isProcessingSignal.set(false);
-      this.toNextIncompleteTask();
-    }, 600);
+    const reward = this.routineService.completeTask(this.routine.id, task.id);
+    this.lastRewardSignal.set({
+      xp: reward.xp,
+      coins: reward.coins,
+      streakBonus: 0,
+    });
+    this.toNextIncompleteTask();
   }
 
   onToggleTask(): void {
     const task = this.currentTask();
-    if (!task) return;
+    if (!task || this.isProcessing()) return;
 
     if (task.completed) {
       this.routineService.uncompleteTask(this.routine.id, task.id);
@@ -563,14 +523,13 @@ export class AppTaskExecutionComponent implements OnInit {
     this.toNextIncompleteTask();
   }
 
+  clearError(): void {
+    this.routineService.clearOperationError();
+  }
+
   private toNextIncompleteTask(): void {
-    const nextIndex = this.routine.tasks.findIndex((t, idx) => idx > this.currentTaskIndexSignal() && !t.completed);
-    if (nextIndex !== -1) {
-      this.currentTaskIndexSignal.set(nextIndex);
-    } else {
-      // All tasks completed or at end
-      this.currentTaskIndexSignal.set(this.routine.tasks.length);
-    }
+    const nextIndex = this.routine.tasks.findIndex((task, index) => index > this.currentTaskIndexSignal() && !task.completed);
+    this.currentTaskIndexSignal.set(nextIndex !== -1 ? nextIndex : this.routine.tasks.length);
   }
 
   onClose(): void {

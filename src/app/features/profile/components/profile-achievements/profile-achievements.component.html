@@ -1,25 +1,21 @@
 <div class="achievements-grid">
   <div class="achievement-card" *ngFor="let achievement of achievements()">
-    <!-- Card Container -->
     <div
       class="card-inner"
       [ngClass]="{ unlocked: isUnlocked(achievement), locked: !isUnlocked(achievement) }"
       [attr.data-rarity]="achievement.rarity"
     >
-      <!-- Badge/Icon -->
-      <div class="achievement-badge">
+      <div class="achievement-badge" [attr.data-rarity]="achievement.rarity">
         <span class="badge-icon">{{ achievement.icon }}</span>
-        <span class="rarity-indicator" [style.color]="getRarityColor(achievement.rarity)">
+        <span class="rarity-indicator">
           {{ translateRarity(achievement.rarity).charAt(0) }}
         </span>
       </div>
 
-      <!-- Content -->
       <div class="achievement-content">
         <h3 class="achievement-name">{{ achievement.name }}</h3>
         <p class="achievement-description">{{ achievement.description }}</p>
 
-        <!-- Progress bar if locked -->
         <div class="achievement-progress" *ngIf="!isUnlocked(achievement) && achievement.progress">
           <div class="progress-bar">
             <div class="progress-fill" [style.width.%]="getProgressPercentage(achievement)"></div>
@@ -29,21 +25,16 @@
           </span>
         </div>
 
-        <!-- Unlock date if unlocked -->
         <div class="unlock-date" *ngIf="isUnlocked(achievement)">
-          ✓ Desbloqueado em {{ formatUnlockedDate(achievement.unlockedDate!) }}
+          Desbloqueado em {{ formatUnlockedDate(achievement.unlockedDate!) }}
         </div>
       </div>
 
-      <!-- Lock indicator -->
-      <div class="lock-overlay" *ngIf="!isUnlocked(achievement)">
-        🔒
-      </div>
+      <div class="lock-overlay" *ngIf="!isUnlocked(achievement)">🔒</div>
     </div>
   </div>
 </div>
 
-<!-- Empty state -->
 <div class="empty-state" *ngIf="achievements().length === 0">
-  <p>Nenhum achievement ainda. Comece a jogar para desbloquear!</p>
+  <p>Nenhum achievement ainda. Comece a jogar para desbloquear.</p>
 </div>

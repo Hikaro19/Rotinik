@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AppSectionPanelComponent } from '@shared/components/ui/section-panel/section-panel.component';
 import { ProfileHistoryItem, ProfileService } from '../../../../core/services/profile.service';
 
 @Component({
   selector: 'app-profile-history',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppSectionPanelComponent],
   templateUrl: './profile-history.component.html',
   styleUrl: './profile-history.component.scss',
 })
