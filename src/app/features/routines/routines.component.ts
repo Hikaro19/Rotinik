@@ -107,9 +107,9 @@ import { RoutineCreateComponent } from './routine-create.component';
           <div class="routine-cards">
             @for (rotina of filteredRoutines(); track rotina.id) {
               <app-routine-card
+                class="routine-card-link"
                 [routine]="rotina"
-                (start)="goToRoutineDetail($event)"
-                (edit)="goToRoutineDetail($event)"
+                (click)="abrirDetalhesRotina(rotina.id)"
               ></app-routine-card>
             }
           </div>
@@ -184,7 +184,7 @@ export class RoutinesComponent {
     this.routinesFacade.clearError();
   }
 
-  goToRoutineDetail(id: string | number): void {
+  abrirDetalhesRotina(id: string | number): void {
     this.router.navigate(['/routine', id]);
   }
 }
