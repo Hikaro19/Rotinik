@@ -3,25 +3,17 @@ export const environment = {
   apiUrl: 'http://localhost:5206/api',
   apiBaseUrl: 'http://localhost:5206/api',
   apiVersion: 'v1',
-  signalRUrl: 'http://localhost:5000/hubs/gamification',
-  
+  signalRUrl: 'http://localhost:5206/hubs/gamification',
+
   // Feature flags
-  enableMockData: true,
+  enableMockData: false,
   enableLogging: true,
   enableAnalytics: false,
-  
+
   // Cache configuration
-  cacheExpiry: 5 * 60 * 1000, // 5 minutes
-  
+  cacheExpiry: 5 * 60 * 1000,
+
   // Auth
   tokenStorageKey: 'rotinik_auth_token',
   refreshTokenStorageKey: 'rotinik_refresh_token',
-  
-  // Mock data
-  mockUser: {
-    id: '1',
-    email: 'demo@rotinik.com',
-    name: 'Demo User',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo',
-  },
 };

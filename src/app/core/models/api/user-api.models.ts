@@ -1,20 +1,18 @@
 export interface UserRegistrationDto {
-  name: string;
-  birthDate: string;
-  userName: string;
-  password: string;
+  nome: string;
   email: string;
+  senha: string;
 }
 
 export interface UserLoginDto {
-  userName: string;
-  password: string;
+  email: string;
+  senha: string;
 }
 
 export interface UserLoginResponseDto {
-  userId: number;
-  userName: string;
   token: string;
+  nome: string;
+  email: string;
 }
 
-export type UserRegisterResponseDto = UserLoginResponseDto | void;
+export type UserRegisterResponseDto = void;

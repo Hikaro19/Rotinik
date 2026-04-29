@@ -19,6 +19,9 @@ export function normalizeHttpError(error: unknown, fallbackMessage = 'Erro inesp
   if (error instanceof HttpErrorResponse) {
     const payload = error.error;
     const message =
+      (typeof payload === 'object' && payload !== null && 'mensagem' in payload && typeof payload.mensagem === 'string'
+        ? payload.mensagem
+        : undefined) ??
       (typeof payload === 'object' && payload !== null && 'message' in payload && typeof payload.message === 'string'
         ? payload.message
         : undefined) ??
