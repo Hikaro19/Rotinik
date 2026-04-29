@@ -9,13 +9,13 @@
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
       <app-input
-        label="Email"
-        placeholder="seu@email.com"
-        inputType="email"
+        label="Usuário"
+        placeholder="Digite seu usuário"
+        inputType="text"
         [disabled]="isLoading()"
-        formControlName="email"
-        [errors]="getFieldErrors('email') || undefined"
-        helpText="Use seu email para acessar"
+        formControlName="userName"
+        [errors]="getFieldErrors('userName') || undefined"
+        helpText="Use seu nome de usuário para acessar"
         [required]="true"
       ></app-input>
 

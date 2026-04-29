@@ -21,3 +21,5 @@ export * from './shop.service';
 export * from './profile.service';
 export * from './user.service';
 export * from './friends.service';
+export * from './auth.service';
+export * from './auth-facade.service';
