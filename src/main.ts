@@ -6,12 +6,13 @@ import { ApplicationConfig } from '@angular/core';
 
 import { AppComponent } from './app/app.component';
 import { appRoutes } from './app/app.routes';
+import { authInterceptor } from './app/core/http/auth.interceptor';
 import { httpErrorInterceptor } from './app/core/http/http-error.utils';
 
 const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes, withHashLocation()),
-    provideHttpClient(withInterceptors([httpErrorInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, httpErrorInterceptor])),
     provideAnimations(),
   ],
 };

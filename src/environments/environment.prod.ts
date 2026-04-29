@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
+  apiUrl: 'https://api.rotinik.com/api',
   apiBaseUrl: 'https://api.rotinik.com/api',
   apiVersion: 'v1',
   signalRUrl: 'https://api.rotinik.com/hubs/gamification',
