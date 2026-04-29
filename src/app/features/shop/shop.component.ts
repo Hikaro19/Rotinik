@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ShopService, ShopItem } from '@core/services/shop.service';
-import { GamificationService } from '@core/services/gamification.service';
+import { ShopFacadeService } from '@core/services/shop-facade.service';
+import { ShopItem } from '@core/services/shop.service';
 import { AppCardComponent } from '@shared/components/ui/card/card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppSpinnerComponent } from '@shared/components/ui/spinner/spinner.component';
@@ -10,9 +10,6 @@ import { AppShopItemComponent } from '@shared/components/feature/shop-item/shop-
 
 type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
 
-/**
- * ShopComponent: Página principal da loja
- */
 @Component({
   selector: 'app-shop',
   standalone: true,
@@ -26,33 +23,30 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
   ],
   template: `
     <div class="shop-container">
-      <!-- Header -->
       <div class="shop-header">
         <div class="shop-header-content">
           <h1 class="shop-title">Loja de Itens 🛍️</h1>
           <p class="shop-subtitle">Gaste suas moedas em itens especiais e melhorias</p>
         </div>
 
-        <!-- Player Info -->
         <app-card variant="outlined" padding="md" rounded="md" class="player-info">
           <div class="player-info-content">
             <div class="player-stat">
               <span class="stat-label">Moedas</span>
-              <span class="stat-value">{{ gameService.playerSignal().coins }}</span>
+              <span class="stat-value">{{ shopFacade.player().coins }}</span>
             </div>
             <div class="player-stat">
               <span class="stat-label">Itens</span>
-              <span class="stat-value">{{ shopService.totalItems() }}</span>
+              <span class="stat-value">{{ shopFacade.totalItems() }}</span>
             </div>
             <div class="player-stat">
               <span class="stat-label">Gastos</span>
-              <span class="stat-value">{{ shopService.totalSpent() }}</span>
+              <span class="stat-value">{{ shopFacade.totalSpent() }}</span>
             </div>
           </div>
         </app-card>
       </div>
 
-      <!-- Categories Filter -->
       <div class="shop-filter">
         <button
           type="button"
@@ -68,7 +62,7 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
           [class.filter-btn--active]="currentCategory() === 'cosmetic'"
           (click)="setCategory('cosmetic')"
         >
-          Cosméticos
+          Cosmeticos
         </button>
         <button
           type="button"
@@ -96,20 +90,18 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
         </button>
       </div>
 
-      <!-- Featured Items Section -->
       <div *ngIf="currentCategory() === 'all'" class="shop-featured">
         <h2 class="shop-section-title">⭐ Em Destaque</h2>
         <div class="shop-grid">
           <app-shop-item
-            *ngFor="let item of shopService.getFeaturedItems()"
+            *ngFor="let item of shopFacade.featuredItems()"
             [item]="item"
-            [purchased]="shopService.hasItem(item.id)"
+            [purchased]="shopFacade.hasItem(item.id)"
             (purchase)="onPurchaseItem($event)"
           ></app-shop-item>
         </div>
       </div>
 
-      <!-- Main Shop Grid -->
       <h2 class="shop-section-title" *ngIf="currentCategory() !== 'all'">
         {{ getCategoryTitle() }}
       </h2>
@@ -117,12 +109,11 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
         <app-shop-item
           *ngFor="let item of getFilteredItems()"
           [item]="item"
-          [purchased]="shopService.hasItem(item.id)"
+          [purchased]="shopFacade.hasItem(item.id)"
           (purchase)="onPurchaseItem($event)"
         ></app-shop-item>
       </div>
 
-      <!-- Empty State -->
       <div *ngIf="getFilteredItems().length === 0 && currentCategory() !== 'all'" class="shop-empty">
         <app-card variant="outlined" padding="lg" rounded="md">
           <div class="empty-state">
@@ -133,13 +124,12 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
         </app-card>
       </div>
 
-      <!-- Inventory Section -->
       <div class="shop-inventory">
-        <h2 class="shop-section-title">📦 Seu Inventário</h2>
-        <div *ngIf="shopService.getInventory().length > 0">
+        <h2 class="shop-section-title">📦 Seu Inventario</h2>
+        <div *ngIf="shopFacade.inventory().length > 0">
           <app-card variant="outlined" padding="md" rounded="md">
             <div class="inventory-grid">
-              <div *ngFor="let item of shopService.getInventory()" class="inventory-item">
+              <div *ngFor="let item of shopFacade.inventory()" class="inventory-item">
                 <span class="inventory-item__icon">{{ item.icon }}</span>
                 <span class="inventory-item__name">{{ item.name }}</span>
                 <span class="inventory-item__qty">x{{ item.quantity }}</span>
@@ -147,11 +137,9 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
             </div>
           </app-card>
         </div>
-        <div *ngIf="shopService.getInventory().length === 0">
+        <div *ngIf="shopFacade.inventory().length === 0">
           <app-card variant="outlined" padding="lg" rounded="md">
-            <p class="text-center" style="color: var(--text-secondary)">
-              Seu inventário está vazio. Compre alguns itens para começar!
-            </p>
+            <p class="text-center shop-empty-copy">Seu inventario esta vazio. Compre alguns itens para comecar!</p>
           </app-card>
         </div>
       </div>
@@ -230,7 +218,10 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
         font-weight: 600;
         font-size: 13px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition:
+          border-color 0.2s ease,
+          color 0.2s ease,
+          background-color 0.2s ease;
       }
 
       .filter-btn:hover {
@@ -324,6 +315,10 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
         text-align: center;
       }
 
+      .shop-empty-copy {
+        color: var(--text-secondary);
+      }
+
       @media (max-width: 768px) {
         .shop-container {
           padding: 12px;
@@ -346,28 +341,21 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
   ],
 })
 export class ShopComponent implements OnInit {
-  shopService = inject(ShopService);
-  gameService = inject(GamificationService);
+  shopFacade = inject(ShopFacadeService);
 
   currentCategorySignal = signal<ShopCategory>('all');
   currentCategory = () => this.currentCategorySignal();
 
-  ngOnInit(): void {
-    console.log('✅ ShopComponent carregado');
-  }
+  ngOnInit(): void {}
 
   getFilteredItems(): ShopItem[] {
-    const category = this.currentCategorySignal();
-    if (category === 'all') {
-      return this.shopService.getCatalog();
-    }
-    return this.shopService.getItemsByCategory(category);
+    return this.shopFacade.getFilteredItems(this.currentCategorySignal());
   }
 
   getCategoryTitle(): string {
     const titles: Record<ShopCategory, string> = {
       all: 'Todos os Itens',
-      cosmetic: 'Cosméticos',
+      cosmetic: 'Cosmeticos',
       boost: 'Impulsos',
       theme: 'Temas',
       badge: 'Placas',
@@ -380,21 +368,6 @@ export class ShopComponent implements OnInit {
   }
 
   onPurchaseItem(item: ShopItem): void {
-    const finalPrice = this.shopService.getFinalPrice(item);
-    const playerCoins = this.gameService.playerSignal().coins;
-
-    if (playerCoins < finalPrice) {
-      console.warn('❌ Moedas insuficientes');
-      return;
-    }
-
-    // Processar compra
-    const result = this.shopService.purchaseItem(item);
-
-    if (result.success) {
-      // Gastar moedas
-      this.gameService.spendCoins(finalPrice, `Compra: ${item.name}`);
-      console.log(`✅ Compra bem-sucedida: ${item.name}`);
-    }
+    this.shopFacade.purchaseItem(item);
   }
 }

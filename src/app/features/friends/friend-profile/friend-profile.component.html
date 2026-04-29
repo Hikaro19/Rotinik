@@ -1,19 +1,13 @@
 <div class="friend-profile-container">
-  <!-- LOADING STATE -->
   <div *ngIf="loadingSignal()" class="loading-state">
     <app-spinner size="lg" [showText]="true" text="Carregando perfil..."></app-spinner>
   </div>
 
-  <!-- PROFILE CONTENT -->
   <div *ngIf="!loadingSignal() && userSignal()">
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <!-- HEADER: Informações do Usuário -->
-    <!-- ───────────────────────────────────────────────────────────────────── -->
     <section class="profile-header">
-      <button class="back-btn" (click)="goBack()">← Voltar</button>
+      <button class="back-btn" (click)="goBack()">Voltar</button>
 
       <div class="header-content">
-        <!-- Avatar -->
         <div class="avatar-section">
           <div class="avatar">
             <span class="avatar-icon">{{ userSignal()?.avatar }}</span>
@@ -24,7 +18,6 @@
           </div>
         </div>
 
-        <!-- Level Info -->
         <div class="level-section">
           <div class="level-badge">
             <span class="level-number">{{ userSignal()?.level }}</span>
@@ -36,53 +29,44 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="header-actions">
         <div *ngIf="!isCurrentUser()" class="friend-actions">
-          <!-- Friend Button -->
           <button
             *ngIf="!isFriend() && pendingRequest() !== 'sent'"
             class="action-btn primary"
             (click)="sendFriendRequest()"
           >
-            ➕ Adicionar Amigo
+            Adicionar amigo
           </button>
 
-          <!-- Requisição Enviada -->
           <button
             *ngIf="pendingRequest() === 'sent'"
             class="action-btn"
             disabled
-            title="Requisição enviada pendente"
+            title="Requisicao enviada pendente"
           >
-            ⏳ Requisição Enviada
+            Requisicao enviada
           </button>
 
-          <!-- Aceitar Requisição -->
           <button
             *ngIf="pendingRequest() === 'received'"
             class="action-btn primary"
             (click)="acceptRequest()"
           >
-            ✓ Aceitar Requisição
+            Aceitar requisicao
           </button>
 
-          <!-- Remover Amigo -->
           <button *ngIf="isFriend()" class="action-btn danger" (click)="removeFriend()">
-            ❌ Remover Amigo
+            Remover amigo
           </button>
         </div>
 
-        <!-- Seu Próprio Perfil -->
         <div *ngIf="isCurrentUser()" class="own-profile-badge">
-          <p>Este é seu perfil</p>
+          <p>Este e seu perfil</p>
         </div>
       </div>
     </section>
 
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <!-- STATS: Quadro de estatísticas -->
-    <!-- ───────────────────────────────────────────────────────────────────── -->
     <section class="stats-grid">
       <app-card variant="outlined" padding="md" rounded="md">
         <div class="stat-card">
@@ -125,33 +109,22 @@
       </app-card>
     </section>
 
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <!-- ACTIVITY: Heatmap de atividade -->
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <section class="section-box">
-      <div class="section-header">
-        <h2>📊 Atividade Recente</h2>
-        <span class="activity-summary">{{ activityPercentage() }}% ativo</span>
-      </div>
-
+    <app-section-panel title="Atividade Recente" [badge]="activityPercentage() + '% ativo'">
       <div class="heatmap-container">
         <div class="heatmap-grid">
-          <div
-            class="heatmap-week"
-            *ngFor="let weekIndex of getWeeksArray()"
-          >
+          <div class="heatmap-week" *ngFor="let weekIndex of getWeeksArray()">
             <div
               class="heatmap-day"
               *ngFor="let day of mockActivityDays().slice(weekIndex * 7, (weekIndex + 1) * 7)"
               [ngClass]="{ active: day.completed, inactive: !day.completed }"
-              [title]="day.date.toLocaleDateString('pt-BR') + ': ' + (day.completed ? '✓ Completo' : '✗ Não completo')"
+              [title]="day.date.toLocaleDateString('pt-BR') + ': ' + (day.completed ? 'Completo' : 'Nao completo')"
             ></div>
           </div>
         </div>
         <div class="heatmap-legend">
           <span class="legend-item">
             <div class="legend-box inactive"></div>
-            Não completo
+            Nao completo
           </span>
           <span class="legend-item">
             <div class="legend-box active"></div>
@@ -159,61 +132,47 @@
           </span>
         </div>
       </div>
-    </section>
+    </app-section-panel>
 
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <!-- ACHIEVEMENTS: Badges e conquistas -->
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <section class="section-box">
-      <div class="section-header">
-        <h2>🏆 Achievements ({{ mockAchievements.length }})</h2>
-      </div>
-
+    <app-section-panel title="Achievements" [badge]="mockAchievements.length.toString()">
       <div class="achievements-grid">
         <div class="achievement-card" *ngFor="let achievement of mockAchievements">
           <div class="card-inner unlocked" [attr.data-rarity]="achievement.rarity">
-            <!-- Badge/Icon -->
-            <div class="achievement-badge">
+            <div class="achievement-badge" [attr.data-rarity]="achievement.rarity">
               <span class="badge-icon">{{ achievement.icon }}</span>
-              <span class="rarity-indicator" [style.color]="getRarityColor(achievement.rarity)">
-                {{ translateRarity(achievement.rarity).charAt(0) }}
-              </span>
+              <span class="rarity-indicator">{{ translateRarity(achievement.rarity).charAt(0) }}</span>
             </div>
 
-            <!-- Content -->
             <div class="achievement-content">
               <h3 class="achievement-name">{{ achievement.name }}</h3>
               <p class="achievement-description">{{ achievement.description }}</p>
               <div class="unlock-date" *ngIf="achievement.unlockedDate">
-                ✓ {{ formatDate(achievement.unlockedDate) }}
+                {{ formatDate(achievement.unlockedDate) }}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Empty state if no achievements -->
       <div class="empty-state" *ngIf="mockAchievements.length === 0">
         <p>Nenhum achievement desbloqueado ainda</p>
       </div>
-    </section>
+    </app-section-panel>
 
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <!-- INFO BOX -->
-    <!-- ───────────────────────────────────────────────────────────────────── -->
-    <section class="section-box info-box">
-      <h3>ℹ️ Sobre Este Perfil</h3>
-      <p>Este é um perfil público. Você está visualizando as informações públicas de {{ userSignal()?.name }}.</p>
-      <p *ngIf="!isFriend()">
-        Adicione
-        <strong>{{ userSignal()?.name }}</strong> como amigo para acompanhar seu progresso e interagir mais!
-      </p>
-    </section>
+    <app-section-panel title="Sobre Este Perfil">
+      <div class="info-box">
+        <p>Este e um perfil publico. Voce esta visualizando as informacoes publicas de {{ userSignal()?.name }}.</p>
+        <p *ngIf="!isFriend()">
+          Adicione
+          <strong>{{ userSignal()?.name }}</strong>
+          como amigo para acompanhar seu progresso e interagir mais.
+        </p>
+      </div>
+    </app-section-panel>
   </div>
 
-  <!-- ERROR STATE -->
   <div *ngIf="!loadingSignal() && !userSignal()" class="error-state">
-    <p>Usuário não encontrado</p>
-    <button class="back-btn" (click)="goBack()">← Voltar</button>
+    <p>Usuario nao encontrado</p>
+    <button class="back-btn" (click)="goBack()">Voltar</button>
   </div>
 </div>

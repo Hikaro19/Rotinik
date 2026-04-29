@@ -1,194 +1,195 @@
 @use '../../../../../styles.scss' as *;
 
+:host {
+  display: block;
+}
+
 .routine-card {
-  // ─────────────────────────────────────────────────────────────────────
-  // 📋 Header
-  // ─────────────────────────────────────────────────────────────────────
+  position: relative;
+}
+:host ::ng-deep .routine-card .app-card {
+  box-shadow:
+    inset 2px 0 0 rgba(217, 70, 239, 0.72),
+    inset 8px 0 14px rgba(217, 70, 239, 0.12),
+    var(--shadow-sm);
+}
 
-  &__header {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-4);
-  }
+:host ::ng-deep .routine-card .app-card:hover {
+  box-shadow:
+    inset 2px 0 0 var(--purple-neon),
+    inset 10px 0 18px rgba(217, 70, 239, 0.18),
+    var(--shadow-md);
+}
 
-  &__icon {
-    font-size: 2.5rem;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    background: rgba(0, 255, 136, 0.1);
-    border-radius: var(--radius-md);
-    transition: transform var(--transition-base);
-  }
+.routine-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: 0.15rem 0.1rem;
+}
 
-  &__title-group {
-    flex: 1;
-    min-width: 0;
-  }
+.routine-card__main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
 
-  &__title {
-    margin: 0 0 var(--spacing-1) 0;
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-bold);
-    color: var(--text-title);
-  }
+.routine-card__body {
+  min-width: 0;
+  flex: 1;
+}
 
-  &__frequency {
-    margin: 0;
-    font-size: var(--font-size-xs);
-  }
+.routine-card__topline {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
 
-  &__frequency-badge {
-    display: inline-block;
-    padding: var(--spacing-1) var(--spacing-2);
-    background-color: rgba(0, 255, 136, 0.15);
-    color: var(--brand-neon);
-    border-radius: var(--radius-pill);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-  }
+.routine-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
+  line-height: 1;
+}
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 📝 Description
-  // ─────────────────────────────────────────────────────────────────────
+.routine-card__frequency-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(164, 78, 255, 0.16);
+  border: 1px solid rgba(228, 84, 255, 0.22);
+  color: rgba(232, 203, 255, 0.92);
+  font-size: 0.68rem;
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
-  &__description {
-    margin: 0 0 var(--spacing-4) 0;
-    font-size: var(--font-size-sm);
-    color: var(--text-body);
-    line-height: var(--line-height-normal);
-  }
+.routine-card__title {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 800;
+  line-height: 1.08;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55), 0 0 14px rgba(255, 255, 255, 0.08);
+}
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 📊 Progress Bar
-  // ─────────────────────────────────────────────────────────────────────
+.routine-card__xp-badge {
+  flex-shrink: 0;
+  min-width: 4.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.82rem 1rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(180deg, rgba(120, 35, 114, 0.75), rgba(88, 27, 86, 0.88));
+  border: 1px solid rgba(255, 111, 228, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 20px rgba(198, 44, 255, 0.12);
+  color: #ff5bd8;
+  font-size: 0.98rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
 
-  &__progress {
-    margin-bottom: var(--spacing-4);
-  }
+.routine-card__description {
+  margin: 0;
+  color: rgba(224, 213, 242, 0.78);
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+}
 
-  &__progress-bar {
-    width: 100%;
-    height: 8px;
-    background-color: var(--bg-input);
-    border-radius: var(--radius-pill);
-    overflow: hidden;
-    margin-bottom: var(--spacing-2);
-  }
+.routine-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
 
-  &__progress-fill {
-    height: 100%;
-    transition: width var(--transition-base);
-    box-shadow: 0 0 12px currentColor;
-  }
+.routine-card__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(233, 226, 244, 0.86);
+  font-size: 0.72rem;
+  font-weight: 700;
 
-  &__progress-text {
-    margin: 0;
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
-    text-align: right;
-  }
-
-  // ─────────────────────────────────────────────────────────────────────
-  // 🎁 Stats
-  // ─────────────────────────────────────────────────────────────────────
-
-  &__stats {
-    display: flex;
-    gap: var(--spacing-3);
-    flex-wrap: wrap;
-    margin-bottom: var(--spacing-4);
-  }
-
-  &__stat {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-3);
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-semibold);
-
-    &--streak {
-      background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 215, 0, 0.15));
-      border: 1px solid rgba(255, 107, 53, 0.3);
-    }
-  }
-
-  &__stat-icon {
-    font-size: var(--font-size-lg);
-  }
-
-  &__stat-value {
-    color: var(--text-body);
-  }
-
-  // ─────────────────────────────────────────────────────────────────────
-  // 🔘 Footer Actions
-  // ─────────────────────────────────────────────────────────────────────
-
-  &__footer {
-    display: flex;
-    gap: var(--spacing-3);
-    justify-content: flex-end;
-
-    app-button {
-      flex: 1;
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────────────
-  // 🎨 Hover Effects
-  // ─────────────────────────────────────────────────────────────────────
-
-  &:hover {
-    .routine-card__icon {
-      transform: scale(1.05);
-    }
+  &--streak {
+    border: 1px solid rgba(255, 140, 71, 0.22);
+    background: rgba(255, 138, 61, 0.1);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// 📱 Responsive
-// ─────────────────────────────────────────────────────────────────────
+.routine-card__stat-icon {
+  font-size: 0.82rem;
+}
+
+.routine-card__footer {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+
+  app-button {
+    flex: 1;
+  }
+}
+
+.progress-segments {
+  display: flex;
+  gap: 6px;
+  width: 60%;
+  margin-top: 8px;
+}
+
+.segment {
+  flex: 1;
+  min-width: 0;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(108, 58, 140, 0.52);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  transition: all 0.3s ease;
+
+  &.completed {
+    background-color: var(--purple-neon);
+    box-shadow: 0 0 10px var(--purple-neon), 0 0 22px rgba(240, 69, 255, 0.42);
+  }
+}
 
 @media (max-width: 768px) {
-  .routine-card {
-    &__header {
-      gap: var(--spacing-2);
-    }
+  .routine-card__main-row {
+    gap: var(--spacing-3);
+  }
 
-    &__icon {
-      width: 48px;
-      height: 48px;
-      font-size: 1.8rem;
-    }
+  .routine-card__title {
+    font-size: 1.05rem;
+  }
 
-    &__title {
-      font-size: var(--font-size-base);
-    }
+  .routine-card__xp-badge {
+    min-width: 4.3rem;
+    padding: 0.72rem 0.85rem;
+    font-size: 0.9rem;
+  }
 
-    &__stats {
-      gap: var(--spacing-2);
-    }
+  .progress-segments {
+    width: 100%;
+  }
 
-    &__stat {
-      padding: var(--spacing-1) var(--spacing-2);
-      font-size: var(--font-size-xs);
-    }
+  .routine-card__footer {
+    flex-direction: column-reverse;
 
-    &__footer {
-      flex-direction: column-reverse;
-
-      app-button {
-        width: 100%;
-      }
+    app-button {
+      width: 100%;
     }
   }
 }
+

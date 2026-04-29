@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:5000/api',
+  apiUrl: 'http://localhost:5206/api',
+  apiBaseUrl: 'http://localhost:5206/api',
   apiVersion: 'v1',
   signalRUrl: 'http://localhost:5000/hubs/gamification',
   

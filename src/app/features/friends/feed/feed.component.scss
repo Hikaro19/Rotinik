@@ -283,16 +283,20 @@
 .difficulty-badge {
   color: white;
 
-  &.easy {
+  &.difficulty-badge--easy {
     background: #4ade80;
   }
 
-  &.medium {
+  &.difficulty-badge--medium {
     background: #fbbf24;
   }
 
-  &.hard {
+  &.difficulty-badge--hard {
     background: #f87171;
+  }
+
+  &.difficulty-badge--default {
+    background: #9ca3af;
   }
 }
 

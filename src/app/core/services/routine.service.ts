@@ -2,14 +2,22 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { take } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { Usuario, Rotina } from '@core/models/domain';
-import { RoutinesSnapshotDto } from '@core/models/api';
+import {
+  CreateRoutineRequestDto,
+  CreateTaskRequestDto,
+  RoutineDto,
+  RoutinesSnapshotDto,
+  UpdateRoutineRequestDto,
+} from '@core/models/api';
 import { RoutineViewModel, TaskViewModel } from '@core/models/view/routine-view.models';
 import { createMockRoutineUser } from '@core/mocks/routine.mock';
+import { getHttpErrorMessage } from '@core/http/http-error.utils';
 import { RoutineApiService } from './routine-api.service';
 import { RoutineMapperService } from './routine-mapper.service';
 
 export type Task = TaskViewModel;
 export type Routine = RoutineViewModel;
+type RoutineOperation = 'loadSnapshot' | 'createRoutine' | 'updateRoutine' | 'deleteRoutine' | 'addTask' | 'deleteTask' | 'completeTask';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineService {
@@ -26,6 +34,16 @@ export class RoutineService {
 
   readonly routinesSignal = signal<Routine[]>([]);
   readonly isLoadingSignal = signal(false);
+  private readonly pendingOperationsState = signal<Record<RoutineOperation, boolean>>({
+    loadSnapshot: false,
+    createRoutine: false,
+    updateRoutine: false,
+    deleteRoutine: false,
+    addTask: false,
+    deleteTask: false,
+    completeTask: false,
+  });
+  readonly operationErrorSignal = signal<string | null>(null);
 
   readonly totalRoutines = computed(() => this.routinesSignal().length);
   readonly completedRoutines = computed(() => this.routinesSignal().filter((routine) => routine.isCompleted).length);
@@ -46,6 +64,14 @@ export class RoutineService {
     if (!user) return 0;
     return Math.floor(100 * Math.pow(user.getNivel(), 1.5));
   });
+  readonly isMutatingSignal = computed(() =>
+    Object.entries(this.pendingOperationsState())
+      .filter(([key]) => key !== 'loadSnapshot')
+      .some(([, isPending]) => isPending),
+  );
+  readonly isCreatingRoutineSignal = computed(() => this.pendingOperationsState().createRoutine);
+  readonly isCompletingTaskSignal = computed(() => this.pendingOperationsState().completeTask);
+  readonly isDeletingTaskSignal = computed(() => this.pendingOperationsState().deleteTask);
 
   initialize(): void {
     if (this.isInitializedSignal()) {
@@ -67,9 +93,8 @@ export class RoutineService {
       return;
     }
 
-    this.currentUserState.set(createMockRoutineUser());
-    this.touchUserState();
-    this.syncRoutinesFromUser();
+    this.setCurrentUser(createMockRoutineUser());
+    this.syncRoutinesFromCurrentUser();
   }
 
   resetState(): void {
@@ -79,17 +104,23 @@ export class RoutineService {
   }
 
   adicionarRotina(rotina: Rotina): Routine {
+    const routineViewModel = this.routineMapper.mapDomainRoutineToViewModel(rotina);
+
+    if (!environment.enableMockData && !this.hasDomainData()) {
+      this.routinesSignal.update((routines) => [routineViewModel, ...routines]);
+      this.createRoutineInApi(routineViewModel);
+      return routineViewModel;
+    }
+
     if (!this.hasDomainData()) {
-      const routineViewModel = this.routineMapper.mapDomainRoutineToViewModel(rotina);
       this.routinesSignal.update((routines) => [routineViewModel, ...routines]);
       return routineViewModel;
     }
 
     const user = this.requireCurrentUser();
     user.adicionarRotina(rotina);
-    const routineViewModel = this.routineMapper.mapDomainRoutineToViewModel(rotina);
 
-    this.touchUserState();
+    this.bumpUserRevision();
     this.routinesSignal.update((routines) => [routineViewModel, ...routines]);
     return routineViewModel;
   }
@@ -100,10 +131,18 @@ export class RoutineService {
       return;
     }
 
+    if (!environment.enableMockData && !routine.domainModel) {
+      this.routinesSignal.update((routines) =>
+        routines.map((item) => (item.id === id ? { ...item, ...updates, tasks: updates.tasks ?? item.tasks } : item)),
+      );
+      this.updateRoutineInApi(id, updates);
+      return;
+    }
+
     if (routine.domainModel && (updates.title || updates.description)) {
       routine.domainModel.atualizar(updates.title ?? routine.title, updates.description ?? routine.description);
-      this.touchUserState();
-      this.syncRoutinesFromUser();
+      this.bumpUserRevision();
+      this.syncRoutinesFromCurrentUser();
       return;
     }
 
@@ -121,10 +160,16 @@ export class RoutineService {
   }
 
   deleteRoutine(id: string): void {
+    if (!environment.enableMockData && !this.hasDomainData()) {
+      this.routinesSignal.update((routines) => routines.filter((routine) => routine.id !== id));
+      this.deleteRoutineInApi(id);
+      return;
+    }
+
     if (this.hasDomainData()) {
       const user = this.requireCurrentUser();
       user.removerRotina(id);
-      this.touchUserState();
+      this.bumpUserRevision();
     }
 
     this.routinesSignal.update((routines) => routines.filter((routine) => routine.id !== id));
@@ -146,6 +191,16 @@ export class RoutineService {
     const routine = this.getRoutineById(routineId);
     if (!routine) {
       return { xp: 0, coins: 0 };
+    }
+
+    if (!environment.enableMockData && !routine.domainModel) {
+      const task = routine.tasks.find((item) => item.id === taskId);
+      const reward = {
+        xp: task?.xpReward ?? 0,
+        coins: task?.coinReward ?? 0,
+      };
+      this.completeTaskInApi(routineId, taskId);
+      return reward;
     }
 
     if (routine.domainModel) {
@@ -203,7 +258,7 @@ export class RoutineService {
       }
 
       domainTask.voltarParaPendente();
-      this.syncRoutinesFromUser();
+      this.syncRoutinesFromCurrentUser();
       return;
     }
 
@@ -228,11 +283,16 @@ export class RoutineService {
       return;
     }
 
+    if (!environment.enableMockData && !routine.domainModel) {
+      this.addTaskInApi(routineId, taskData);
+      return;
+    }
+
     if (routine.domainModel) {
       const task = this.routineMapper.createDomainTask(taskData);
 
       routine.domainModel.adicionarTarefa(task);
-      this.syncRoutinesFromUser();
+      this.syncRoutinesFromCurrentUser();
       return;
     }
 
@@ -269,9 +329,14 @@ export class RoutineService {
       return;
     }
 
+    if (!environment.enableMockData && !routine.domainModel) {
+      this.deleteTaskInApi(routineId, taskId);
+      return;
+    }
+
     if (routine.domainModel) {
       routine.domainModel.removerTarefa(taskId);
-      this.syncRoutinesFromUser();
+      this.syncRoutinesFromCurrentUser();
       return;
     }
 
@@ -296,7 +361,7 @@ export class RoutineService {
   addCoins(amount: number): void {
     const user = this.requireCurrentUser();
     user.ganharMoedas(amount);
-    this.touchUserState();
+    this.bumpUserRevision();
   }
 
   spendCoins(amount: number): boolean {
@@ -304,23 +369,27 @@ export class RoutineService {
     const success = user.gastarMoedas(amount);
 
     if (success) {
-      this.touchUserState();
+      this.bumpUserRevision();
     }
 
     return success;
   }
 
   hydrateFromApi(snapshot: RoutinesSnapshotDto): void {
-    this.currentUserState.set(this.routineMapper.createUserFromApiSnapshot(snapshot));
-    this.touchUserState();
-    this.routinesSignal.set(this.routineMapper.mapSnapshotFromApi(snapshot));
+    this.setCurrentUser(this.routineMapper.createUserFromApiSnapshot(snapshot));
+    this.setRoutines(this.routineMapper.mapSnapshotFromApi(snapshot));
   }
 
   mapSnapshotFromApi(snapshot: RoutinesSnapshotDto): Routine[] {
     return this.routineMapper.mapSnapshotFromApi(snapshot);
   }
 
+  clearOperationError(): void {
+    this.operationErrorSignal.set(null);
+  }
+
   private loadSnapshotFromApi(): void {
+    this.startOperation('loadSnapshot');
     this.isLoadingSignal.set(true);
     this.routineApi
       .getSnapshot()
@@ -328,12 +397,123 @@ export class RoutineService {
       .subscribe({
         next: (snapshot) => {
           this.hydrateFromApi(snapshot);
+          this.finishOperation('loadSnapshot');
           this.isLoadingSignal.set(false);
         },
-        error: () => {
+        error: (error) => {
+          this.failOperation('loadSnapshot', getHttpErrorMessage(error, 'Nao foi possivel carregar as rotinas do servidor.'));
           this.isLoadingSignal.set(false);
           this.seedData();
         },
+      });
+  }
+
+  private createRoutineInApi(routine: Routine): void {
+    this.startOperation('createRoutine');
+    const payload: CreateRoutineRequestDto = {
+      title: routine.title,
+      description: routine.description,
+      category: routine.category ?? 'geral',
+      frequency: routine.frequency,
+    };
+
+    this.routineApi
+      .create(payload)
+      .pipe(take(1))
+      .subscribe({
+        next: (createdRoutine) => {
+          this.replaceRoutineFromApi(routine.id, createdRoutine);
+          this.finishOperation('createRoutine');
+        },
+        error: (error) =>
+          this.failOperation('createRoutine', getHttpErrorMessage(error, 'Nao foi possivel criar a rotina agora.')),
+      });
+  }
+
+  private updateRoutineInApi(routineId: string, updates: Partial<Routine>): void {
+    this.startOperation('updateRoutine');
+    const payload: UpdateRoutineRequestDto = {};
+
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.description !== undefined) payload.description = updates.description;
+    if (updates.category !== undefined) payload.category = updates.category;
+    if (updates.frequency !== undefined) payload.frequency = updates.frequency;
+
+    this.routineApi
+      .update(routineId, payload)
+      .pipe(take(1))
+      .subscribe({
+        next: (updatedRoutine) => {
+          this.replaceRoutineFromApi(routineId, updatedRoutine);
+          this.finishOperation('updateRoutine');
+        },
+        error: (error) =>
+          this.failOperation('updateRoutine', getHttpErrorMessage(error, 'Nao foi possivel atualizar a rotina.')),
+      });
+  }
+
+  private deleteRoutineInApi(routineId: string): void {
+    this.startOperation('deleteRoutine');
+    this.routineApi
+      .delete(routineId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => this.finishOperation('deleteRoutine'),
+        error: (error) =>
+          this.failOperation('deleteRoutine', getHttpErrorMessage(error, 'Nao foi possivel remover a rotina.')),
+      });
+  }
+
+  private addTaskInApi(routineId: string, taskData: Omit<Task, 'id' | 'routineId' | 'completed' | 'order'>): void {
+    this.startOperation('addTask');
+    const payload: CreateTaskRequestDto = {
+      title: taskData.title,
+      description: taskData.description,
+      xpReward: taskData.xpReward,
+      coinReward: taskData.coinReward,
+    };
+
+    this.routineApi
+      .addTask(routineId, payload)
+      .pipe(take(1))
+      .subscribe({
+        next: (updatedRoutine) => {
+          this.replaceRoutineFromApi(routineId, updatedRoutine);
+          this.finishOperation('addTask');
+        },
+        error: (error) =>
+          this.failOperation('addTask', getHttpErrorMessage(error, 'Nao foi possivel adicionar a tarefa.')),
+      });
+  }
+
+  private deleteTaskInApi(routineId: string, taskId: string): void {
+    this.startOperation('deleteTask');
+    this.routineApi
+      .deleteTask(routineId, taskId)
+      .pipe(take(1))
+      .subscribe({
+        next: (updatedRoutine) => {
+          this.replaceRoutineFromApi(routineId, updatedRoutine);
+          this.finishOperation('deleteTask');
+        },
+        error: (error) =>
+          this.failOperation('deleteTask', getHttpErrorMessage(error, 'Nao foi possivel remover a tarefa.')),
+      });
+  }
+
+  private completeTaskInApi(routineId: string, taskId: string): void {
+    this.startOperation('completeTask');
+    this.routineApi
+      .completeTask(routineId, taskId)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          this.hydrateUserFromApiReward(response.user);
+          this.replaceRoutineFromApi(routineId, response.routine);
+          this.finishOperation('completeTask');
+        },
+        error: (error) =>
+          this.failOperation('completeTask', getHttpErrorMessage(error, 'Nao foi possivel concluir a tarefa.')),
       });
   }
 
@@ -358,8 +538,8 @@ export class RoutineService {
       }
     }
 
-    this.touchUserState();
-    this.syncRoutinesFromUser();
+    this.bumpUserRevision();
+    this.syncRoutinesFromCurrentUser();
 
     return {
       xp: task.getXPRecompensa(),
@@ -381,18 +561,18 @@ export class RoutineService {
       user.ganharMoedas(coins);
     }
 
-    this.touchUserState();
+    this.bumpUserRevision();
   }
 
-  private syncRoutinesFromUser(): void {
+  private syncRoutinesFromCurrentUser(): void {
     const user = this.currentUserState();
     if (!user) {
-      this.routinesSignal.set([]);
+      this.setRoutines([]);
       return;
     }
 
-    this.touchUserState();
-    this.routinesSignal.set(user.getRotinas().map((routine) => this.routineMapper.mapDomainRoutineToViewModel(routine)));
+    this.bumpUserRevision();
+    this.setRoutines(user.getRotinas().map((routine) => this.routineMapper.mapDomainRoutineToViewModel(routine)));
   }
 
   private requireCurrentUser(): Usuario {
@@ -407,8 +587,76 @@ export class RoutineService {
     return this.routinesSignal().some((routine) => !!routine.domainModel);
   }
 
-  private touchUserState(): void {
+  private setCurrentUser(user: Usuario | null): void {
+    this.currentUserState.set(user);
+    this.bumpUserRevision();
+  }
+
+  private setRoutines(routines: Routine[]): void {
+    this.routinesSignal.set(routines);
+  }
+
+  private replaceRoutineFromApi(routineId: string, routine: RoutineDto): void {
+    const mappedRoutine = this.routineMapper.mapApiRoutineToViewModel(routine);
+    this.routinesSignal.update((routines) => {
+      const hasExisting = routines.some((item) => item.id === routineId);
+      if (!hasExisting) {
+        return [mappedRoutine, ...routines];
+      }
+
+      return routines.map((item) => (item.id === routineId ? mappedRoutine : item));
+    });
+  }
+
+  private hydrateUserFromApiReward(user: RoutinesSnapshotDto['user']): void {
+    const snapshot: RoutinesSnapshotDto = {
+      user,
+      routines: this.routinesSignal().map((routine) => ({
+        id: routine.id,
+        title: routine.title,
+        description: routine.description,
+        category: routine.category ?? 'geral',
+        icon: routine.icon,
+        color: routine.color,
+        frequency: routine.frequency,
+        tasks: routine.tasks.map((task) => ({
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          isCompleted: task.completed,
+          xpReward: task.xpReward,
+          coinReward: task.coinReward,
+          order: task.order,
+          completedAt: task.completedDate?.toISOString(),
+        })),
+        totalXp: routine.totalXP,
+        totalCoins: routine.totalCoins,
+        createdAt: routine.createdDate.toISOString(),
+        completionStreak: routine.completionStreak,
+        lastCompletedAt: routine.lastCompletedDate?.toISOString(),
+        isCompleted: routine.isCompleted,
+      })),
+    };
+
+    this.setCurrentUser(this.routineMapper.createUserFromApiSnapshot(snapshot));
+  }
+
+  private bumpUserRevision(): void {
     this.userRevision.update((revision) => revision + 1);
+  }
+
+  private startOperation(operation: RoutineOperation): void {
+    this.operationErrorSignal.set(null);
+    this.pendingOperationsState.update((state) => ({ ...state, [operation]: true }));
+  }
+
+  private finishOperation(operation: RoutineOperation): void {
+    this.pendingOperationsState.update((state) => ({ ...state, [operation]: false }));
+  }
+
+  private failOperation(operation: RoutineOperation, message: string): void {
+    this.operationErrorSignal.set(message);
+    this.pendingOperationsState.update((state) => ({ ...state, [operation]: false }));
   }
 
 }

@@ -281,9 +281,7 @@
           <button class="action-btn primary" (click)="goToProfile(user.id)">Ver Perfil</button>
           <button
             class="action-btn"
-            [disabled]="
-              friendsService.isFriend(user.id) || friendsService.hasPendingRequest(user.id) === 'sent'
-            "
+            [disabled]="socialFacade.isFriend(user.id) || socialFacade.pendingRequestStatus(user.id) === 'sent'"
             (click)="sendFriendRequest(user.id, user.name, user.avatar)"
           >
             {{ getActionButtonText(user.id) }}

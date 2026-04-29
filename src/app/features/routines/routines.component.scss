@@ -300,7 +300,7 @@
   position: fixed;
   top: var(--spacing-6);
   right: var(--spacing-6);
-  z-index: 70;
+  z-index: 9999;
   width: min(100%, 420px);
 }
 
@@ -327,10 +327,11 @@
 @media (max-width: 768px) {
   .routines-toast-layer {
     top: auto;
-    right: var(--spacing-4);
-    bottom: var(--spacing-4);
-    left: var(--spacing-4);
-    width: auto;
+    right: auto;
+    bottom: 90px;
+    left: 50%;
+    width: min(calc(100vw - var(--spacing-8)), 420px);
+    transform: translateX(-50%);
   }
 }
 
@@ -342,5 +343,26 @@
 
   .card-right {
     align-self: flex-end;
+  }
+}
+
+.routine-card-link {
+  display: block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  ::ng-deep .app-card,
+  ::ng-deep .routine-card {
+    transition: all 0.3s ease;
+  }
+
+  &:hover ::ng-deep .app-card,
+  &:hover ::ng-deep .routine-card {
+    filter: brightness(1.03);
+    box-shadow: 0 8px 20px rgba(217, 70, 239, 0.18);
   }
 }

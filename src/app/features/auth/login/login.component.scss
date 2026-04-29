@@ -1,3 +1,7 @@
+// ============================================================================
+// Ã°Å¸â€Â LOGIN COMPONENT STYLES
+// ============================================================================
+
 @use '../../../../styles.scss' as *;
 
 .auth-container {
@@ -11,6 +15,10 @@
   padding: var(--spacing-4);
 }
 
+// ============================================================================
+// Ã°Å¸â€œÂ¦ AUTH CONTENT
+// ============================================================================
+
 .auth-content {
   position: relative;
   z-index: 2;
@@ -20,6 +28,10 @@
   flex-direction: column;
   gap: var(--spacing-8);
 }
+
+// ============================================================================
+// Ã°Å¸Å½Â¯ AUTH HEADER
+// ============================================================================
 
 .auth-header {
   text-align: center;
@@ -48,12 +60,20 @@
   line-height: var(--line-height-relaxed);
 }
 
+// ============================================================================
+// Ã°Å¸â€œâ€¹ AUTH FORM
+// ============================================================================
+
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-5);
   animation: slide-up 600ms ease-out 100ms both;
 }
+
+// ============================================================================
+// Ã°Å¸Â§Â­ FORM FOOTER (Remember + Forgot Password)
+// ============================================================================
 
 .auth-form-footer {
   display: flex;
@@ -85,12 +105,12 @@
 }
 
 .forgot-password-link {
-  color: var(--purple-neon);
+  color: var(--text-secondary);
   text-decoration: none;
   transition: color var(--transition-base);
 
   &:hover {
-    color: #D946EF;
+    color: var(--purple-neon);
     text-decoration: underline;
   }
 
@@ -100,6 +120,10 @@
     border-radius: var(--radius-sm);
   }
 }
+
+// ============================================================================
+// Ã¢Å¡Â Ã¯Â¸Â ERROR ALERT
+// ============================================================================
 
 .auth-error-alert {
   background: rgba(255, 68, 68, 0.1);
@@ -111,6 +135,10 @@
   line-height: var(--line-height-normal);
   animation: slide-up 300ms ease-out;
 }
+
+// ============================================================================
+// Ã°Å¸â€œÂ DIVIDER
+// ============================================================================
 
 .auth-divider {
   display: flex;
@@ -125,14 +153,13 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.05),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
   }
 }
+
+// ============================================================================
+// Ã°Å¸Å’Â SOCIAL LOGIN
+// ============================================================================
 
 .auth-social {
   display: grid;
@@ -179,6 +206,10 @@
   flex-shrink: 0;
 }
 
+// ============================================================================
+// Ã°Å¸â€â€” AUTH FOOTER
+// ============================================================================
+
 .auth-footer-text {
   text-align: center;
   color: var(--text-primary);
@@ -194,7 +225,7 @@
   transition: color var(--transition-base);
 
   &:hover {
-    color: #D946EF;
+    color: #d946ef;
     text-decoration: underline;
   }
 
@@ -204,6 +235,10 @@
     border-radius: var(--radius-sm);
   }
 }
+
+// ============================================================================
+// Ã°Å¸Å½Â¨ BACKGROUND DECORATION
+// ============================================================================
 
 .auth-background-decoration {
   position: absolute;
@@ -233,6 +268,10 @@
   }
 }
 
+// ============================================================================
+// Ã°Å¸â€œÂ± RESPONSIVE
+// ============================================================================
+
 @media (max-width: 480px) {
   .auth-container {
     padding: var(--spacing-4);
@@ -261,9 +300,18 @@
   }
 }
 
+// ============================================================================
+// Ã°Å¸Å’â„¢ DARK MODE (jÃƒÂ¡ estÃƒÂ¡ em dark por padrÃƒÂ£o)
+// ============================================================================
+
+// Neon glow on focus
 .auth-form:focus-within .auth-background-decoration {
   filter: brightness(1.2);
 }
+
+// ============================================================================
+// Ã¢â„¢Â¿ ACCESSIBILITY
+// ============================================================================
 
 @media (prefers-reduced-motion: reduce) {
   .auth-container,

@@ -1,14 +1,8 @@
-<section class="section-box" *ngIf="historyItems().length > 0">
-  <div class="section-header">
-    <h2>📜 Histórico Recente</h2>
-  </div>
-
+<app-section-panel *ngIf="historyItems().length > 0" title="Historico Recente">
   <div class="history-timeline">
     <div class="history-item" *ngFor="let item of historyItems()" [style.--item-color]="getTypeColor(item.type)">
-      <!-- Timeline dot -->
       <div class="timeline-dot"></div>
 
-      <!-- Item card -->
       <div class="history-card">
         <div class="card-header">
           <div class="icon-badge">{{ item.icon }}</div>
@@ -25,15 +19,11 @@
     </div>
   </div>
 
-  <!-- See more -->
   <div class="see-more">
-    <button class="see-more-btn">Ver histórico completo →</button>
+    <button class="see-more-btn">Ver historico completo →</button>
   </div>
-</section>
+</app-section-panel>
 
-<!-- Empty state -->
-<section class="section-box" *ngIf="historyItems().length === 0">
-  <p class="empty-state-text">
-    Nenhum histórico disponível. Comece a jogar!
-  </p>
-</section>
+<app-section-panel *ngIf="historyItems().length === 0" title="Historico Recente">
+  <p class="empty-state-text">Nenhum historico disponivel. Comece a jogar!</p>
+</app-section-panel>

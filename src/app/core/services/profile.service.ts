@@ -9,6 +9,7 @@ import {
   createMockProfileStats,
   generateMockActivityHistory,
 } from '@core/mocks/profile.mock';
+import { getHttpErrorMessage } from '@core/http/http-error.utils';
 import { ProfileApiService } from './profile-api.service';
 
 export interface Achievement {
@@ -60,6 +61,7 @@ export class ProfileService {
   readonly profileStatsSignal = signal<ProfileStats>(createMockProfileStats());
   readonly isInitializedSignal = signal(false);
   readonly isLoadingSignal = signal(false);
+  readonly operationErrorSignal = signal<string | null>(null);
 
   readonly unlockedAchievements = computed(() => this.achievementsSignal().filter((achievement) => achievement.unlockedDate).length);
   readonly totalAchievements = computed(() => this.achievementsSignal().length);
@@ -90,6 +92,7 @@ export class ProfileService {
     }
 
     this.isInitializedSignal.set(true);
+    this.operationErrorSignal.set(null);
 
     if (environment.enableMockData) {
       return;
@@ -201,6 +204,7 @@ export class ProfileService {
 
   private loadSnapshotFromApi(): void {
     this.isLoadingSignal.set(true);
+    this.operationErrorSignal.set(null);
     this.profileApi
       .getSnapshot()
       .pipe(take(1))
@@ -209,7 +213,8 @@ export class ProfileService {
           this.hydrateFromApi(snapshot);
           this.isLoadingSignal.set(false);
         },
-        error: () => {
+        error: (error) => {
+          this.operationErrorSignal.set(getHttpErrorMessage(error, 'Nao foi possivel carregar o perfil.'));
           this.isLoadingSignal.set(false);
         },
       });

@@ -1,7 +1,8 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FeedService, SharedRoutine } from '@core/services/feed.service';
+import { FeedFacadeService } from '@core/services/feed-facade.service';
+import { SharedRoutine } from '@core/services/feed.service';
 import { AppCardComponent } from '@shared/components/ui/card/card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
@@ -22,24 +23,22 @@ import { AppSpinnerComponent } from '@shared/components/ui/spinner/spinner.compo
   styleUrls: ['./feed.component.scss'],
 })
 export class FeedComponent implements OnInit {
-  feedService = inject(FeedService);
+  feedFacade = inject(FeedFacadeService);
 
-  // Signals
   searchQuerySignal = signal('');
   searchQueryText = '';
   filteredRoutinesSignal = signal<SharedRoutine[]>([]);
-  isLoadingMoreSignal = this.feedService.isLoadingMoreSignal;
-  hasMoreRoutinesSignal = this.feedService.hasMoreRoutinesSignal;
+  isLoadingMoreSignal = this.feedFacade.isLoadingMore;
+  hasMoreRoutinesSignal = this.feedFacade.hasMoreRoutines;
   selectedCategorySignal = signal<string | null>(null);
 
-  // Computed
   routineCategories = [
-    { id: 'health', name: '❤️ Saúde', emoji: '❤️' },
-    { id: 'productivity', name: '⚡ Produtividade', emoji: '⚡' },
-    { id: 'mindfulness', name: '🧘 Mindfulness', emoji: '🧘' },
-    { id: 'fitness', name: '💪 Fitness', emoji: '💪' },
-    { id: 'learning', name: '📚 Aprendizado', emoji: '📚' },
-    { id: 'other', name: '🌟 Outros', emoji: '🌟' },
+    { id: 'health', name: 'Saude', emoji: '❤️' },
+    { id: 'productivity', name: 'Produtividade', emoji: '⚡' },
+    { id: 'mindfulness', name: 'Mindfulness', emoji: '🧘' },
+    { id: 'fitness', name: 'Fitness', emoji: '💪' },
+    { id: 'learning', name: 'Aprendizado', emoji: '📚' },
+    { id: 'other', name: 'Outros', emoji: '🌟' },
   ];
 
   ngOnInit(): void {
@@ -47,28 +46,9 @@ export class FeedComponent implements OnInit {
   }
 
   updateFilteredRoutines(): void {
-    const query = this.searchQuerySignal();
-    const category = this.selectedCategorySignal();
-
-    let routines = this.feedService.feedRoutinesSignal();
-
-    // Filter by category
-    if (category) {
-      routines = routines.filter((r) => r.category === category);
-    }
-
-    // Filter by search query
-    if (query) {
-      const lowercaseQuery = query.toLowerCase();
-      routines = routines.filter(
-        (r) =>
-          r.routineName.toLowerCase().includes(lowercaseQuery) ||
-          r.description.toLowerCase().includes(lowercaseQuery) ||
-          r.sharedBy.username.toLowerCase().includes(lowercaseQuery)
-      );
-    }
-
-    this.filteredRoutinesSignal.set(routines);
+    this.filteredRoutinesSignal.set(
+      this.feedFacade.filteredRoutines(this.searchQuerySignal(), this.selectedCategorySignal()),
+    );
   }
 
   onSearchChange(value: string): void {
@@ -78,29 +58,24 @@ export class FeedComponent implements OnInit {
   }
 
   onCategoryClick(categoryId: string): void {
-    this.selectedCategorySignal.update((current) =>
-      current === categoryId ? null : categoryId
-    );
+    this.selectedCategorySignal.update((current) => (current === categoryId ? null : categoryId));
     this.updateFilteredRoutines();
   }
 
   onLoadMore(): void {
     if (!this.isLoadingMoreSignal() && this.hasMoreRoutinesSignal()) {
-      this.feedService.loadMoreRoutines().then(() => {
-        this.updateFilteredRoutines();
-      });
+      this.feedFacade.loadMoreRoutines().then(() => this.updateFilteredRoutines());
     }
   }
 
   onLikeClick(routine: SharedRoutine): void {
-    this.feedService.toggleLike(routine.id);
+    this.feedFacade.toggleLike(routine.id);
     this.updateFilteredRoutines();
   }
 
   onCopyRoutine(routine: SharedRoutine): void {
-    this.feedService.copyRoutine(routine.id).then(() => {
-      // In a real app, show a toast notification
-      alert(`✓ Rotina "${routine.routineName}" adicionada à sua lista!`);
+    this.feedFacade.copyRoutine(routine.id).then(() => {
+      alert(`Rotina "${routine.routineName}" adicionada a sua lista!`);
     });
   }
 
@@ -112,41 +87,39 @@ export class FeedComponent implements OnInit {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffMins < 1) return 'agora';
-    if (diffMins < 60) return `${diffMins}m atrás`;
-    if (diffHours < 24) return `${diffHours}h atrás`;
-    if (diffDays < 7) return `${diffDays}d atrás`;
+    if (diffMins < 60) return `${diffMins}m atras`;
+    if (diffHours < 24) return `${diffHours}h atras`;
+    if (diffDays < 7) return `${diffDays}d atras`;
 
     return date.toLocaleDateString('pt-BR');
   }
 
-  getDifficultyColor(difficulty: string): string {
+  getDifficultyTone(difficulty: string): 'easy' | 'medium' | 'hard' | 'default' {
     switch (difficulty) {
       case 'easy':
-        return '#4ade80'; // green
       case 'medium':
-        return '#fbbf24'; // amber
       case 'hard':
-        return '#f87171'; // red
+        return difficulty;
       default:
-        return '#9ca3af'; // gray
+        return 'default';
     }
   }
 
   getDifficultyLabel(difficulty: string): string {
     switch (difficulty) {
       case 'easy':
-        return 'Fácil';
+        return 'Facil';
       case 'medium':
-        return 'Médio';
+        return 'Medio';
       case 'hard':
-        return 'Difícil';
+        return 'Dificil';
       default:
         return difficulty;
     }
   }
 
   getCategoryEmoji(category: string): string {
-    const cat = this.routineCategories.find((c) => c.id === category);
+    const cat = this.routineCategories.find((entry) => entry.id === category);
     return cat ? cat.emoji : '🌟';
   }
 }

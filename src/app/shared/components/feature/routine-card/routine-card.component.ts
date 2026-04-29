@@ -1,18 +1,16 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Routine } from '@core/services/routine.service';
-import { AppCardComponent } from '../../ui/card/card.component';
 import { AppButtonComponent } from '../../ui/button/button.component';
+import { AppCardComponent } from '../../ui/card/card.component';
 
-/**
- * RoutineCardComponent: Card que exibe uma rotina com progresso
- */
 @Component({
   selector: 'app-routine-card',
   standalone: true,
   imports: [CommonModule, AppCardComponent, AppButtonComponent],
   template: `
     <app-card
+      class="routine-card"
       variant="default"
       padding="md"
       rounded="md"
@@ -20,65 +18,53 @@ import { AppButtonComponent } from '../../ui/button/button.component';
       role="article"
       [attr.aria-label]="routine.title"
     >
-      <!-- Header com ícone e título -->
-      <div appCardHeader class="routine-card__header">
-        <div class="routine-card__icon" [style.color]="routine.color">
-          {{ routine.icon }}
-        </div>
-        <div class="routine-card__title-group">
-          <h3 class="routine-card__title">{{ routine.title }}</h3>
-          <p class="routine-card__frequency">
-            <span class="routine-card__frequency-badge">{{ frequencyLabel() }}</span>
-          </p>
-        </div>
-      </div>
-
-      <!-- Progresso -->
       <div class="routine-card__content">
+        <div class="routine-card__main-row">
+          <div class="routine-card__body">
+            <div class="routine-card__topline">
+              <span class="routine-card__icon">{{ routine.icon }}</span>
+              <span class="routine-card__frequency-badge">{{ frequencyLabel() }}</span>
+            </div>
+
+            <h3 class="routine-card__title">{{ routine.title }}</h3>
+
+            <div
+              class="progress-segments"
+              [attr.aria-label]="completedTaskCount() + ' de ' + routine.tasks.length + ' tarefas concluídas'"
+            >
+              @for (segment of getTaskSegments(); track $index) {
+                <div class="segment" [class.completed]="segment"></div>
+              }
+            </div>
+          </div>
+
+          <div class="routine-card__xp-badge">+{{ routine.totalXP }} XP</div>
+        </div>
+
         <p *ngIf="routine.description" class="routine-card__description">
           {{ routine.description }}
         </p>
 
-        <!-- Barra de Progresso -->
-        <div class="routine-card__progress">
-          <div class="routine-card__progress-bar">
-            <div
-              class="routine-card__progress-fill"
-              [style.width.%]="progressPercentage()"
-              [style.backgroundColor]="routine.color"
-            ></div>
-          </div>
-          <p class="routine-card__progress-text">
-            {{ completedTaskCount() }} / {{ routine.tasks.length }} tarefas
-          </p>
-        </div>
-
-        <!-- Stats -->
-        <div class="routine-card__stats">
-          <div class="routine-card__stat">
-            <span class="routine-card__stat-icon">⭐</span>
-            <span class="routine-card__stat-value">{{ routine.totalXP }} XP</span>
-          </div>
-          <div class="routine-card__stat">
+        <div class="routine-card__stats" *ngIf="showActions && (routine.totalCoins || routine.completionStreak > 0)">
+          <div class="routine-card__stat" *ngIf="routine.totalCoins">
             <span class="routine-card__stat-icon">💰</span>
             <span class="routine-card__stat-value">{{ routine.totalCoins }} moedas</span>
           </div>
-          <div *ngIf="routine.completionStreak > 0" class="routine-card__stat routine-card__stat--streak">
+          <div class="routine-card__stat routine-card__stat--streak" *ngIf="routine.completionStreak > 0">
             <span class="routine-card__stat-icon">🔥</span>
             <span class="routine-card__stat-value">{{ routine.completionStreak }} dias</span>
           </div>
         </div>
       </div>
 
-      <!-- Footer com ações -->
-      <div appCardFooter class="routine-card__footer">
+      <div *ngIf="showActions" appCardFooter class="routine-card__footer">
         <app-button
           variant="ghost"
           size="sm"
           (buttonClick)="onEdit()"
           [attr.aria-label]="'Editar rotina ' + routine.title"
         >
-          ✏️ Editar
+          Editar
         </app-button>
         <app-button
           variant="primary"
@@ -86,7 +72,7 @@ import { AppButtonComponent } from '../../ui/button/button.component';
           (buttonClick)="onStart()"
           [attr.aria-label]="'Iniciar rotina ' + routine.title"
         >
-          ► Iniciar
+          Iniciar
         </app-button>
       </div>
     </app-card>
@@ -95,8 +81,9 @@ import { AppButtonComponent } from '../../ui/button/button.component';
 })
 export class AppRoutineCardComponent {
   @Input() routine!: Routine;
-  @Output() edit = new EventEmitter<string>(); // routineId
-  @Output() start = new EventEmitter<string>(); // routineId
+  @Input() showActions = true;
+  @Output() edit = new EventEmitter<string>();
+  @Output() start = new EventEmitter<string>();
 
   frequencyLabel = () => {
     const labels: Record<Routine['frequency'], string> = {
@@ -107,14 +94,12 @@ export class AppRoutineCardComponent {
     return labels[this.routine.frequency];
   };
 
-  completedTaskCount = () => {
-    return this.routine.tasks.filter((t) => t.completed).length;
-  };
+  completedTaskCount = () => this.routine.tasks.filter((task) => task.completed).length;
 
-  progressPercentage = () => {
-    if (this.routine.tasks.length === 0) return 0;
-    const completed = this.routine.tasks.filter((t) => t.completed).length;
-    return (completed / this.routine.tasks.length) * 100;
+  getTaskSegments = (): boolean[] => {
+    const totalTasks = this.routine?.tasks.length ?? 0;
+    const completedTasks = this.completedTaskCount();
+    return Array.from({ length: totalTasks }, (_, index) => index < completedTasks);
   };
 
   onEdit(): void {
