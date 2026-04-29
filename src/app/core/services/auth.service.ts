@@ -11,16 +11,16 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly baseUrl = `${environment.apiUrl}/User`;
+  private readonly baseUrl = `${environment.apiUrl}`;
 
   constructor(private readonly http: HttpClient) {}
 
   register(payload: UserRegistrationDto): Observable<UserRegisterResponseDto> {
-    return this.http.post<UserRegisterResponseDto>(`${this.baseUrl}/register`, payload);
+    return this.http.post<UserRegisterResponseDto>(`${this.baseUrl}/usuarios`, payload);
   }
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
-    return this.http.post<UserLoginResponseDto>(`${this.baseUrl}/login`, payload).pipe(
+    return this.http.post<UserLoginResponseDto>(`${this.baseUrl}/auth/login`, payload).pipe(
       tap((session) => this.saveSession(session)),
     );
   }
@@ -37,9 +37,7 @@ export class AuthService {
   getCurrentSession(): UserLoginResponseDto | null {
     const rawSession = localStorage.getItem('rotinik_auth_user');
 
-    if (!rawSession) {
-      return null;
-    }
+    if (!rawSession) return null;
 
     try {
       return JSON.parse(rawSession) as UserLoginResponseDto;

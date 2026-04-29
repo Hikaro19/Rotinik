@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
+import { AuthService } from '@core/services/auth.service';
+import { AppHttpError } from '@core/http/http-error.utils';
 
 @Component({
   selector: 'app-login',
@@ -15,9 +17,11 @@ import { AppInputComponent } from '@shared/components/ui/input/input.component';
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
   readonly isLoading = signal(false);
   readonly formErrorMessage = signal('');
+
   readonly loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
@@ -33,21 +37,24 @@ export class LoginComponent {
     this.formErrorMessage.set('');
     this.loginForm.markAllAsTouched();
 
-    if (this.loginForm.invalid) {
-      return;
-    }
+    if (this.loginForm.invalid || this.isLoading()) return;
 
     this.isLoading.set(true);
 
-    setTimeout(() => {
-      const { email, password } = this.loginForm.value;
+    const { email, password } = this.loginForm.value;
 
-      if (email === 'demo@rotinik.com' && password === 'password123') {
+    this.authService.login({ email, senha: password }).subscribe({
+      next: () => {
         this.router.navigate(['/home']);
-      } else {
-        this.formErrorMessage.set('Email ou senha invÃ¡lidos. Tente com demo@rotinik.com / password123');
+      },
+      error: (err: AppHttpError) => {
+        if (err.status === 401) {
+          this.formErrorMessage.set('Email ou senha inválidos.');
+        } else {
+          this.formErrorMessage.set(err.message ?? 'Erro ao conectar com o servidor. Tente novamente.');
+        }
         this.isLoading.set(false);
-      }
-    }, 1500);
+      },
+    });
   }
 }
