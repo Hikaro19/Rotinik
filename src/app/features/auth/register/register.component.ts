@@ -49,11 +49,15 @@ export class RegisterComponent {
 
     const { fullName, email, password } = this.registerForm.value;
 
-    this.authService.register({ nome: fullName, email, senha: password }).subscribe({
-      next: () => {
+    const payload = { Nome: fullName, Email: email, Senha: password };
+
+    this.authService.register(payload).subscribe({
+      next: (res) => {
+        console.log('[RegisterComponent] Cadastro realizado:', res);
         this.router.navigate(['/auth/success']);
       },
       error: (err: AppHttpError) => {
+        console.error('[RegisterComponent] Erro no cadastro:', err);
         if (err.status === 400) {
           this.formErrorMessage.set(err.message ?? 'Dados inválidos. Verifique as informações.');
         } else {
