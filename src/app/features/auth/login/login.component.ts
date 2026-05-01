@@ -43,7 +43,7 @@ export class LoginComponent {
 
     const { email, password } = this.loginForm.value;
 
-    this.authService.login({ email, senha: password }).subscribe({
+    this.authService.login({ Email: email, Senha: password }).subscribe({
       next: () => {
         this.router.navigate(['/home']);
       },

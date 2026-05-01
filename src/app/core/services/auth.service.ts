@@ -11,16 +11,19 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly baseUrl = `${environment.apiUrl}`;
+  private readonly usersUrl = `${environment.apiUrl}/usuarios`;
 
   constructor(private readonly http: HttpClient) {}
 
   register(payload: UserRegistrationDto): Observable<UserRegisterResponseDto> {
-    return this.http.post<UserRegisterResponseDto>(`${this.baseUrl}/usuarios`, payload);
+    console.log('[AuthService] Enviando Payload:', payload);
+    return this.http.post<UserRegisterResponseDto>(this.usersUrl, payload);
   }
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
-    return this.http.post<UserLoginResponseDto>(`${this.baseUrl}/auth/login`, payload).pipe(
+    console.log('[AuthService] Enviando Payload:', payload);
+    return this.http.post<Record<string, unknown>>(`${this.usersUrl}/login`, payload).pipe(
+      map((session) => this.normalizeSession(session)),
       tap((session) => this.saveSession(session)),
     );
   }
@@ -55,5 +58,34 @@ export class AuthService {
   private saveSession(session: UserLoginResponseDto): void {
     localStorage.setItem(environment.tokenStorageKey, session.token);
     localStorage.setItem('rotinik_auth_user', JSON.stringify(session));
+  }
+
+  isAuthenticated(): boolean {
+    const session = this.getCurrentSession();
+    return Boolean(this.getToken() && session?.user?.Id);
+  }
+
+  private normalizeSession(session: Record<string, unknown>): UserLoginResponseDto {
+    const rawUser = this.getUserFromSession(session);
+
+    return {
+      token: String(session['token'] ?? session['Token'] ?? ''),
+      user: {
+        Id: String(rawUser['Id'] ?? rawUser['id'] ?? rawUser['UserId'] ?? rawUser['userId'] ?? ''),
+        Nome: String(rawUser['Nome'] ?? rawUser['nome'] ?? ''),
+        Email: String(rawUser['Email'] ?? rawUser['email'] ?? ''),
+      },
+      message: String(session['message'] ?? session['Message'] ?? ''),
+    };
+  }
+
+  private getUserFromSession(session: Record<string, unknown>): Record<string, unknown> {
+    const user = session['user'] ?? session['User'];
+
+    if (user && typeof user === 'object') {
+      return user as Record<string, unknown>;
+    }
+
+    return session;
   }
 }
