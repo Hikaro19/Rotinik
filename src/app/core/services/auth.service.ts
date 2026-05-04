@@ -11,18 +11,18 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly usersUrl = `${environment.apiUrl}/usuarios`;
+  private readonly baseUrl = `${environment.apiUrl}/Usuario`;
 
   constructor(private readonly http: HttpClient) {}
 
   register(payload: UserRegistrationDto): Observable<UserRegisterResponseDto> {
-    console.log('[AuthService] Enviando Payload:', payload);
-    return this.http.post<UserRegisterResponseDto>(this.usersUrl, payload);
+    console.log('[Rotinik Debug] Enviando:', payload);
+    return this.http.post<UserRegisterResponseDto>(this.baseUrl, payload);
   }
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
-    console.log('[AuthService] Enviando Payload:', payload);
-    return this.http.post<Record<string, unknown>>(`${this.usersUrl}/login`, payload).pipe(
+    console.log('[Rotinik Debug] Enviando:', payload);
+    return this.http.post<Record<string, unknown>>(`${this.baseUrl}/login`, payload).pipe(
       map((session) => this.normalizeSession(session)),
       tap((session) => this.saveSession(session)),
     );
@@ -62,30 +62,35 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const session = this.getCurrentSession();
-    return Boolean(this.getToken() && session?.user?.Id);
+    return Boolean(this.getToken() && session?.user?.Email);
   }
 
   private normalizeSession(session: Record<string, unknown>): UserLoginResponseDto {
     const rawUser = this.getUserFromSession(session);
 
     return {
-      token: String(session['token'] ?? session['Token'] ?? ''),
+      token: String(session['token'] ?? session['Token'] ?? session['accessToken'] ?? session['AccessToken'] ?? ''),
       user: {
         Id: String(rawUser['Id'] ?? rawUser['id'] ?? rawUser['UserId'] ?? rawUser['userId'] ?? ''),
         Nome: String(rawUser['Nome'] ?? rawUser['nome'] ?? ''),
         Email: String(rawUser['Email'] ?? rawUser['email'] ?? ''),
+        Telefone: this.optionalString(rawUser['Telefone'] ?? rawUser['telefone']),
       },
       message: String(session['message'] ?? session['Message'] ?? ''),
     };
   }
 
   private getUserFromSession(session: Record<string, unknown>): Record<string, unknown> {
-    const user = session['user'] ?? session['User'];
+    const user = session['user'] ?? session['User'] ?? session['usuario'] ?? session['Usuario'];
 
     if (user && typeof user === 'object') {
       return user as Record<string, unknown>;
     }
 
     return session;
+  }
+
+  private optionalString(value: unknown): string | undefined {
+    return value === undefined || value === null ? undefined : String(value);
   }
 }
