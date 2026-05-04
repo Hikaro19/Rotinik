@@ -2,6 +2,7 @@ export interface UserRegistrationDto {
   Nome: string;
   Email: string;
   Senha: string;
+  Telefone: string;
 }
 
 export interface UserLoginDto {
@@ -10,9 +11,10 @@ export interface UserLoginDto {
 }
 
 export interface UserLoginUserDto {
-  Id: string | number;
+  Id?: string | number;
   Nome: string;
   Email: string;
+  Telefone?: string;
 }
 
 export interface UserLoginResponseDto {
@@ -32,4 +34,6 @@ export interface UserApiDto {
   nome?: string;
   Email?: string;
   email?: string;
+  Telefone?: string;
+  telefone?: string;
 }

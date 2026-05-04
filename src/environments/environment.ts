@@ -1,9 +1,9 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5206/api',
-  apiBaseUrl: 'http://localhost:5206/api',
+  apiUrl: 'http://localhost:5025/api',
+  apiBaseUrl: 'http://localhost:5025/api',
   apiVersion: 'v1',
-  signalRUrl: 'http://localhost:5206/hubs/gamification',
+  signalRUrl: 'http://localhost:5025/hubs/gamification',
 
   // Feature flags
   enableMockData: false,

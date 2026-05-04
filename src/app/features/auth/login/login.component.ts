@@ -6,6 +6,7 @@ import { AppButtonComponent } from '@shared/components/ui/button/button.componen
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
 import { AuthService } from '@core/services/auth.service';
 import { AppHttpError } from '@core/http/http-error.utils';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -44,10 +45,14 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     this.authService.login({ Email: email, Senha: password }).subscribe({
-      next: () => {
+      next: (session) => {
+        console.log('[LoginComponent] Sessao autenticada:', session);
+        localStorage.setItem(environment.tokenStorageKey, session.token);
+        localStorage.setItem('rotinik_auth_user', JSON.stringify(session));
         this.router.navigate(['/home']);
       },
       error: (err: AppHttpError) => {
+        console.error('[LoginComponent] Falha na autenticacao:', err);
         if (err.status === 401) {
           this.formErrorMessage.set('Email ou senha inválidos.');
         } else {
