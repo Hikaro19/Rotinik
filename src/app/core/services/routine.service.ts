@@ -390,11 +390,13 @@ export class RoutineService {
       .pipe(take(1))
       .subscribe({
         next: (routines) => {
+          console.log('[RoutineService] Rotinas mapeadas do banco:', routines);
           this.hydrateFromApi(routines);
           this.finishOperation('loadSnapshot');
           this.isLoadingSignal.set(false);
         },
         error: (error) => {
+          console.error('[RoutineService] Falha crítica ao carregar snapshot:', error);
           this.failOperation('loadSnapshot', getHttpErrorMessage(error, 'Nao foi possivel carregar as rotinas do servidor.'));
           this.isLoadingSignal.set(false);
           this.seedData();
@@ -557,8 +559,13 @@ export class RoutineService {
 
   private syncRoutinesFromCurrentUser(): void {
     const user = this.currentUserState();
+
+    // CORREÇÃO: Evita limpar a tela caso a API já tenha preenchido as rotinas
+    // mas o profile do usuário ainda esteja pendente ou tenha falhado o carregamento.
     if (!user) {
-      this.setRoutines([]);
+      if (this.routinesSignal().length === 0) {
+        this.setRoutines([]);
+      }
       return;
     }
 
