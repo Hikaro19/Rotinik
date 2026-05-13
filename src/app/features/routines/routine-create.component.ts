@@ -54,7 +54,7 @@ export class RoutineCreateComponent {
       this.routineCreated.emit(pendingRoutine);
       this.pendingCreatedRoutine.set(null);
       this.resetForm();
-    }, { allowSignalWrites: true }); // <-- CORREÇÃO: Permite explicitamente a escrita em sinais neste ciclo reativo
+    });
   }
 
   get nomeControl() {

@@ -86,25 +86,12 @@ export class AppRoutineCardComponent {
   @Output() start = new EventEmitter<string>();
 
   frequencyLabel = () => {
-    if (!this.routine?.frequency) return 'Geral';
-
-    const freqStr = this.routine.frequency.toString().toLowerCase();
-
-    const labels: Record<string, string> = {
+    const labels: Record<Routine['frequency'], string> = {
       daily: 'Diariamente',
-      diaria: 'Diariamente',
-      '0': 'Diariamente',
-
       weekly: 'Semanalmente',
-      semanal: 'Semanalmente',
-      '1': 'Semanalmente',
-
       monthly: 'Mensalmente',
-      mensal: 'Mensalmente',
-      '2': 'Mensalmente',
     };
-
-    return labels[freqStr] || 'Geral';
+    return labels[this.routine.frequency];
   };
 
   completedTaskCount = () => this.routine.tasks.filter((task) => task.completed).length;

@@ -1,13 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, Observable, map, switchMap, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import {
   CompleteTaskResponseDto,
   CreateRoutineRequestDto,
   CreateTaskRequestDto,
   RoutineDto,
+  RoutinesSnapshotDto,
   RoutineSummaryResponse,
   StartTaskExecutionResponseDto,
   UpdateRoutineRequestDto,
@@ -16,12 +16,13 @@ import {
 @Injectable({ providedIn: 'root' })
 export class RoutineApiService {
   private readonly http = inject(HttpClient);
-  // BaseUrl aponta para api/Routine seguindo o padrão de nomenclatura do C# Controller
+  // Backend route is /api/Routine
   private readonly baseUrl = `${environment.apiBaseUrl}/Routine`;
 
   /**
-   * Obtém todas as rotinas resumidas e busca os detalhes de cada uma em paralelo.
-   * Blindado com catchError para evitar que falhas individuais zerem a listagem completa.
+   * Emulates the old getSnapshot by fetching all routines and then fetching details for each.
+   * This bridges the gap between the new backend (which splits GET /Routine and GET /Routine/:id)
+   * and the current frontend UI which expects all tasks loaded upfront.
    */
   getSnapshot(): Observable<RoutineDto[]> {
     return this.getAll().pipe(
@@ -29,19 +30,9 @@ export class RoutineApiService {
         if (!summaries || summaries.length === 0) {
           return of([]);
         }
-
-        const detailRequests = summaries.map((s) =>
-          this.getById(s.id).pipe(
-            catchError((err) => {
-              console.error(`[RoutineApiService] Erro ao buscar detalhes da rotina individual (ID: ${s.id}):`, err);
-              return of(null); // Retorna nulo para não quebrar as demais requisições do forkJoin
-            })
-          )
-        );
-
-        return forkJoin(detailRequests).pipe(
-          map((results) => results.filter((r): r is RoutineDto => r !== null))
-        );
+        // Fetch full details for each routine to get tasks
+        const detailRequests = summaries.map((s) => this.getById(s.id));
+        return forkJoin(detailRequests);
       })
     );
   }
@@ -74,7 +65,10 @@ export class RoutineApiService {
     return this.http.post<RoutineDto>(`${this.baseUrl}/templates/${templateId}/clone`, {});
   }
 
+  // --- Task endpoints (Will need refactoring later to match FMRT_7-14 exactly) ---
+  
   addTask(routineId: string, payload: CreateTaskRequestDto): Observable<RoutineDto> {
+    // Current frontend calls POST /routines/:id/tasks (not strictly FMRT_7 which links existing tasks)
     return this.http.post<RoutineDto>(`${this.baseUrl}/${routineId}/tasks`, payload);
   }
 

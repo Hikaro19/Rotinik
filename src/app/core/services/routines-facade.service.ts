@@ -19,43 +19,15 @@ export class RoutinesFacadeService {
   readonly filteredRoutines = computed(() => {
     const filter = this.activeFilter();
     const routines = this.routines();
-
-    // 1. Filtro de frequência resiliente
     const visibleRoutines = filter === 'all'
       ? routines
-      : routines.filter((routine) => {
-          if (!routine.frequency) return false;
+      : routines.filter((routine) => routine.frequency === filter);
 
-          const freqLower = routine.frequency.toString().toLowerCase();
-          // Forçamos o filtro para string para o TS não reclamar
-          const filterStr = String(filter).toLowerCase();
-
-          if (filterStr === 'daily') {
-            return freqLower === 'daily' || freqLower === 'diaria' || freqLower === '0';
-          }
-          if (filterStr === 'weekly') {
-            return freqLower === 'weekly' || freqLower === 'semanal' || freqLower === '1';
-          }
-          if (filterStr === 'monthly') {
-            return freqLower === 'monthly' || freqLower === 'mensal' || freqLower === '2';
-          }
-
-          return freqLower === filterStr;
-        });
-
-    // 2. CORREÇÃO: Permitir rotinas que tenham 0 tarefas
     return visibleRoutines
-      .filter((routine) => !routine.isCompleted || (routine.tasks && routine.tasks.length === 0))
+      .filter((routine) => !routine.isCompleted && routine.tasks.length > 0)
       .sort((a, b) => {
-        const totalA = a.tasks?.length ?? 0;
-        const totalB = b.tasks?.length ?? 0;
-
-        if (totalA === 0 && totalB === 0) return 0;
-        if (totalA === 0) return 1;
-        if (totalB === 0) return -1;
-
-        const progressA = a.tasks.filter((task) => task.completed).length / totalA;
-        const progressB = b.tasks.filter((task) => task.completed).length / totalB;
+        const progressA = a.tasks.length > 0 ? a.tasks.filter((task) => task.completed).length / a.tasks.length : 0;
+        const progressB = b.tasks.length > 0 ? b.tasks.filter((task) => task.completed).length / b.tasks.length : 0;
         return progressB - progressA;
       });
   });
