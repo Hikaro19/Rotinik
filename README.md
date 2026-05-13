@@ -1,116 +1,89 @@
-# Rotinik
+# Rotinik Frontend
 
 ![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)
-![Backend Target](https://img.shields.io/badge/API-ASP.NET%20Core-512BD4?logo=dotnet&logoColor=white)
 
-Rotinik transforma rotina em progresso visivel. O produto usa gamificacao para combater a procrastinacao com loops claros de recompensa: tarefas geram XP, moedas, streaks, historico e motivacao para manter consistencia no dia a dia.
+Rotinik transforma rotina em progresso visível. O produto usa gamificação para combater a procrastinação com loops claros de recompensa: tarefas geram XP, moedas, streaks, histórico e motivação para manter consistência no dia a dia.
 
-Hoje o repositorio representa o frontend em Angular da plataforma. A base foi iniciada como prototipo academico, mas esta sendo evoluida para uma arquitetura real de integracao com backend em C#.
+Este repositório contém a **Aplicação Frontend (SPA)** em Angular da plataforma Rotinik, responsável por toda a interface de usuário e interações gamificadas.
 
 ## Proposta de Valor
 
-- Quebra objetivos grandes em tarefas pequenas e acompanhaveis
-- Recompensa execucao com XP, moedas e progresso de nivel
-- Usa rotina, loja, perfil e elementos sociais para reforcar consistencia
-- Converte um problema subjetivo, procrastinacao, em feedback visual e mensuravel
+- Quebra objetivos grandes em tarefas pequenas e acompanháveis
+- Recompensa execução com XP, moedas e progresso de nível
+- Usa rotina, loja, perfil e elementos sociais para reforçar consistência
+- Converte um problema subjetivo, procrastinação, em feedback visual e mensurável
 
-## Visao de Arquitetura
+## Visão de Arquitetura
 
-### Frontend
+- **Angular 18** com Standalone Components
+- **Signals** e `computed` para gerenciamento de estado reativo e derivações de UI
+- **HttpClient** e Interceptors para integração com API REST (Autenticação baseada em JWT)
+- **SCSS** com design system dark gamificado e fonte Montserrat
 
-- Angular 18 com Standalone Components
-- Signals e computed para estado de leitura e derivacoes de UI
-- HttpClient para integracao com API REST
-- SCSS com design system dark gamificado e fonte Montserrat
+### Camadas do Frontend
 
-### Backend Alvo
+A aplicação atua nas seguintes camadas:
 
-- ASP.NET Core Web API
-- DTOs versionados por recurso
-- JWT para autenticacao
-- Regras oficiais de XP, moedas, streaks e progresso executadas no servidor
-
-### Contrato Arquitetural
-
-O frontend deixa de ser a fonte de verdade do dominio e passa a atuar em quatro camadas:
-
-1. `ApiServices`: clientes HTTP puros
-2. `Stores/Facades`: carregamento, cache local, loading/error e exposicao para a UI
-3. `Mappers`: conversao entre DTOs, view models e modelos de dominio leves
-4. `Shared/UI`: componentes de apresentacao reutilizaveis
-
-## O que o Projeto Demonstra
-
-- Organizacao por `core`, `features` e `shared`
-- Modelagem orientada a objetos no frontend para explorar regras de dominio
-- Uso de Signals para compor dashboards e estados derivados
-- Preparacao para migrar de mock local para integracao real com API C#
+1. `ApiServices`: Clientes HTTP puros que realizam as requisições
+2. `Stores/Facades`: Gerenciamento de estado, cache local, loading/error e exposição para a UI
+3. `Mappers`: Conversão entre DTOs de API e modelos de domínio da UI
+4. `Shared/UI`: Componentes de apresentação reutilizáveis (botões, inputs, modais)
 
 ## Features Atuais
 
-- Autenticacao com telas de login e cadastro
-- Dashboard inicial com progresso do usuario
-- CRUD local de rotinas e tarefas
-- Sistema gamificado de XP, niveis e moedas
-- Loja, inventario e historico
-- Perfil com estatisticas, heatmap, achievements e historico
-- Modulos sociais com amigos, feed e leaderboard
+- Autenticação com telas de login e cadastro (Integração via JWT)
+- Dashboard inicial com progresso do usuário e status diário
+- Gerenciamento de Rotinas e Tarefas
+- Sistema gamificado de XP, níveis e moedas
+- Loja virtual, inventário de itens e histórico
+- Perfil de usuário com estatísticas, heatmap, conquistas e histórico
+- Módulos sociais com lista de amigos, feed e placar de líderes (Leaderboard)
 
-## Roadmap de Evolucao
-
-- Reposicionar a documentacao para avaliadores tecnicos e recrutadores
-- Isolar mocks do codigo de producao
-- Refatorar services para `HttpClient + facade/store`
-- Componentizar blocos repetidos de Home, Routines e Profile
-- Padronizar acessibilidade, estados assinc e design system
-
-## Estrutura Principal
+## Estrutura Principal do Projeto
 
 ```text
 src/
 |-- app/
 |   |-- core/
-|   |   |-- models/             # DTOs e modelos de dominio
-|   |   |-- services/           # API clients, facades e stores
-|   |   `-- mocks/              # Dados temporarios enquanto a API nao assume a fonte oficial
-|   |-- features/               # Views e fluxos por dominio
-|   `-- shared/                 # Componentes UI e feature components reutilizaveis
-|-- environments/
-|-- main.ts
-`-- styles.scss
+|   |   |-- models/             # DTOs e modelos de domínio
+|   |   |-- services/           # API clients, facades e gerenciamento de estado
+|   |   |-- http/               # Interceptors e utilitários HTTP
+|   |   `-- mocks/              # Dados temporários (para fallback)
+|   |-- features/               # Telas, views e fluxos por domínio (auth, routines, etc)
+|   `-- shared/                 # Componentes UI reutilizáveis e pipes
+|-- environments/               # Configuração de URLs da API por ambiente
+|-- main.ts                     # Ponto de entrada (Bootstrap)
+`-- styles.scss                 # Estilos globais e Design System
 ```
 
-## Como Rodar
+## Como Rodar Localmente
 
+Para rodar este frontend na sua máquina, você precisará do **Node.js** instalado.
+
+1. Instale as dependências do projeto:
 ```bash
 npm install
+```
+
+2. Inicie o servidor de desenvolvimento:
+```bash
 npm start
 ```
 
-App local:
-
+3. Acesse a aplicação no seu navegador:
 ```text
 http://localhost:4200
 ```
 
-## Scripts
+> **Nota:** Certifique-se de ter o Backend da API rodando localmente (por padrão na porta `5025` conforme o `environments/environment.ts`) para que os fluxos de login e carregamento de dados funcionem corretamente.
+
+## Scripts Úteis
 
 ```bash
-npm start
-npm run build
-npm run build:prod
-npm test
-npm run format
-npm run format:check
+npm start           # Inicia o servidor local
+npm run build       # Realiza o build de desenvolvimento
+npm run build:prod  # Realiza o build otimizado para produção
+npm test            # Roda a suíte de testes (Karma/Jasmine)
+npm run format      # Formata os arquivos (Prettier)
 ```
-
-## Documentacao Complementar
-
-- [Visao de Produto](./docs/PRODUCT_OVERVIEW.md)
-- [Arquitetura](./docs/ARCHITECTURE.md)
-- [Plano de Integracao com API](./docs/API_INTEGRATION_PLAN.md)
-
-## Status Atual
-
-O frontend esta em transicao de prototipo para arquitetura integrada com backend real. O foco atual da refatoracao e remover mocks embutidos dos services, consolidar componentes compartilhados e formalizar o contrato Angular + C#.
