@@ -44,7 +44,7 @@ export class LoginComponent {
 
     const { email, password } = this.loginForm.value;
 
-    this.authService.login({ Email: email, Senha: password }).subscribe({
+    this.authService.login({ email, password }).subscribe({
       next: (session) => {
         console.log('[LoginComponent] Sessao autenticada:', session);
         localStorage.setItem(environment.tokenStorageKey, session.token);

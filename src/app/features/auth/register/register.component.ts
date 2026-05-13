@@ -49,7 +49,7 @@ export class RegisterComponent {
 
     const { fullName, email, phone, password } = this.registerForm.value;
 
-    const payload = { Nome: fullName, Email: email, Senha: password, Telefone: phone };
+    const payload = { name: fullName, email, password, phone };
 
     this.authService.register(payload).subscribe({
       next: (res) => {

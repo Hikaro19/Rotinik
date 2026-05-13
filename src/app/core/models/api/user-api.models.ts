@@ -1,39 +1,35 @@
 export interface UserRegistrationDto {
-  Nome: string;
-  Email: string;
-  Senha: string;
-  Telefone: string;
+  name: string;
+  email: string;
+  password?: string;
+  phone: string;
 }
 
 export interface UserLoginDto {
-  Email: string;
-  Senha: string;
+  email: string;
+  password?: string;
 }
 
-export interface UserLoginUserDto {
-  Id?: string | number;
-  Nome: string;
-  Email: string;
-  Telefone?: string;
+export interface UserMeDto {
+  id?: string | number;
+  name: string;
+  email: string;
+  phone?: string;
 }
 
 export interface UserLoginResponseDto {
   token: string;
-  user: UserLoginUserDto;
-  message: string;
+  user?: UserMeDto;
+  message?: string;
 }
 
-export type UserRegisterResponseDto = void;
+export interface UserRegisterResponseDto {
+  id: string;
+}
 
 export interface UserApiDto {
-  Id?: string | number;
   id?: string | number;
-  UserId?: string | number;
-  userId?: string | number;
-  Nome?: string;
-  nome?: string;
-  Email?: string;
+  name?: string;
   email?: string;
-  Telefone?: string;
-  telefone?: string;
+  phone?: string;
 }

@@ -102,9 +102,9 @@ export class UserService {
   }
 
   private mapApiUser(user: UserApiDto): User {
-    const id = String(user.Id ?? user.id ?? user.UserId ?? user.userId ?? '');
-    const name = user.Nome ?? user.nome ?? '';
-    const email = user.Email ?? user.email ?? '';
+    const id = String(user.id ?? '');
+    const name = user.name ?? '';
+    const email = user.email ?? '';
 
     return {
       id,
