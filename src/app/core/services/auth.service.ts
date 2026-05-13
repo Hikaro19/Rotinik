@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@environments/environment';
-import { Observable, map, tap, timer } from 'rxjs';
+import { Observable, map, tap, timer, switchMap } from 'rxjs';
 import {
   UserLoginDto,
   UserLoginResponseDto,
   UserRegistrationDto,
   UserRegisterResponseDto,
+  UserMeDto,
 } from '../models/api/user-api.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly baseUrl = `${environment.apiUrl}/Usuario`;
+  private readonly baseUrl = `${environment.apiUrl}/User`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -22,9 +23,21 @@ export class AuthService {
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
     console.log('[Rotinik Debug] Enviando:', payload);
-    return this.http.post<Record<string, unknown>>(`${this.baseUrl}/login`, payload).pipe(
-      map((session) => this.normalizeSession(session)),
-      tap((session) => this.saveSession(session)),
+    return this.http.post<{ token: string }>(`${this.baseUrl}/login`, payload).pipe(
+      tap((res) => {
+        // Armazena o token para o auth.interceptor poder incluí-lo na chamada /me
+        localStorage.setItem(environment.tokenStorageKey, res.token);
+      }),
+      switchMap((res) => {
+        return this.http.get<UserMeDto>(`${this.baseUrl}/me`).pipe(
+          map((user) => ({
+            token: res.token,
+            user: user,
+            message: 'Login realizado com sucesso',
+          }))
+        );
+      }),
+      tap((session) => this.saveSession(session))
     );
   }
 
@@ -62,35 +75,6 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const session = this.getCurrentSession();
-    return Boolean(this.getToken() && session?.user?.Email);
-  }
-
-  private normalizeSession(session: Record<string, unknown>): UserLoginResponseDto {
-    const rawUser = this.getUserFromSession(session);
-
-    return {
-      token: String(session['token'] ?? session['Token'] ?? session['accessToken'] ?? session['AccessToken'] ?? ''),
-      user: {
-        Id: String(rawUser['Id'] ?? rawUser['id'] ?? rawUser['UserId'] ?? rawUser['userId'] ?? ''),
-        Nome: String(rawUser['Nome'] ?? rawUser['nome'] ?? ''),
-        Email: String(rawUser['Email'] ?? rawUser['email'] ?? ''),
-        Telefone: this.optionalString(rawUser['Telefone'] ?? rawUser['telefone']),
-      },
-      message: String(session['message'] ?? session['Message'] ?? ''),
-    };
-  }
-
-  private getUserFromSession(session: Record<string, unknown>): Record<string, unknown> {
-    const user = session['user'] ?? session['User'] ?? session['usuario'] ?? session['Usuario'];
-
-    if (user && typeof user === 'object') {
-      return user as Record<string, unknown>;
-    }
-
-    return session;
-  }
-
-  private optionalString(value: unknown): string | undefined {
-    return value === undefined || value === null ? undefined : String(value);
+    return Boolean(this.getToken() && session?.user?.email);
   }
 }
