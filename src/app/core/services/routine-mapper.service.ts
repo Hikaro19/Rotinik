@@ -1,48 +1,53 @@
 import { Injectable } from '@angular/core';
-import { RoutineDto, RoutineTaskDto, RoutinesSnapshotDto } from '@core/models/api';
+import { RoutineDto, RoutineTaskDto, RoutineSummaryResponse } from '@core/models/api';
 import { Usuario, Rotina, Tarefa, EFrequencia, EDificuldadeTarefa } from '@core/models/domain';
 import { RoutineViewModel, TaskViewModel } from '@core/models/view/routine-view.models';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineMapperService {
-  mapSnapshotFromApi(snapshot: RoutinesSnapshotDto): RoutineViewModel[] {
-    return snapshot.routines.map((routine) => this.mapApiRoutineToViewModel(routine));
+  mapApiRoutinesToViewModels(routines: RoutineDto[]): RoutineViewModel[] {
+    return routines.map((routine) => this.mapApiRoutineToViewModel(routine));
   }
 
   mapApiRoutineToViewModel(routine: RoutineDto): RoutineViewModel {
     const fallbackTheme = {
-      icon: routine.icon ?? 'RT',
-      color: routine.color ?? 'var(--purple-primary)',
+      icon: 'RT',
+      color: 'var(--purple-primary)',
     };
-    const theme = routine.category ? this.resolveRoutineTheme(routine.category) : fallbackTheme;
+    const theme = routine.theme ? this.resolveRoutineTheme(routine.theme) : fallbackTheme;
+    const tasks = routine.tasks ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id)) : [];
+
+    const totalXP = tasks.reduce((sum, task) => sum + (task.xpReward || 0), 0);
+    const totalCoins = tasks.reduce((sum, task) => sum + (task.coinReward || 0), 0);
+    const isCompleted = tasks.length > 0 && tasks.every((task) => task.completed);
 
     return {
-      id: routine.id,
-      title: routine.title,
-      description: routine.description,
-      category: routine.category,
-      icon: routine.icon ?? theme.icon,
-      color: routine.color ?? theme.color,
-      frequency: routine.frequency,
-      tasks: routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id)),
-      totalXP: routine.totalXp,
-      totalCoins: routine.totalCoins,
+      id: routine.id.toString(),
+      title: routine.name,
+      description: routine.description ?? '',
+      category: routine.theme,
+      icon: theme.icon,
+      color: theme.color,
+      frequency: 'daily', // Backend doesn't support frequency at the routine level yet
+      tasks: tasks,
+      totalXP: totalXP,
+      totalCoins: totalCoins,
       createdDate: new Date(routine.createdAt),
-      completionStreak: routine.completionStreak,
-      lastCompletedDate: routine.lastCompletedAt ? new Date(routine.lastCompletedAt) : undefined,
-      isCompleted: routine.isCompleted,
+      completionStreak: 0, // Wait for FMRT_14 fully
+      lastCompletedDate: undefined,
+      isCompleted: isCompleted,
     };
   }
 
-  mapApiTaskToViewModel(task: RoutineTaskDto, routineId: string): TaskViewModel {
+  mapApiTaskToViewModel(task: RoutineTaskDto, routineId: string | number): TaskViewModel {
     return {
-      id: task.id,
-      routineId,
-      title: task.title,
-      description: task.description,
+      id: task.taskId?.toString() ?? task.id.toString(),
+      routineId: routineId.toString(),
+      title: task.taskTitle,
+      description: task.taskDescription,
       completed: task.isCompleted,
-      xpReward: task.xpReward,
-      coinReward: task.coinReward,
+      xpReward: task.xpReward || 10, // Fallback since backend doesn't have it yet
+      coinReward: task.coinReward || 5, // Fallback
       order: task.order,
       completedDate: task.completedAt ? new Date(task.completedAt) : undefined,
     };
@@ -78,26 +83,6 @@ export class RoutineMapperService {
       isCompleted: rotina.calcularProgresso() === 100,
       domainModel: rotina,
     };
-  }
-
-  createUserFromApiSnapshot(snapshot: RoutinesSnapshotDto): Usuario {
-    const user = new Usuario(snapshot.user.name, snapshot.user.email);
-    const totalXp = Math.max(snapshot.user.totalXp, 0);
-
-    if (totalXp > 0) {
-      user.adicionarXP(totalXp, 'API snapshot');
-    }
-
-    const currentCoins = user.getMoedas();
-    const targetCoins = snapshot.user.coins;
-
-    if (targetCoins > currentCoins) {
-      user.ganharMoedas(targetCoins - currentCoins);
-    } else if (targetCoins < currentCoins) {
-      user.gastarMoedas(currentCoins - targetCoins);
-    }
-
-    return user;
   }
 
   createDomainTask(taskData: {
@@ -143,3 +128,4 @@ export class RoutineMapperService {
     return themes[normalized] ?? themes['geral'];
   }
 }
+

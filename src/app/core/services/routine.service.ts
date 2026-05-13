@@ -6,7 +6,6 @@ import {
   CreateRoutineRequestDto,
   CreateTaskRequestDto,
   RoutineDto,
-  RoutinesSnapshotDto,
   UpdateRoutineRequestDto,
 } from '@core/models/api';
 import { RoutineViewModel, TaskViewModel } from '@core/models/view/routine-view.models';
@@ -375,13 +374,8 @@ export class RoutineService {
     return success;
   }
 
-  hydrateFromApi(snapshot: RoutinesSnapshotDto): void {
-    this.setCurrentUser(this.routineMapper.createUserFromApiSnapshot(snapshot));
-    this.setRoutines(this.routineMapper.mapSnapshotFromApi(snapshot));
-  }
-
-  mapSnapshotFromApi(snapshot: RoutinesSnapshotDto): Routine[] {
-    return this.routineMapper.mapSnapshotFromApi(snapshot);
+  hydrateFromApi(routines: RoutineDto[]): void {
+    this.setRoutines(this.routineMapper.mapApiRoutinesToViewModels(routines));
   }
 
   clearOperationError(): void {
@@ -395,8 +389,8 @@ export class RoutineService {
       .getSnapshot()
       .pipe(take(1))
       .subscribe({
-        next: (snapshot) => {
-          this.hydrateFromApi(snapshot);
+        next: (routines) => {
+          this.hydrateFromApi(routines);
           this.finishOperation('loadSnapshot');
           this.isLoadingSignal.set(false);
         },
@@ -411,10 +405,9 @@ export class RoutineService {
   private createRoutineInApi(routine: Routine): void {
     this.startOperation('createRoutine');
     const payload: CreateRoutineRequestDto = {
-      title: routine.title,
+      name: routine.title,
       description: routine.description,
-      category: routine.category ?? 'geral',
-      frequency: routine.frequency,
+      theme: routine.category ?? 'geral',
     };
 
     this.routineApi
@@ -434,10 +427,9 @@ export class RoutineService {
     this.startOperation('updateRoutine');
     const payload: UpdateRoutineRequestDto = {};
 
-    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.title !== undefined) payload.name = updates.title;
     if (updates.description !== undefined) payload.description = updates.description;
-    if (updates.category !== undefined) payload.category = updates.category;
-    if (updates.frequency !== undefined) payload.frequency = updates.frequency;
+    if (updates.category !== undefined) payload.theme = updates.category;
 
     this.routineApi
       .update(routineId, payload)
@@ -508,7 +500,6 @@ export class RoutineService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this.hydrateUserFromApiReward(response.user);
           this.replaceRoutineFromApi(routineId, response.routine);
           this.finishOperation('completeTask');
         },
@@ -608,38 +599,7 @@ export class RoutineService {
     });
   }
 
-  private hydrateUserFromApiReward(user: RoutinesSnapshotDto['user']): void {
-    const snapshot: RoutinesSnapshotDto = {
-      user,
-      routines: this.routinesSignal().map((routine) => ({
-        id: routine.id,
-        title: routine.title,
-        description: routine.description,
-        category: routine.category ?? 'geral',
-        icon: routine.icon,
-        color: routine.color,
-        frequency: routine.frequency,
-        tasks: routine.tasks.map((task) => ({
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          isCompleted: task.completed,
-          xpReward: task.xpReward,
-          coinReward: task.coinReward,
-          order: task.order,
-          completedAt: task.completedDate?.toISOString(),
-        })),
-        totalXp: routine.totalXP,
-        totalCoins: routine.totalCoins,
-        createdAt: routine.createdDate.toISOString(),
-        completionStreak: routine.completionStreak,
-        lastCompletedAt: routine.lastCompletedDate?.toISOString(),
-        isCompleted: routine.isCompleted,
-      })),
-    };
 
-    this.setCurrentUser(this.routineMapper.createUserFromApiSnapshot(snapshot));
-  }
 
   private bumpUserRevision(): void {
     this.userRevision.update((revision) => revision + 1);

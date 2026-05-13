@@ -13,30 +13,37 @@ export interface RoutineUserDto {
 
 export interface RoutineTaskDto {
   id: string;
-  title: string;
-  description?: string;
+  routineId?: string | number;
+  taskId?: string | number;
+  taskTitle: string;
+  taskDescription?: string;
   isCompleted: boolean;
-  xpReward: number;
-  coinReward: number;
+  xpReward: number; // Placeholder: backend currently doesn't return this
+  coinReward: number; // Placeholder
   order: number;
   completedAt?: string;
 }
 
+export interface RoutineSummaryResponse {
+  id: string;
+  userId?: number;
+  name: string;
+  description?: string;
+  theme?: string;
+  isTemplate: boolean;
+  taskCount: number;
+  createdAt: string;
+}
+
 export interface RoutineDto {
   id: string;
-  title: string;
-  description: string;
-  category: string;
-  icon?: string;
-  color?: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
-  tasks: RoutineTaskDto[];
-  totalXp: number;
-  totalCoins: number;
+  userId?: number;
+  name: string;
+  description?: string;
+  theme?: string;
+  isTemplate: boolean;
   createdAt: string;
-  completionStreak: number;
-  lastCompletedAt?: string;
-  isCompleted: boolean;
+  tasks: RoutineTaskDto[];
 }
 
 export interface RoutinesSnapshotDto {
@@ -45,17 +52,15 @@ export interface RoutinesSnapshotDto {
 }
 
 export interface CreateRoutineRequestDto {
-  title: string;
-  description: string;
-  category: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
+  name: string;
+  description?: string;
+  theme?: string;
 }
 
 export interface UpdateRoutineRequestDto {
-  title?: string;
+  name?: string;
   description?: string;
-  category?: string;
-  frequency?: 'daily' | 'weekly' | 'monthly';
+  theme?: string;
 }
 
 export interface CreateTaskRequestDto {
