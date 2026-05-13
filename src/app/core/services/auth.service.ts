@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@environments/environment';
-import { Observable, map, tap, timer, switchMap } from 'rxjs';
+import { Observable, map, tap, timer } from 'rxjs';
 import {
   UserLoginDto,
   UserLoginResponseDto,
   UserRegistrationDto,
   UserRegisterResponseDto,
-  UserMeDto,
 } from '../models/api/user-api.models';
 
 @Injectable({ providedIn: 'root' })
@@ -17,28 +16,13 @@ export class AuthService {
   constructor(private readonly http: HttpClient) {}
 
   register(payload: UserRegistrationDto): Observable<UserRegisterResponseDto> {
-    console.log('[Rotinik Debug] Enviando:', payload);
-    return this.http.post<UserRegisterResponseDto>(this.baseUrl, payload);
+    return this.http.post<UserRegisterResponseDto>(`${this.baseUrl}/register`, payload);
   }
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
-    console.log('[Rotinik Debug] Enviando:', payload);
-    return this.http.post<{ token: string }>(`${this.baseUrl}/login`, payload).pipe(
-      tap((res) => {
-        // Armazena o token para o auth.interceptor poder incluí-lo na chamada /me
-        localStorage.setItem(environment.tokenStorageKey, res.token);
-      }),
-      switchMap((res) => {
-        return this.http.get<UserMeDto>(`${this.baseUrl}/me`).pipe(
-          map((user) => ({
-            token: res.token,
-            user: user,
-            message: 'Login realizado com sucesso',
-          }))
-        );
-      }),
-      tap((session) => this.saveSession(session))
-    );
+    return this.http
+      .post<UserLoginResponseDto>(`${this.baseUrl}/login`, payload)
+      .pipe(tap((session) => this.saveSession(session)));
   }
 
   logout(): void {
@@ -53,7 +37,9 @@ export class AuthService {
   getCurrentSession(): UserLoginResponseDto | null {
     const rawSession = localStorage.getItem('rotinik_auth_user');
 
-    if (!rawSession) return null;
+    if (!rawSession) {
+      return null;
+    }
 
     try {
       return JSON.parse(rawSession) as UserLoginResponseDto;
@@ -61,6 +47,14 @@ export class AuthService {
       this.logout();
       return null;
     }
+  }
+
+  getCurrentUserId(): string | number | null {
+    return this.getCurrentSession()?.userId ?? null;
+  }
+
+  isAuthenticated(): boolean {
+    return Boolean(this.getToken() && this.getCurrentUserId());
   }
 
   recuperarSenha(email: string): Observable<void> {
@@ -71,10 +65,5 @@ export class AuthService {
   private saveSession(session: UserLoginResponseDto): void {
     localStorage.setItem(environment.tokenStorageKey, session.token);
     localStorage.setItem('rotinik_auth_user', JSON.stringify(session));
-  }
-
-  isAuthenticated(): boolean {
-    const session = this.getCurrentSession();
-    return Boolean(this.getToken() && session?.user?.email);
   }
 }

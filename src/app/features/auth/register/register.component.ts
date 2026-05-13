@@ -1,11 +1,9 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { AuthFacadeService } from '@core/services/auth-facade.service';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
-import { AuthService } from '@core/services/auth.service';
-import { AppHttpError } from '@core/http/http-error.utils';
 
 @Component({
   selector: 'app-register',
@@ -16,17 +14,17 @@ import { AppHttpError } from '@core/http/http-error.utils';
 })
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
   private readonly location = inject(Location);
-  private readonly authService = inject(AuthService);
+  private readonly authFacade = inject(AuthFacadeService);
 
-  readonly isLoading = signal(false);
-  readonly formErrorMessage = signal('');
+  readonly isLoading = this.authFacade.isLoading;
+  readonly formErrorMessage = this.authFacade.errorMessage;
 
   readonly registerForm: FormGroup = this.fb.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
+    userName: ['', [Validators.required, Validators.minLength(3)]],
+    birthDate: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.minLength(10)]],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
 
@@ -40,31 +38,21 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
-    this.formErrorMessage.set('');
+    this.authFacade.clearError();
     this.registerForm.markAllAsTouched();
 
-    if (this.registerForm.invalid || this.isLoading()) return;
+    if (this.registerForm.invalid || this.isLoading()) {
+      return;
+    }
 
-    this.isLoading.set(true);
+    const { fullName, birthDate, userName, password, email } = this.registerForm.getRawValue();
 
-    const { fullName, email, phone, password } = this.registerForm.value;
-
-    const payload = { name: fullName, email, password, phone };
-
-    this.authService.register(payload).subscribe({
-      next: (res) => {
-        console.log('[RegisterComponent] Cadastro realizado:', res);
-        this.router.navigate(['/auth/success']);
-      },
-      error: (err: AppHttpError) => {
-        console.error('[RegisterComponent] Erro no cadastro:', err);
-        if (err.status === 400) {
-          this.formErrorMessage.set(err.message ?? 'Dados inválidos. Verifique as informações.');
-        } else {
-          this.formErrorMessage.set(err.message ?? 'Erro ao conectar com o servidor. Tente novamente.');
-        }
-        this.isLoading.set(false);
-      },
+    this.authFacade.register({
+      name: fullName,
+      birthDate,
+      userName,
+      password,
+      email,
     });
   }
 }

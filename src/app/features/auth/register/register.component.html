@@ -30,21 +30,31 @@
       ></app-input>
 
       <app-input
-        label="Email"
-        placeholder="Digite seu email"
-        inputType="email"
-        formControlName="email"
-        [errors]="getFieldErrors('email') || undefined"
+        label="Nome de usuário"
+        placeholder="Digite seu usuário"
+        inputType="text"
+        formControlName="userName"
+        [errors]="getFieldErrors('userName') || undefined"
         [disabled]="isLoading()"
         [required]="true"
       ></app-input>
 
       <app-input
-        label="Número de Telefone"
-        placeholder="(27) 99999-9999"
-        inputType="tel"
-        formControlName="phone"
-        [errors]="getFieldErrors('phone') || undefined"
+        label="Data de nascimento"
+        placeholder="Informe sua data de nascimento"
+        inputType="date"
+        formControlName="birthDate"
+        [errors]="getFieldErrors('birthDate') || undefined"
+        [disabled]="isLoading()"
+        [required]="true"
+      ></app-input>
+
+      <app-input
+        label="Email"
+        placeholder="Digite seu email"
+        inputType="email"
+        formControlName="email"
+        [errors]="getFieldErrors('email') || undefined"
         [disabled]="isLoading()"
         [required]="true"
       ></app-input>
@@ -58,6 +68,10 @@
         [disabled]="isLoading()"
         [required]="true"
       ></app-input>
+
+      <div *ngIf="formErrorMessage()" class="register-error-alert" role="alert">
+        {{ formErrorMessage() }}
+      </div>
 
       <app-button
         class="register-submit"

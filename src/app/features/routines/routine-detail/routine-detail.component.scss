@@ -241,6 +241,18 @@
   gap: var(--spacing-2);
 }
 
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.task-time-status {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
 .xp-badge {
   background: linear-gradient(135deg, rgba(255, 71, 182, 0.2), rgba(255, 71, 182, 0.1));
   border: 1px solid rgba(255, 71, 182, 0.4);
@@ -275,6 +287,13 @@
 
   &:active {
     transform: scale(0.96);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 }
 

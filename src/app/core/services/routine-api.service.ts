@@ -9,6 +9,7 @@ import {
   CreateTaskRequestDto,
   RoutineDto,
   RoutineSummaryResponse,
+  StartTaskExecutionResponseDto,
   UpdateRoutineRequestDto,
 } from '@core/models/api';
 
@@ -79,6 +80,10 @@ export class RoutineApiService {
 
   deleteTask(routineId: string, taskId: string): Observable<RoutineDto> {
     return this.http.delete<RoutineDto>(`${this.baseUrl}/${routineId}/tasks/${taskId}`);
+  }
+
+  startTaskExecution(routineId: string, taskId: string): Observable<StartTaskExecutionResponseDto> {
+    return this.http.post<StartTaskExecutionResponseDto>(`${this.baseUrl}/${routineId}/tasks/${taskId}/start-execution`, {});
   }
 
   completeTask(routineId: string, taskId: string): Observable<CompleteTaskResponseDto> {

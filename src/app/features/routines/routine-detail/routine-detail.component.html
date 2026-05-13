@@ -14,7 +14,7 @@
     </div>
 
     <div class="user-info">
-      <span>{{ nomeUsuario() }} • Nivel {{ nivelUsuario() }} • {{ moedasUsuario() }} moedas</span>
+      <span>{{ nomeUsuario() }} - Nivel {{ nivelUsuario() }} - {{ moedasUsuario() }} moedas</span>
     </div>
 
     <div class="progress-container">
@@ -27,7 +27,7 @@
 
     <div class="header-section">
       <h3 class="action-title">Acao Imediata</h3>
-      <div class="streak-badge">🔥 {{ seqenciaCompletamento() }} Sequencia</div>
+      <div class="streak-badge">{{ seqenciaCompletamento() }} Sequencia</div>
     </div>
 
     <div class="tasks-section">
@@ -37,8 +37,9 @@
           <p class="task-description" *ngIf="tarefa.description">{{ tarefa.description }}</p>
           <div class="task-meta">
             <span class="task-state" [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')">
-              {{ tarefa.completed ? '✅ Concluida' : '⏳ Pendente' }}
+              {{ tarefa.completed ? 'Concluida' : 'Pendente' }}
             </span>
+            <span class="task-time-status">{{ getTaskTimeStatus(tarefa) }}</span>
           </div>
         </div>
         <div class="task-right">
@@ -47,11 +48,26 @@
       </div>
 
       <div *ngIf="tarefasIniciais().length > 0" class="task-actions">
-        <button class="btn-action btn-iniciar" [disabled]="isCompletingTask() || isDeletingTask()" (click)="completeTask(tarefasIniciais()[0].id)">
-          ✅ Concluir
+        <button
+          class="btn-action btn-iniciar"
+          [disabled]="isStartingTask() || isCompletingTask() || isDeletingTask() || !!tarefasIniciais()[0].startedAt"
+          (click)="startTaskExecution(tarefasIniciais()[0].id)"
+        >
+          Iniciar
         </button>
-        <button class="btn-action btn-small" [disabled]="isCompletingTask() || isDeletingTask()" (click)="deleteTask(tarefasIniciais()[0].id)">
-          🗑️
+        <button
+          class="btn-action btn-concluir"
+          [disabled]="isStartingTask() || isCompletingTask() || isDeletingTask() || !canCompleteTask(tarefasIniciais()[0])"
+          (click)="completeTask(tarefasIniciais()[0].id)"
+        >
+          Concluir
+        </button>
+        <button
+          class="btn-action btn-small"
+          [disabled]="isCompletingTask() || isDeletingTask()"
+          (click)="deleteTask(tarefasIniciais()[0].id)"
+        >
+          Excluir
         </button>
       </div>
     </div>
@@ -59,14 +75,19 @@
     <h3 class="restante-title" *ngIf="tarefasRestante().length > 0">Restante</h3>
 
     <div class="tasks-section" *ngIf="tarefasRestante().length > 0">
-      <div *ngFor="let tarefa of tarefasRestante()" class="task-card secondary" [ngClass]="{ 'task-completed': tarefa.completed }">
+      <div
+        *ngFor="let tarefa of tarefasRestante()"
+        class="task-card secondary"
+        [ngClass]="{ 'task-completed': tarefa.completed }"
+      >
         <div class="task-left">
           <h4 class="task-title">{{ tarefa.title }}</h4>
           <p class="task-description" *ngIf="tarefa.description">{{ tarefa.description }}</p>
           <div class="task-meta">
             <span class="task-state" [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')">
-              {{ tarefa.completed ? '✅ Concluida' : '⏳ Pendente' }}
+              {{ tarefa.completed ? 'Concluida' : 'Pendente' }}
             </span>
+            <span class="task-time-status">{{ getTaskTimeStatus(tarefa) }}</span>
           </div>
         </div>
         <div class="task-right">
@@ -77,25 +98,36 @@
       <div class="tasks-actions-grid">
         <ng-container *ngFor="let tarefa of tarefasRestante()">
           <div class="task-action-group" *ngIf="!tarefa.completed">
-            <button class="btn-action btn-small" [disabled]="isCompletingTask() || isDeletingTask()" (click)="completeTask(tarefa.id)">
-              ✅
+            <button
+              class="btn-action btn-small"
+              [disabled]="isStartingTask() || isCompletingTask() || isDeletingTask() || !!tarefa.startedAt"
+              (click)="startTaskExecution(tarefa.id)"
+            >
+              Iniciar
+            </button>
+            <button
+              class="btn-action btn-small btn-concluir"
+              [disabled]="isStartingTask() || isCompletingTask() || isDeletingTask() || !canCompleteTask(tarefa)"
+              (click)="completeTask(tarefa.id)"
+            >
+              Concluir
             </button>
             <button class="btn-action btn-small" [disabled]="isCompletingTask() || isDeletingTask()" (click)="deleteTask(tarefa.id)">
-              🗑️
+              Excluir
             </button>
           </div>
         </ng-container>
       </div>
     </div>
 
-    <h3 class="completas-title" *ngIf="tarefasCompletas() > 0">✅ Completas</h3>
+    <h3 class="completas-title" *ngIf="tarefasCompletas() > 0">Completas</h3>
     <div class="completas-count" *ngIf="tarefasCompletas() > 0">{{ tarefasCompletas() }} tarefa(s) concluida(s)</div>
 
     <div class="rewards-summary" *ngIf="rotinaCompleta()">
-      <h3>🎉 Rotina Completa!</h3>
+      <h3>Rotina Completa</h3>
       <p>XP Total: +{{ xpTotal() }} | Moedas: +{{ moedasTotal() }}</p>
     </div>
 
-    <button class="add-task-btn" (click)="backToRoutines()">← Voltar</button>
+    <button class="add-task-btn" (click)="backToRoutines()">Voltar</button>
   </ng-container>
 </div>

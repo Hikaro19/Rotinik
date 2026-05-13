@@ -16,7 +16,15 @@ import { RoutineMapperService } from './routine-mapper.service';
 
 export type Task = TaskViewModel;
 export type Routine = RoutineViewModel;
-type RoutineOperation = 'loadSnapshot' | 'createRoutine' | 'updateRoutine' | 'deleteRoutine' | 'addTask' | 'deleteTask' | 'completeTask';
+type RoutineOperation =
+  | 'loadSnapshot'
+  | 'createRoutine'
+  | 'updateRoutine'
+  | 'deleteRoutine'
+  | 'addTask'
+  | 'deleteTask'
+  | 'startTask'
+  | 'completeTask';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineService {
@@ -40,6 +48,7 @@ export class RoutineService {
     deleteRoutine: false,
     addTask: false,
     deleteTask: false,
+    startTask: false,
     completeTask: false,
   });
   readonly operationErrorSignal = signal<string | null>(null);
@@ -71,6 +80,7 @@ export class RoutineService {
   readonly isCreatingRoutineSignal = computed(() => this.pendingOperationsState().createRoutine);
   readonly isCompletingTaskSignal = computed(() => this.pendingOperationsState().completeTask);
   readonly isDeletingTaskSignal = computed(() => this.pendingOperationsState().deleteTask);
+  readonly isStartingTaskSignal = computed(() => this.pendingOperationsState().startTask);
 
   initialize(): void {
     if (this.isInitializedSignal()) {
@@ -194,6 +204,11 @@ export class RoutineService {
 
     if (!environment.enableMockData && !routine.domainModel) {
       const task = routine.tasks.find((item) => item.id === taskId);
+      if (!task || !this.canCompleteTask(task)) {
+        this.operationErrorSignal.set('Inicie a tarefa e aguarde o tempo estimado antes de concluir.');
+        return { xp: 0, coins: 0 };
+      }
+
       const reward = {
         xp: task?.xpReward ?? 0,
         coins: task?.coinReward ?? 0,
@@ -276,7 +291,10 @@ export class RoutineService {
     );
   }
 
-  addTaskToRoutine(routineId: string, taskData: Omit<Task, 'id' | 'routineId' | 'completed' | 'order'>): void {
+  addTaskToRoutine(
+    routineId: string,
+    taskData: Omit<Task, 'id' | 'routineId' | 'completed' | 'order' | 'elapsedMinutes' | 'startedAt' | 'canComplete'>,
+  ): void {
     const routine = this.getRoutineById(routineId);
     if (!routine) {
       return;
@@ -309,6 +327,9 @@ export class RoutineService {
           completed: false,
           xpReward: taskData.xpReward,
           coinReward: taskData.coinReward,
+          estimatedMinutes: taskData.estimatedMinutes ?? 0,
+          elapsedMinutes: 0,
+          canComplete: true,
           order: item.tasks.length + 1,
         };
 
@@ -320,6 +341,24 @@ export class RoutineService {
         };
       }),
     );
+  }
+
+  startTaskExecution(routineId: string, taskId: string): void {
+    const routine = this.getRoutineById(routineId);
+    if (!routine) {
+      return;
+    }
+
+    if (!environment.enableMockData && !routine.domainModel) {
+      this.startTaskExecutionInApi(routineId, taskId);
+      return;
+    }
+
+    this.markTaskExecutionStarted(routineId, taskId, {
+      startedAt: new Date().toISOString(),
+      elapsedMinutes: 0,
+      canComplete: true,
+    });
   }
 
   deleteTask(routineId: string, taskId: string): void {
@@ -458,11 +497,15 @@ export class RoutineService {
       });
   }
 
-  private addTaskInApi(routineId: string, taskData: Omit<Task, 'id' | 'routineId' | 'completed' | 'order'>): void {
+  private addTaskInApi(
+    routineId: string,
+    taskData: Omit<Task, 'id' | 'routineId' | 'completed' | 'order' | 'elapsedMinutes' | 'startedAt' | 'canComplete'>,
+  ): void {
     this.startOperation('addTask');
     const payload: CreateTaskRequestDto = {
       title: taskData.title,
       description: taskData.description,
+      estimatedMinutes: taskData.estimatedMinutes,
       xpReward: taskData.xpReward,
       coinReward: taskData.coinReward,
     };
@@ -495,6 +538,28 @@ export class RoutineService {
       });
   }
 
+  private startTaskExecutionInApi(routineId: string, taskId: string): void {
+    this.startOperation('startTask');
+    this.routineApi
+      .startTaskExecution(routineId, taskId)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          if (response.routine) {
+            this.replaceRoutineFromApi(routineId, response.routine);
+          } else if (response.task) {
+            this.markTaskExecutionStarted(routineId, taskId, response.task);
+          } else {
+            this.markTaskExecutionStarted(routineId, taskId, response);
+          }
+
+          this.finishOperation('startTask');
+        },
+        error: (error) =>
+          this.failOperation('startTask', getHttpErrorMessage(error, 'Nao foi possivel iniciar a tarefa.')),
+      });
+  }
+
   private completeTaskInApi(routineId: string, taskId: string): void {
     this.startOperation('completeTask');
     this.routineApi
@@ -508,6 +573,53 @@ export class RoutineService {
         error: (error) =>
           this.failOperation('completeTask', getHttpErrorMessage(error, 'Nao foi possivel concluir a tarefa.')),
       });
+  }
+
+  private markTaskExecutionStarted(
+    routineId: string,
+    taskId: string,
+    execution: {
+      taskId?: string | number;
+      startedAt?: string;
+      estimatedMinutes?: number;
+      elapsedMinutes?: number;
+      canComplete?: boolean;
+    },
+  ): void {
+    this.routinesSignal.update((routines) =>
+      routines.map((routine) => {
+        if (routine.id !== routineId) {
+          return routine;
+        }
+
+        return {
+          ...routine,
+          tasks: routine.tasks.map((task) => {
+            const responseTaskId = execution.taskId?.toString();
+            const isSameTask = task.id === taskId || (responseTaskId ? task.id === responseTaskId : false);
+
+            if (!isSameTask) {
+              return task;
+            }
+
+            const estimatedMinutes = execution.estimatedMinutes ?? task.estimatedMinutes;
+            const elapsedMinutes = execution.elapsedMinutes ?? task.elapsedMinutes;
+
+            return {
+              ...task,
+              startedAt: execution.startedAt ? new Date(execution.startedAt) : (task.startedAt ?? new Date()),
+              estimatedMinutes,
+              elapsedMinutes,
+              canComplete: execution.canComplete ?? elapsedMinutes >= estimatedMinutes,
+            };
+          }),
+        };
+      }),
+    );
+  }
+
+  private canCompleteTask(task: Task): boolean {
+    return Boolean(task.startedAt && task.elapsedMinutes >= task.estimatedMinutes && task.canComplete);
   }
 
   private completeDomainTask(routineId: string, taskId: string): { xp: number; coins: number } {

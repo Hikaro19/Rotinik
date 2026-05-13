@@ -40,14 +40,22 @@ export class RoutineMapperService {
   }
 
   mapApiTaskToViewModel(task: RoutineTaskDto, routineId: string | number): TaskViewModel {
+    const estimatedMinutes = task.estimatedMinutes ?? 0;
+    const elapsedMinutes = task.elapsedMinutes ?? 0;
+    const startedAt = task.startedAt ? new Date(task.startedAt) : undefined;
+
     return {
       id: task.taskId?.toString() ?? task.id.toString(),
       routineId: routineId.toString(),
-      title: task.taskTitle,
-      description: task.taskDescription,
+      title: task.taskTitle ?? task.title ?? 'Tarefa',
+      description: task.taskDescription ?? task.description,
       completed: task.isCompleted,
       xpReward: task.xpReward || 10, // Fallback since backend doesn't have it yet
       coinReward: task.coinReward || 5, // Fallback
+      estimatedMinutes,
+      elapsedMinutes,
+      startedAt,
+      canComplete: Boolean(task.canComplete ?? (startedAt && elapsedMinutes >= estimatedMinutes)),
       order: task.order,
       completedDate: task.completedAt ? new Date(task.completedAt) : undefined,
     };
@@ -72,6 +80,9 @@ export class RoutineMapperService {
         completed: task.ehCompleta(),
         xpReward: task.getXPRecompensa(),
         coinReward: task.getMoedasRecompensa(),
+        estimatedMinutes: 0,
+        elapsedMinutes: 0,
+        canComplete: true,
         order: index + 1,
         completedDate: task.getDataConclusao(),
       })),

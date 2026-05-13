@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RoutineDetailFacadeService } from '@core/services/routine-detail-facade.service';
+import { type Task } from '@core/services/routine.service';
 
 @Component({
   selector: 'app-routine-detail',
@@ -36,6 +37,7 @@ export class RoutineDetailComponent implements OnInit {
   readonly nivelUsuario = this.routineDetailFacade.nivelUsuario;
   readonly moedasUsuario = this.routineDetailFacade.moedasUsuario;
   readonly isBusy = this.routineDetailFacade.isBusy;
+  readonly isStartingTask = this.routineDetailFacade.isStartingTask;
   readonly isCompletingTask = this.routineDetailFacade.isCompletingTask;
   readonly isDeletingTask = this.routineDetailFacade.isDeletingTask;
   readonly errorMessage = this.routineDetailFacade.errorMessage;
@@ -49,6 +51,18 @@ export class RoutineDetailComponent implements OnInit {
 
   completeTask(taskId: string): void {
     this.routineDetailFacade.completeTask(taskId);
+  }
+
+  startTaskExecution(taskId: string): void {
+    this.routineDetailFacade.startTaskExecution(taskId);
+  }
+
+  canCompleteTask(task: Task): boolean {
+    return this.routineDetailFacade.canCompleteTask(task);
+  }
+
+  getTaskTimeStatus(task: Task): string {
+    return this.routineDetailFacade.getTaskTimeStatus(task);
   }
 
   uncompleteTask(taskId: string): void {
