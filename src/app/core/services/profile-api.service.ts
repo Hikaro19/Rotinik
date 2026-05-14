@@ -7,9 +7,16 @@ import { ProfileSnapshotDto } from '@core/models/api';
 @Injectable({ providedIn: 'root' })
 export class ProfileApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiBaseUrl}/${environment.apiVersion}/profile`;
 
+  // CORREÇÃO: Aponta para a rota [Route("api/[controller]")] do seu UserController do C#
+  private readonly baseUrl = `${environment.apiBaseUrl}/User`;
+
+  /**
+   * Obtém o snapshot do perfil do usuário autenticado.
+   * Alinhado com o endpoint [HttpGet("me")] do back-end em C#.
+   */
   getSnapshot(): Observable<ProfileSnapshotDto> {
-    return this.http.get<ProfileSnapshotDto>(this.baseUrl);
+    // Alvo final: http://localhost:5025/api/User/me
+    return this.http.get<ProfileSnapshotDto>(`${this.baseUrl}/me`);
   }
 }

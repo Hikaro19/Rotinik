@@ -102,7 +102,14 @@ export class ProfileService {
   }
 
   hydrateFromApi(snapshot: ProfileSnapshotDto): void {
-    this.memberSinceSignal.set(new Date(snapshot.memberSince));
+    // Mantém a data de criação do membro (com fallback seguro caso venha nula)
+    this.memberSinceSignal.set(snapshot?.memberSince ? new Date(snapshot.memberSince) : new Date());
+
+    /* ===================================================================
+       COMENTADO TEMPORARIAMENTE: Evita erros de 'map' de propriedades
+       undefined enquanto o back-end em C# não implementa a gamificação.
+       ===================================================================
+
     this.achievementsSignal.set(
       snapshot.achievements.map((achievement) => ({
         id: achievement.id,
@@ -132,17 +139,23 @@ export class ProfileService {
         details: item.details,
       })),
     );
-    this.profileStatsSignal.set({
-      totalXpEarned: snapshot.stats.totalXpEarned,
-      totalCoinsEarned: snapshot.stats.totalCoinsEarned,
-      totalCoinsSpent: snapshot.stats.totalCoinsSpent,
-      routinesCreated: snapshot.stats.routinesCreated,
-      routinesCompleted: snapshot.stats.routinesCompleted,
-      tasksCompleted: snapshot.stats.tasksCompleted,
-      currentStreak: snapshot.stats.currentStreak,
-      longestStreak: snapshot.stats.longestStreak,
-      daysSinceStart: snapshot.stats.daysSinceStart,
-    });
+    */
+
+    // Se o back-end enviar estatísticas básicas, nós atualizamos.
+    // Caso contrário, evita quebrar o sinal.
+    if (snapshot?.stats) {
+      this.profileStatsSignal.set({
+        totalXpEarned: snapshot.stats.totalXpEarned,
+        totalCoinsEarned: snapshot.stats.totalCoinsEarned,
+        totalCoinsSpent: snapshot.stats.totalCoinsSpent,
+        routinesCreated: snapshot.stats.routinesCreated,
+        routinesCompleted: snapshot.stats.routinesCompleted,
+        tasksCompleted: snapshot.stats.tasksCompleted,
+        currentStreak: snapshot.stats.currentStreak,
+        longestStreak: snapshot.stats.longestStreak,
+        daysSinceStart: snapshot.stats.daysSinceStart,
+      });
+    }
   }
 
   getAchievements(): Achievement[] {
