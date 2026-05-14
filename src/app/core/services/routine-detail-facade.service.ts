@@ -6,7 +6,7 @@ export class RoutineDetailFacadeService {
   private readonly routineService = inject(RoutineService);
 
   readonly routineId = signal<string>('');
-  readonly rotinaAtual = computed(() => this.routineService.getRoutineById(this.routineId()));
+  readonly rotinaAtual = signal<Routine | undefined>(undefined);
   readonly loading = signal<boolean>(true);
 
   readonly nomeUsuario = computed(() => {
@@ -19,7 +19,6 @@ export class RoutineDetailFacadeService {
   readonly isBusy = this.routineService.isMutatingSignal;
   readonly isCompletingTask = this.routineService.isCompletingTaskSignal;
   readonly isDeletingTask = this.routineService.isDeletingTaskSignal;
-  readonly isStartingTask = this.routineService.isStartingTaskSignal;
   readonly errorMessage = this.routineService.operationErrorSignal;
 
   readonly rotineName = computed(() => this.rotinaAtual()?.title ?? 'Rotina');
@@ -47,6 +46,7 @@ export class RoutineDetailFacadeService {
   loadRoutine(id: string): void {
     this.routineId.set(id);
     this.loading.set(true);
+    this.rotinaAtual.set(this.routineService.getRoutineById(id));
     this.loading.set(false);
   }
 
@@ -56,30 +56,7 @@ export class RoutineDetailFacadeService {
     }
 
     this.routineService.completeTask(this.routineId(), taskId);
-  }
-
-  startTaskExecution(taskId: string): void {
-    if (!this.routineId()) {
-      return;
-    }
-
-    this.routineService.startTaskExecution(this.routineId(), taskId);
-  }
-
-  canCompleteTask(task: Routine['tasks'][number]): boolean {
-    return Boolean(task.startedAt && task.elapsedMinutes >= task.estimatedMinutes && task.canComplete);
-  }
-
-  getTaskTimeStatus(task: Routine['tasks'][number]): string {
-    if (!task.startedAt) {
-      return `Tempo estimado: ${task.estimatedMinutes} min`;
-    }
-
-    if (this.canCompleteTask(task)) {
-      return 'Pronta para concluir';
-    }
-
-    return `${task.elapsedMinutes}/${task.estimatedMinutes} min`;
+    this.refreshRoutine();
   }
 
   uncompleteTask(taskId: string): void {
@@ -88,6 +65,7 @@ export class RoutineDetailFacadeService {
     }
 
     this.routineService.uncompleteTask(this.routineId(), taskId);
+    this.refreshRoutine();
   }
 
   deleteTask(taskId: string): void {
@@ -96,10 +74,14 @@ export class RoutineDetailFacadeService {
     }
 
     this.routineService.deleteTask(this.routineId(), taskId);
+    this.refreshRoutine();
   }
 
   clearError(): void {
     this.routineService.clearOperationError();
   }
 
+  private refreshRoutine(): void {
+    this.rotinaAtual.set(this.routineService.getRoutineById(this.routineId()));
+  }
 }

@@ -15,24 +15,18 @@ export interface RoutineTaskDto {
   id: string;
   routineId?: string | number;
   taskId?: string | number;
-  title?: string;
-  description?: string;
-  taskTitle?: string;
+  taskTitle: string;
   taskDescription?: string;
   isCompleted: boolean;
-  estimatedMinutes?: number;
-  elapsedMinutes?: number;
-  startedAt?: string;
-  canComplete?: boolean;
-  xpReward: number;
-  coinReward: number;
+  xpReward: number; // Placeholder: backend currently doesn't return this
+  coinReward: number; // Placeholder
   order: number;
   completedAt?: string;
 }
 
-export interface RoutineResponse {
+export interface RoutineSummaryResponse {
   id: string;
-  userId?: string | number | null;
+  userId?: number;
   name: string;
   description?: string;
   theme?: string;
@@ -41,12 +35,14 @@ export interface RoutineResponse {
   createdAt: string;
 }
 
-export type RoutineSummaryResponse = RoutineResponse;
-
-export interface TaskResponse extends RoutineTaskDto {}
-
-export interface RoutineDto extends RoutineResponse {
+export interface RoutineDto {
   id: string;
+  userId?: number;
+  name: string;
+  description?: string;
+  theme?: string;
+  isTemplate: boolean;
+  createdAt: string;
   tasks: RoutineTaskDto[];
 }
 
@@ -70,19 +66,8 @@ export interface UpdateRoutineRequestDto {
 export interface CreateTaskRequestDto {
   title: string;
   description?: string;
-  estimatedMinutes?: number;
   xpReward: number;
   coinReward: number;
-}
-
-export interface StartTaskExecutionResponseDto {
-  routine?: RoutineDto;
-  task?: RoutineTaskDto;
-  taskId?: string | number;
-  startedAt?: string;
-  estimatedMinutes?: number;
-  elapsedMinutes?: number;
-  canComplete?: boolean;
 }
 
 export interface CompleteTaskResponseDto {

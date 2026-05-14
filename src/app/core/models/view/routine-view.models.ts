@@ -8,10 +8,6 @@ export interface TaskViewModel {
   completed: boolean;
   xpReward: number;
   coinReward: number;
-  estimatedMinutes: number;
-  elapsedMinutes: number;
-  startedAt?: Date;
-  canComplete: boolean;
   dueDate?: Date;
   completedDate?: Date;
   order: number;

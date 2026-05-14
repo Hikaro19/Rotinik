@@ -74,16 +74,6 @@
   animation: slide-up 600ms ease-out 100ms both;
 }
 
-.register-error-alert {
-  padding: var(--spacing-3) var(--spacing-4);
-  border: 1px solid var(--game-danger);
-  border-radius: var(--radius-md);
-  background: rgba(248, 113, 113, 0.08);
-  color: var(--game-danger);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-normal);
-}
-
 .register-submit {
   display: block;
   margin-top: var(--spacing-2);
