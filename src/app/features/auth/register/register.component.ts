@@ -2,10 +2,10 @@ import { CommonModule, Location } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
 import { AuthService } from '@core/services/auth.service';
-import { AppHttpError } from '@core/http/http-error.utils';
 
 @Component({
   selector: 'app-register',
@@ -23,10 +23,12 @@ export class RegisterComponent {
   readonly isLoading = signal(false);
   readonly formErrorMessage = signal('');
 
+  // CONTRATO ALINHADO: Espelhando as exigências do C# e os limites do EF Core
   readonly registerForm: FormGroup = this.fb.group({
-    fullName: ['', [Validators.required, Validators.minLength(3)]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.minLength(10)]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+    userName: ['', [Validators.required, Validators.maxLength(50)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
+    birthDate: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
 
@@ -47,22 +49,48 @@ export class RegisterComponent {
 
     this.isLoading.set(true);
 
-    const { fullName, email, phone, password } = this.registerForm.value;
-
-    const payload = { name: fullName, email, password, phone };
+    // O objeto value agora reflete perfeitamente o UserRegistrationDto do C#
+    const payload = this.registerForm.value;
 
     this.authService.register(payload).subscribe({
       next: (res) => {
         console.log('[RegisterComponent] Cadastro realizado:', res);
         this.router.navigate(['/auth/success']);
       },
-      error: (err: AppHttpError) => {
+      error: (err: HttpErrorResponse) => {
         console.error('[RegisterComponent] Erro no cadastro:', err);
-        if (err.status === 400) {
-          this.formErrorMessage.set(err.message ?? 'Dados inválidos. Verifique as informações.');
-        } else {
-          this.formErrorMessage.set(err.message ?? 'Erro ao conectar com o servidor. Tente novamente.');
+
+        // 1. Intercepta erros de formatação do FluentValidation (HTTP 400)
+        if (err.status === 400 && err.error?.errors) {
+          const backendErrors = err.error.errors;
+
+          Object.keys(backendErrors).forEach(key => {
+            // Mapeia de 'UserName' (PascalCase no C#) para 'userName' (camelCase no Angular)
+            const controlName = key.charAt(0).toLowerCase() + key.slice(1);
+            const formControl = this.registerForm.get(controlName);
+
+            if (formControl) {
+              formControl.setErrors({ backend: backendErrors[key][0] });
+            }
+          });
+
+          this.formErrorMessage.set('Verifique os campos destacados em vermelho.');
         }
+        // 2. Intercepta regras de negócio quebradas (HTTP 409 - Email/UserName em uso)
+        else if (err.status === 409) {
+          this.formErrorMessage.set(err.error?.message || 'Este usuário ou e-mail já está cadastrado.');
+
+          // Se o C# mandar o campo exato (como sugerimos na ConflictException com metadados)
+          if (err.error?.field) {
+            const controlName = err.error.field.charAt(0).toLowerCase() + err.error.field.slice(1);
+            this.registerForm.get(controlName)?.setErrors({ conflict: true });
+          }
+        }
+        // 3. Fallback
+        else {
+          this.formErrorMessage.set('Erro ao conectar com o servidor. Tente novamente.');
+        }
+
         this.isLoading.set(false);
       },
     });
