@@ -18,6 +18,7 @@ export class RoutineDetailFacadeService {
   readonly moedasUsuario = this.routineService.userCoins;
   readonly isBusy = this.routineService.isMutatingSignal;
   readonly isCompletingTask = this.routineService.isCompletingTaskSignal;
+  readonly isUpdatingTask = this.routineService.isUpdatingTaskSignal;
   readonly isDeletingTask = this.routineService.isDeletingTaskSignal;
   readonly errorMessage = this.routineService.operationErrorSignal;
 
@@ -81,7 +82,7 @@ export class RoutineDetailFacadeService {
     this.routineService.clearOperationError();
   }
 
-  private refreshRoutine(): void {
+  refreshRoutine(): void {
     this.rotinaAtual.set(this.routineService.getRoutineById(this.routineId()));
   }
 }

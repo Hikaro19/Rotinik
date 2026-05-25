@@ -6,6 +6,7 @@ import {
   CreateRoutineRequestDto,
   CreateTaskRequestDto,
   RoutineDto,
+  UpdateTaskRequestDto,
   UpdateRoutineRequestDto,
 } from '@core/models/api';
 import { RoutineViewModel, TaskViewModel } from '@core/models/view/routine-view.models';
@@ -16,7 +17,17 @@ import { RoutineMapperService } from './routine-mapper.service';
 
 export type Task = TaskViewModel;
 export type Routine = RoutineViewModel;
-type RoutineOperation = 'loadSnapshot' | 'createRoutine' | 'updateRoutine' | 'deleteRoutine' | 'addTask' | 'deleteTask' | 'completeTask';
+type TaskMutationData = Pick<Task, 'title' | 'importance' | 'estimatedMinutes'> &
+  Partial<Pick<Task, 'description'>>;
+type RoutineOperation =
+  | 'loadSnapshot'
+  | 'createRoutine'
+  | 'updateRoutine'
+  | 'deleteRoutine'
+  | 'addTask'
+  | 'updateTask'
+  | 'deleteTask'
+  | 'completeTask';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineService {
@@ -39,25 +50,35 @@ export class RoutineService {
     updateRoutine: false,
     deleteRoutine: false,
     addTask: false,
+    updateTask: false,
     deleteTask: false,
     completeTask: false,
   });
   readonly operationErrorSignal = signal<string | null>(null);
 
   readonly totalRoutines = computed(() => this.routinesSignal().length);
-  readonly completedRoutines = computed(() => this.routinesSignal().filter((routine) => routine.isCompleted).length);
-  readonly totalPossibleXP = computed(() => this.routinesSignal().reduce((sum, routine) => sum + routine.totalXP, 0));
+  readonly completedRoutines = computed(
+    () => this.routinesSignal().filter((routine) => routine.isCompleted).length
+  );
+  readonly totalPossibleXP = computed(() =>
+    this.routinesSignal().reduce((sum, routine) => sum + routine.totalXP, 0)
+  );
   readonly totalPendingTasks = computed(() =>
-    this.routinesSignal().reduce((sum, routine) => sum + routine.tasks.filter((task) => !task.completed).length, 0),
+    this.routinesSignal().reduce(
+      (sum, routine) => sum + routine.tasks.filter((task) => !task.completed).length,
+      0
+    )
   );
   readonly longestStreak = computed(() =>
-    this.routinesSignal().reduce((max, routine) => Math.max(max, routine.completionStreak), 0),
+    this.routinesSignal().reduce((max, routine) => Math.max(max, routine.completionStreak), 0)
   );
 
   readonly userLevel = computed(() => this.currentUserSignal()?.getNivel() ?? 0);
   readonly userXP = computed(() => this.currentUserSignal()?.getExperiencia() ?? 0);
   readonly userCoins = computed(() => this.currentUserSignal()?.getMoedas() ?? 0);
-  readonly userLevelProgress = computed(() => this.currentUserSignal()?.calcularProgressoNivel() ?? 0);
+  readonly userLevelProgress = computed(
+    () => this.currentUserSignal()?.calcularProgressoNivel() ?? 0
+  );
   readonly xpToNextLevel = computed(() => {
     const user = this.currentUserSignal();
     if (!user) return 0;
@@ -66,10 +87,11 @@ export class RoutineService {
   readonly isMutatingSignal = computed(() =>
     Object.entries(this.pendingOperationsState())
       .filter(([key]) => key !== 'loadSnapshot')
-      .some(([, isPending]) => isPending),
+      .some(([, isPending]) => isPending)
   );
   readonly isCreatingRoutineSignal = computed(() => this.pendingOperationsState().createRoutine);
   readonly isCompletingTaskSignal = computed(() => this.pendingOperationsState().completeTask);
+  readonly isUpdatingTaskSignal = computed(() => this.pendingOperationsState().updateTask);
   readonly isDeletingTaskSignal = computed(() => this.pendingOperationsState().deleteTask);
 
   initialize(): void {
@@ -132,14 +154,19 @@ export class RoutineService {
 
     if (!environment.enableMockData && !routine.domainModel) {
       this.routinesSignal.update((routines) =>
-        routines.map((item) => (item.id === id ? { ...item, ...updates, tasks: updates.tasks ?? item.tasks } : item)),
+        routines.map((item) =>
+          item.id === id ? { ...item, ...updates, tasks: updates.tasks ?? item.tasks } : item
+        )
       );
       this.updateRoutineInApi(id, updates);
       return;
     }
 
     if (routine.domainModel && (updates.title || updates.description)) {
-      routine.domainModel.atualizar(updates.title ?? routine.title, updates.description ?? routine.description);
+      routine.domainModel.atualizar(
+        updates.title ?? routine.title,
+        updates.description ?? routine.description
+      );
       this.bumpUserRevision();
       this.syncRoutinesFromCurrentUser();
       return;
@@ -153,8 +180,8 @@ export class RoutineService {
               ...updates,
               tasks: updates.tasks ?? item.tasks,
             }
-          : item,
-      ),
+          : item
+      )
     );
   }
 
@@ -234,7 +261,7 @@ export class RoutineService {
           lastCompletedDate: isCompleted ? new Date() : item.lastCompletedDate,
           completionStreak: isCompleted ? item.completionStreak + 1 : item.completionStreak,
         };
-      }),
+      })
     );
 
     if (reward.xp > 0 || reward.coins > 0) {
@@ -268,15 +295,15 @@ export class RoutineService {
               ...item,
               isCompleted: false,
               tasks: item.tasks.map((task) =>
-                task.id === taskId ? { ...task, completed: false, completedDate: undefined } : task,
+                task.id === taskId ? { ...task, completed: false, completedDate: undefined } : task
               ),
             }
-          : item,
-      ),
+          : item
+      )
     );
   }
 
-  addTaskToRoutine(routineId: string, taskData: Omit<Task, 'id' | 'routineId' | 'completed' | 'order'>): void {
+  addTaskToRoutine(routineId: string, taskData: TaskMutationData): void {
     const routine = this.getRoutineById(routineId);
     if (!routine) {
       return;
@@ -306,9 +333,11 @@ export class RoutineService {
           routineId,
           title: taskData.title,
           description: taskData.description,
+          importance: taskData.importance,
+          estimatedMinutes: taskData.estimatedMinutes,
           completed: false,
-          xpReward: taskData.xpReward,
-          coinReward: taskData.coinReward,
+          xpReward: 0,
+          coinReward: 0,
           order: item.tasks.length + 1,
         };
 
@@ -318,7 +347,7 @@ export class RoutineService {
           totalXP: item.totalXP + newTask.xpReward,
           totalCoins: item.totalCoins + newTask.coinReward,
         };
-      }),
+      })
     );
   }
 
@@ -353,7 +382,56 @@ export class RoutineService {
           totalCoins: tasks.reduce((sum, task) => sum + task.coinReward, 0),
           isCompleted: tasks.length > 0 && tasks.every((task) => task.completed),
         };
-      }),
+      })
+    );
+  }
+
+  updateTask(routineId: string, taskId: string, taskData: TaskMutationData): void {
+    const routine = this.getRoutineById(routineId);
+    if (!routine) {
+      return;
+    }
+
+    if (!environment.enableMockData && !routine.domainModel) {
+      this.updateTaskInApi(routineId, taskId, taskData);
+      return;
+    }
+
+    this.routinesSignal.update((routines) =>
+      routines.map((item) => {
+        if (item.id !== routineId) {
+          return item;
+        }
+
+        const tasks = item.tasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                title: taskData.title,
+                description: taskData.description,
+                importance: taskData.importance,
+                estimatedMinutes: taskData.estimatedMinutes,
+              }
+            : task
+        );
+
+        return {
+          ...item,
+          tasks,
+          totalXP: tasks.reduce((sum, task) => sum + task.xpReward, 0),
+          totalCoins: tasks.reduce((sum, task) => sum + task.coinReward, 0),
+        };
+      })
+    );
+  }
+
+  syncRoutineFromApi(routine: RoutineDto): void {
+    this.replaceRoutineFromApi(routine.id.toString(), routine);
+  }
+
+  removeRoutineFromState(routineId: string): void {
+    this.routinesSignal.update((routines) =>
+      routines.filter((routine) => routine.id !== routineId)
     );
   }
 
@@ -397,7 +475,10 @@ export class RoutineService {
         },
         error: (error) => {
           console.error('[RoutineService] Falha crítica ao carregar snapshot:', error);
-          this.failOperation('loadSnapshot', getHttpErrorMessage(error, 'Nao foi possivel carregar as rotinas do servidor.'));
+          this.failOperation(
+            'loadSnapshot',
+            getHttpErrorMessage(error, 'Nao foi possivel carregar as rotinas do servidor.')
+          );
           this.isLoadingSignal.set(false);
           this.seedData();
         },
@@ -421,7 +502,10 @@ export class RoutineService {
           this.finishOperation('createRoutine');
         },
         error: (error) =>
-          this.failOperation('createRoutine', getHttpErrorMessage(error, 'Nao foi possivel criar a rotina agora.')),
+          this.failOperation(
+            'createRoutine',
+            getHttpErrorMessage(error, 'Nao foi possivel criar a rotina agora.')
+          ),
       });
   }
 
@@ -442,7 +526,10 @@ export class RoutineService {
           this.finishOperation('updateRoutine');
         },
         error: (error) =>
-          this.failOperation('updateRoutine', getHttpErrorMessage(error, 'Nao foi possivel atualizar a rotina.')),
+          this.failOperation(
+            'updateRoutine',
+            getHttpErrorMessage(error, 'Nao foi possivel atualizar a rotina.')
+          ),
       });
   }
 
@@ -454,17 +541,20 @@ export class RoutineService {
       .subscribe({
         next: () => this.finishOperation('deleteRoutine'),
         error: (error) =>
-          this.failOperation('deleteRoutine', getHttpErrorMessage(error, 'Nao foi possivel remover a rotina.')),
+          this.failOperation(
+            'deleteRoutine',
+            getHttpErrorMessage(error, 'Nao foi possivel remover a rotina.')
+          ),
       });
   }
 
-  private addTaskInApi(routineId: string, taskData: Omit<Task, 'id' | 'routineId' | 'completed' | 'order'>): void {
+  private addTaskInApi(routineId: string, taskData: TaskMutationData): void {
     this.startOperation('addTask');
     const payload: CreateTaskRequestDto = {
       title: taskData.title,
       description: taskData.description,
-      xpReward: taskData.xpReward,
-      coinReward: taskData.coinReward,
+      estimatedMinutes: taskData.estimatedMinutes,
+      importance: taskData.importance,
     };
 
     this.routineApi
@@ -476,7 +566,35 @@ export class RoutineService {
           this.finishOperation('addTask');
         },
         error: (error) =>
-          this.failOperation('addTask', getHttpErrorMessage(error, 'Nao foi possivel adicionar a tarefa.')),
+          this.failOperation(
+            'addTask',
+            getHttpErrorMessage(error, 'Nao foi possivel adicionar a tarefa.')
+          ),
+      });
+  }
+
+  private updateTaskInApi(routineId: string, taskId: string, taskData: TaskMutationData): void {
+    this.startOperation('updateTask');
+    const payload: UpdateTaskRequestDto = {
+      title: taskData.title,
+      description: taskData.description,
+      estimatedMinutes: taskData.estimatedMinutes,
+      importance: taskData.importance,
+    };
+
+    this.routineApi
+      .updateTask(routineId, taskId, payload)
+      .pipe(take(1))
+      .subscribe({
+        next: (updatedRoutine) => {
+          this.replaceRoutineFromApi(routineId, updatedRoutine);
+          this.finishOperation('updateTask');
+        },
+        error: (error) =>
+          this.failOperation(
+            'updateTask',
+            getHttpErrorMessage(error, 'Nao foi possivel atualizar a tarefa.')
+          ),
       });
   }
 
@@ -491,7 +609,10 @@ export class RoutineService {
           this.finishOperation('deleteTask');
         },
         error: (error) =>
-          this.failOperation('deleteTask', getHttpErrorMessage(error, 'Nao foi possivel remover a tarefa.')),
+          this.failOperation(
+            'deleteTask',
+            getHttpErrorMessage(error, 'Nao foi possivel remover a tarefa.')
+          ),
       });
   }
 
@@ -506,7 +627,10 @@ export class RoutineService {
           this.finishOperation('completeTask');
         },
         error: (error) =>
-          this.failOperation('completeTask', getHttpErrorMessage(error, 'Nao foi possivel concluir a tarefa.')),
+          this.failOperation(
+            'completeTask',
+            getHttpErrorMessage(error, 'Nao foi possivel concluir a tarefa.')
+          ),
       });
   }
 
@@ -523,7 +647,10 @@ export class RoutineService {
     user.adicionarXP(task.getXPRecompensa(), `Tarefa: ${task.getTitulo()}`);
     user.ganharMoedas(task.getMoedasRecompensa());
 
-    if (routine.getTarefas().length > 0 && routine.getTarefas().every((item) => item.ehCompleta())) {
+    if (
+      routine.getTarefas().length > 0 &&
+      routine.getTarefas().every((item) => item.ehCompleta())
+    ) {
       try {
         routine.marcarCompleta();
       } catch {
@@ -570,7 +697,9 @@ export class RoutineService {
     }
 
     this.bumpUserRevision();
-    this.setRoutines(user.getRotinas().map((routine) => this.routineMapper.mapDomainRoutineToViewModel(routine)));
+    this.setRoutines(
+      user.getRotinas().map((routine) => this.routineMapper.mapDomainRoutineToViewModel(routine))
+    );
   }
 
   private requireCurrentUser(): Usuario {
@@ -606,8 +735,6 @@ export class RoutineService {
     });
   }
 
-
-
   private bumpUserRevision(): void {
     this.userRevision.update((revision) => revision + 1);
   }
@@ -625,5 +752,4 @@ export class RoutineService {
     this.operationErrorSignal.set(message);
     this.pendingOperationsState.update((state) => ({ ...state, [operation]: false }));
   }
-
 }

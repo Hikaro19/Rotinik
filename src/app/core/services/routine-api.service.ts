@@ -9,6 +9,7 @@ import {
   CreateTaskRequestDto,
   RoutineDto,
   RoutineSummaryResponse,
+  UpdateTaskRequestDto,
   UpdateRoutineRequestDto,
 } from '@core/models/api';
 
@@ -16,7 +17,7 @@ import {
 export class RoutineApiService {
   private readonly http = inject(HttpClient);
   // BaseUrl aponta para api/Routine seguindo o padrão de nomenclatura do C# Controller
-  private readonly baseUrl = `${environment.apiBaseUrl}/Routine`;
+  private readonly baseUrl = `${environment.apiBaseUrl}/routine`;
 
   /**
    * Obtém todas as rotinas resumidas e busca os detalhes de cada uma em paralelo.
@@ -32,7 +33,10 @@ export class RoutineApiService {
         const detailRequests = summaries.map((s) =>
           this.getById(s.id).pipe(
             catchError((err) => {
-              console.error(`[RoutineApiService] Erro ao buscar detalhes da rotina individual (ID: ${s.id}):`, err);
+              console.error(
+                `[RoutineApiService] Erro ao buscar detalhes da rotina individual (ID: ${s.id}):`,
+                err
+              );
               return of(null); // Retorna nulo para não quebrar as demais requisições do forkJoin
             })
           )
@@ -74,14 +78,25 @@ export class RoutineApiService {
   }
 
   addTask(routineId: string, payload: CreateTaskRequestDto): Observable<RoutineDto> {
-    return this.http.post<RoutineDto>(`${this.baseUrl}/${routineId}/tasks`, payload);
+    return this.http.post<RoutineDto>(`${this.baseUrl}/${routineId}/task`, payload);
+  }
+
+  updateTask(
+    routineId: string,
+    taskId: string,
+    payload: UpdateTaskRequestDto
+  ): Observable<RoutineDto> {
+    return this.http.put<RoutineDto>(`${this.baseUrl}/${routineId}/task/${taskId}`, payload);
   }
 
   deleteTask(routineId: string, taskId: string): Observable<RoutineDto> {
-    return this.http.delete<RoutineDto>(`${this.baseUrl}/${routineId}/tasks/${taskId}`);
+    return this.http.delete<RoutineDto>(`${this.baseUrl}/${routineId}/task/${taskId}`);
   }
 
   completeTask(routineId: string, taskId: string): Observable<CompleteTaskResponseDto> {
-    return this.http.post<CompleteTaskResponseDto>(`${this.baseUrl}/${routineId}/tasks/${taskId}/complete`, {});
+    return this.http.post<CompleteTaskResponseDto>(
+      `${this.baseUrl}/${routineId}/tasks/${taskId}/complete`,
+      {}
+    );
   }
 }

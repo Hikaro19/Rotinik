@@ -1,56 +1,3 @@
-// 🏃 ROUTINE DETAIL COMPONENT STYLES - TELA DENTRO DA ROTINA (Pixel Perfect)
-
-// ============================================================================
-// 🎬 ANIMATIONS
-// ============================================================================
-
-@keyframes taskSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes taskCompleteCheck {
-  0% {
-    transform: scale(1) rotate(0deg);
-  }
-  50% {
-    transform: scale(1.1) rotate(5deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-@keyframes progressFill {
-  from {
-    width: 0;
-  }
-  to {
-    width: var(--progress-width, 0%);
-  }
-}
-
-@keyframes fadeOutRemove {
-  0% {
-    opacity: 1;
-    transform: translateX(0) scaleY(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(20px) scaleY(0.8);
-  }
-}
-
-// ============================================================================
-// CONTAINER
-// ============================================================================
-
 .routine-detail-container {
   display: flex;
   flex-direction: column;
@@ -59,449 +6,520 @@
   padding-bottom: var(--spacing-8);
 }
 
-// ============================================================================
-// 0. LOADING & USER INFO
-// ============================================================================
-
-.loading-state {
+.loading-state,
+.sync-state,
+.error-state {
   display: flex;
+  min-height: 220px;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  font-size: var(--font-size-lg);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  border-radius: 16px;
+  background: rgba(19, 17, 27, 0.72);
   color: var(--text-secondary);
-}
-
-.user-info {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  padding: var(--spacing-2) var(--spacing-3);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-sm);
   text-align: center;
 }
 
-// ============================================================================
-// 0.5 PROGRESS BAR
-// ============================================================================
+.error-state {
+  min-height: auto;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.ghost-action {
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 9999px;
+  background: transparent;
+  color: #c4b5fd;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
+  padding: var(--spacing-2) var(--spacing-4);
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base);
+}
+
+.ghost-action:hover {
+  border-color: rgba(216, 180, 254, 0.7);
+  background: rgba(168, 85, 247, 0.12);
+  color: #ffffff;
+}
+
+.routine-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
+
+.routine-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.routine-icon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 14px;
+  background: rgba(168, 85, 247, 0.12);
+  color: #d8b4fe;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+}
+
+.routine-identity h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+}
+
+.routine-identity p {
+  margin: var(--spacing-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.delete-routine-btn {
+  flex-shrink: 0;
+  min-height: 40px;
+  border: 1px solid #ef4444;
+  border-radius: 9999px;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
+  padding: 0 var(--spacing-4);
+  transition:
+    background-color var(--transition-base),
+    box-shadow var(--transition-base),
+    color var(--transition-base);
+}
+
+.delete-routine-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.12);
+}
+
+.action-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.header-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.header-copy {
+  min-width: 0;
+}
+
+.action-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-bold);
+  line-height: var(--line-height-tight);
+}
+
+.action-subtitle {
+  margin: var(--spacing-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.new-task-btn,
+.streak-badge {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  border-radius: 9999px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
+  padding: 0 var(--spacing-4);
+  white-space: nowrap;
+}
+
+.new-task-btn {
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  background: rgba(168, 85, 247, 0.14);
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
+}
+
+.new-task-btn:hover {
+  border-color: #d946ef;
+  background: rgba(168, 85, 247, 0.22);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.18);
+  transform: translateY(-1px);
+}
+
+.streak-badge {
+  border: 1px solid rgba(255, 71, 182, 0.3);
+  background: rgba(255, 71, 182, 0.12);
+  color: #f5d0fe;
+}
 
 .progress-container {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: var(--spacing-3);
+  border: 1px solid rgba(168, 85, 247, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
   padding: var(--spacing-3);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: var(--radius-sm);
 }
 
-.progress-text {
-  font-size: var(--font-size-xs);
+.progress-text,
+.progress-percent {
   color: var(--text-secondary);
-  min-width: 70px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
 }
 
 .progress-bar {
-  flex: 1;
   height: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: var(--radius-pill);
+  flex: 1;
   overflow: hidden;
-  
-  .progress-fill {
-    height: 100%;
-    width: 0;
-    background: linear-gradient(90deg, #A855F7, #D946EF);
-    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: var(--radius-pill);
-    box-shadow: 0 0 12px rgba(217, 70, 239, 0.6);
-    
-    // 🎬 Animação de pulsação quando ativo
-    &:not([style*="width: 0%"]) {
-      animation: progressFill 0.8s ease-out;
-    }
-  }
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.32);
 }
 
-.progress-percent {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-semibold);
-  color: var(--purple-neon);
-  min-width: 35px;
-  text-align: right;
+.progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #a855f7, #d946ef);
+  box-shadow: 0 0 12px rgba(217, 70, 239, 0.55);
+  transition: width 0.55s ease;
 }
 
-// ============================================================================
-// 1. HEADER SECTION (Ação Imediata + Streak)
-// ============================================================================
-
-.header-section {
+.tasks-section {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-4);
-  margin: var(--spacing-4) 0 var(--spacing-2) 0;
+  flex-direction: column;
+  gap: var(--spacing-3);
 }
-
-.action-title {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0;
-  text-align: left;
-}
-
-.streak-badge {
-  font-size: var(--font-size-xs);
-  color: var(--text-primary);
-  background: rgba(255, 71, 182, 0.15);
-  border: 1px solid rgba(255, 71, 182, 0.3);
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-  text-align: right;
-}
-
-// ============================================================================
-// 2. TASK CARDS SECTION
-// ============================================================================
 
 .task-card {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-3);
-  padding: var(--spacing-4);
-  background: rgba(255, 255, 255, 0.03);
+  gap: var(--spacing-4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-card);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  
-  // 🎬 Animação de entrada
-  animation: taskSlideIn 0.4s ease-out forwards;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: var(--spacing-4);
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
+}
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 71, 182, 0.4);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(255, 71, 182, 0.2);
-  }
+.task-card:hover {
+  border-color: rgba(217, 70, 239, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 28px rgba(168, 85, 247, 0.16);
+  transform: translateY(-2px);
+}
 
-  &.completed {
-    opacity: 0.7;
-    background: rgba(34, 197, 94, 0.05);
-    border-color: rgba(34, 197, 94, 0.3);
-
-    .task-title {
-      text-decoration: line-through;
-      color: var(--text-secondary);
-      animation: taskCompleteCheck 0.3s ease-out;
-    }
-  }
+.task-card.primary {
+  border-color: rgba(168, 85, 247, 0.28);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.14), rgba(255, 255, 255, 0.035));
 }
 
 .task-left {
-  flex: 1;
   display: flex;
+  min-width: 0;
+  flex: 1;
   flex-direction: column;
-  gap: var(--spacing-1);
+  gap: var(--spacing-2);
+}
+
+.task-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-3);
 }
 
 .task-title {
+  margin: 0;
+  color: var(--text-primary);
   font-size: var(--font-size-base);
   font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
   line-height: var(--line-height-tight);
+}
+
+.task-description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.task-meta,
+.task-icon-actions,
+.task-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.task-meta {
+  flex-wrap: wrap;
+}
+
+.task-state,
+.task-importance,
+.task-time {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-semibold);
+  min-height: 26px;
+  padding: 0 10px;
+}
+
+.state-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+}
+
+.state-completed {
+  background: rgba(16, 185, 129, 0.12);
+  color: #4ade80;
+}
+
+.importance-baixa {
+  border: 1px solid rgba(16, 185, 129, 0.42);
+  color: #6ee7b7;
+}
+
+.importance-media {
+  border: 1px solid rgba(245, 158, 11, 0.42);
+  color: #fcd34d;
+}
+
+.importance-alta {
+  border: 1px solid rgba(249, 115, 22, 0.42);
+  color: #fdba74;
+}
+
+.importance-critica {
+  border: 1px solid rgba(239, 68, 68, 0.48);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
 }
 
 .task-time {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-regular);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: var(--line-height-tight);
+  background: rgba(167, 139, 250, 0.1);
+  color: #c4b5fd;
 }
 
-.task-urgency {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-semibold);
-  color: var(--game-danger);
-  margin: 0;
-  line-height: var(--line-height-tight);
-}
-
-.task-right {
+.task-icon-actions {
   flex-shrink: 0;
-  display: flex;
+}
+
+.task-icon-btn {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2);
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base);
 }
 
-.xp-badge {
-  background: linear-gradient(135deg, rgba(255, 71, 182, 0.2), rgba(255, 71, 182, 0.1));
-  border: 1px solid rgba(255, 71, 182, 0.4);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-2) var(--spacing-3);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-semibold);
-  color: var(--game-xp);
-  white-space: nowrap;
+.task-icon-btn svg {
+  width: 17px;
+  height: 17px;
 }
 
-// ============================================================================
-// 2. ACTION BUTTONS - PADRONIZADOS COM DESIGN NEON
-// ============================================================================
+.task-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.task-icon-btn--danger:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
 
 .btn-action {
-  padding: var(--spacing-2) var(--spacing-4);
-  border: none;
-  border-radius: 9999px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
-  
-  // 🎬 Animação de entrada
-  animation: fadeInUp 0.4s ease-out;
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
-// Botão "Iniciar" - Ação Principal com Gradiente Roxo e Neon
-.btn-iniciar {
-  background: var(--brand-gradient);
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-  
-  &:hover {
-    box-shadow: 
-      0 8px 24px rgba(168, 85, 247, 0.6),
-      inset 0 0 12px rgba(255, 255, 255, 0.1);
-    transform: translateY(-3px);
-  }
-
-  &:active {
-    transform: translateY(-1px) scale(0.96);
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
-  }
-}
-
-// Botão "Concluir" - Estado de Sucesso com Verde Neon
-.btn-concluir {
-  background: var(--game-success);
-  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
-  
-  &:hover {
-    background: var(--game-success-bright);
-    box-shadow: 
-      0 8px 24px rgba(34, 197, 94, 0.6),
-      inset 0 0 12px rgba(255, 255, 255, 0.1);
-    transform: translateY(-3px);
-  }
-
-  &:active {
-    transform: translateY(-1px) scale(0.96);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-  }
-}
-
-// Botão Pequeno para Tarefas Restantes
-.btn-small {
-  padding: var(--spacing-1) var(--spacing-3);
-  font-size: var(--font-size-xs);
-  min-width: 40px;
-  min-height: 36px;
-  
-  &:hover {
-    transform: translateY(-2px) scale(1.05);
-  }
-}
-
-.concluir-btn {
-  padding: var(--spacing-2) var(--spacing-4);
-  background: var(--game-success);
-  border: none;
+  border: 0;
   border-radius: 9999px;
-  color: var(--text-primary);
+  color: #ffffff;
+  cursor: pointer;
   font-family: inherit;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-semibold);
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
-  transition: all var(--transition-base);
-  
-  &:hover {
-    background: var(--game-success-bright);
-    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0) scale(0.96);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-  }
+  padding: 0 var(--spacing-5);
+  transition:
+    box-shadow var(--transition-base),
+    opacity var(--transition-base),
+    transform var(--transition-base);
 }
 
-.task-actions {
-  display: flex;
-  flex-direction: row;
-  gap: var(--spacing-2);
-  align-items: center;
+.btn-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
-// ============================================================================
-// 3. RESTANTE SECTION
-// ============================================================================
+.btn-iniciar,
+.btn-small {
+  background: var(--brand-gradient);
+  box-shadow: 0 6px 18px rgba(168, 85, 247, 0.32);
+}
 
-.restante-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-semibold);
+.btn-action:not(:disabled):hover {
+  box-shadow: 0 10px 26px rgba(168, 85, 247, 0.44);
+  transform: translateY(-1px);
+}
+
+.btn-small {
+  width: 42px;
+  padding: 0;
+}
+
+.btn-small svg {
+  width: 18px;
+  height: 18px;
+}
+
+.section-title {
+  margin: var(--spacing-2) 0 0;
   color: var(--text-primary);
-  margin: var(--spacing-4) 0 var(--spacing-2) 0;
-  line-height: var(--line-height-tight);
-}
-
-// ============================================================================
-// 4. ADD TASK BUTTON
-// ============================================================================
-
-.add-task-btn {
-  width: 100%;
-  padding: var(--spacing-4) var(--spacing-6);
-  background: var(--purple-primary);
-  border: none;
-  border-radius: var(--radius-card);
   font-size: var(--font-size-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--transition-base) ease;
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
-
-  &:hover {
-    background: var(--purple-neon);
-    box-shadow: 0 6px 20px rgba(217, 70, 239, 0.4);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(217, 70, 239, 0.3);
-  }
+  font-weight: var(--font-bold);
 }
 
-// ============================================================================
-// RESPONSIVE BREAKPOINTS
-// ============================================================================
+.task-completed {
+  opacity: 0.72;
+}
+
+.task-completed .task-title {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.rewards-summary {
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  border-radius: 16px;
+  background: rgba(16, 185, 129, 0.08);
+  padding: var(--spacing-4);
+}
+
+.rewards-summary h2 {
+  margin: 0;
+  color: #86efac;
+  font-size: var(--font-size-base);
+}
+
+.rewards-summary p {
+  margin: var(--spacing-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.toast-layer {
+  position: fixed;
+  top: var(--spacing-6);
+  right: var(--spacing-6);
+  z-index: 60;
+  width: min(420px, calc(100vw - 2rem));
+}
 
 @media (max-width: 768px) {
   .routine-detail-container {
-    gap: var(--spacing-3);
     padding: var(--spacing-3);
   }
 
+  .routine-topbar,
   .task-card {
-    flex-direction: column;
     align-items: flex-start;
-    gap: var(--spacing-2);
+    flex-direction: column;
+  }
+
+  .delete-routine-btn,
+  .task-right {
+    align-self: stretch;
+  }
+
+  .header-section {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .new-task-btn,
+  .streak-badge {
+    width: 100%;
   }
 
   .progress-container {
     flex-wrap: wrap;
   }
 
-  .task-actions {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .routine-detail-container {
-    gap: var(--spacing-3);
-    padding: var(--spacing-3);
-  }
-
-  .task-card {
-    gap: var(--spacing-3);
-    padding: var(--spacing-3);
-  }
-
-  .header-section {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  .streak-badge {
-    text-align: left;
-  }
-
-  .action-title {
-    font-size: 12px;
-  }
-
-  .restante-title {
-    margin: var(--spacing-3) 0 var(--spacing-2) 0;
-    font-size: 14px;
-  }
-
-  .add-task-btn {
-    padding: var(--spacing-3) var(--spacing-4);
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 320px) {
-  .routine-detail-container {
-    padding: var(--spacing-2);
-  }
-
-  .task-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-2);
+  .progress-bar {
+    flex-basis: 100%;
+    order: 3;
   }
 
   .task-right {
+    justify-content: flex-end;
+  }
+
+  .toast-layer {
+    top: auto;
+    right: var(--spacing-4);
+    bottom: var(--spacing-4);
+    left: var(--spacing-4);
+    width: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .task-title-row {
+    flex-direction: column;
+  }
+
+  .task-icon-actions {
     align-self: flex-end;
-  }
-
-  .task-title {
-    font-size: 14px;
-  }
-
-  .task-time,
-  .task-urgency {
-    font-size: 11px;
-  }
-}
-
-// ============================================================================
-// ANIMATIONS
-// ============================================================================
-
-.task-card {
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

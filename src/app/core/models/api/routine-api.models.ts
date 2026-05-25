@@ -1,3 +1,5 @@
+export type TaskImportance = 'baixa' | 'media' | 'alta' | 'critica';
+
 export interface RoutineUserDto {
   id: string;
   name: string;
@@ -18,8 +20,10 @@ export interface RoutineTaskDto {
   taskTitle: string;
   taskDescription?: string;
   isCompleted: boolean;
-  xpReward: number; // Placeholder: backend currently doesn't return this
-  coinReward: number; // Placeholder
+  importance?: TaskImportance;
+  estimatedMinutes?: number;
+  xpReward?: number;
+  coinReward?: number;
   order: number;
   completedAt?: string;
 }
@@ -66,8 +70,15 @@ export interface UpdateRoutineRequestDto {
 export interface CreateTaskRequestDto {
   title: string;
   description?: string;
-  xpReward: number;
-  coinReward: number;
+  estimatedMinutes: number;
+  importance: TaskImportance;
+}
+
+export interface UpdateTaskRequestDto {
+  title: string;
+  description?: string;
+  estimatedMinutes: number;
+  importance: TaskImportance;
 }
 
 export interface CompleteTaskResponseDto {

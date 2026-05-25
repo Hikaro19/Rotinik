@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { RoutineDto, RoutineTaskDto, RoutineSummaryResponse } from '@core/models/api';
+import {
+  RoutineDto,
+  RoutineTaskDto,
+  RoutineSummaryResponse,
+  TaskImportance,
+} from '@core/models/api';
 import { Usuario, Rotina, Tarefa, EFrequencia, EDificuldadeTarefa } from '@core/models/domain';
 import { RoutineViewModel, TaskViewModel } from '@core/models/view/routine-view.models';
 
@@ -15,7 +20,9 @@ export class RoutineMapperService {
       color: 'var(--purple-primary)',
     };
     const theme = routine.theme ? this.resolveRoutineTheme(routine.theme) : fallbackTheme;
-    const tasks = routine.tasks ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id)) : [];
+    const tasks = routine.tasks
+      ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id))
+      : [];
 
     const totalXP = tasks.reduce((sum, task) => sum + (task.xpReward || 0), 0);
     const totalCoins = tasks.reduce((sum, task) => sum + (task.coinReward || 0), 0);
@@ -46,8 +53,10 @@ export class RoutineMapperService {
       title: task.taskTitle,
       description: task.taskDescription,
       completed: task.isCompleted,
-      xpReward: task.xpReward || 10, // Fallback since backend doesn't have it yet
-      coinReward: task.coinReward || 5, // Fallback
+      importance: this.normalizeTaskImportance(task.importance),
+      estimatedMinutes: task.estimatedMinutes ?? 30,
+      xpReward: task.xpReward ?? 0,
+      coinReward: task.coinReward ?? 0,
       order: task.order,
       completedDate: task.completedAt ? new Date(task.completedAt) : undefined,
     };
@@ -70,6 +79,8 @@ export class RoutineMapperService {
         title: task.getTitulo(),
         description: task.getDescricao(),
         completed: task.ehCompleta(),
+        importance: 'media',
+        estimatedMinutes: 30,
         xpReward: task.getXPRecompensa(),
         coinReward: task.getMoedasRecompensa(),
         order: index + 1,
@@ -88,16 +99,31 @@ export class RoutineMapperService {
   createDomainTask(taskData: {
     title: string;
     description?: string;
-    xpReward: number;
-    coinReward: number;
+    xpReward?: number;
+    coinReward?: number;
   }): Tarefa {
     return new Tarefa(
       taskData.title,
       taskData.description ?? '',
-      taskData.xpReward,
-      taskData.coinReward,
-      EDificuldadeTarefa.MEDIA,
+      taskData.xpReward ?? 0,
+      taskData.coinReward ?? 0,
+      EDificuldadeTarefa.MEDIA
     );
+  }
+
+  private normalizeTaskImportance(importance?: string): TaskImportance {
+    const normalized = importance?.trim().toLowerCase();
+
+    if (
+      normalized === 'baixa' ||
+      normalized === 'media' ||
+      normalized === 'alta' ||
+      normalized === 'critica'
+    ) {
+      return normalized;
+    }
+
+    return 'media';
   }
 
   private mapFrequency(frequency: EFrequencia): RoutineViewModel['frequency'] {
@@ -128,4 +154,3 @@ export class RoutineMapperService {
     return themes[normalized] ?? themes['geral'];
   }
 }
-
