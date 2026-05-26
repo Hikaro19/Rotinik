@@ -8,7 +8,7 @@
       *ngIf="isBusy() || isSubmittingTaskForm() || isDeletingTaskRequest() || isDeletingRoutine()"
       class="sync-state"
     >
-      <p>Sincronizando alteracoes...</p>
+      <p>Sincronizando alterações...</p>
     </div>
 
     <div *ngIf="displayErrorMessage() as message" class="error-state">
@@ -21,7 +21,7 @@
         <span class="routine-icon">{{ rotineIcon() }}</span>
         <div>
           <h1>{{ rotneName() }}</h1>
-          <p>{{ nomeUsuario() }} - Nivel {{ nivelUsuario() }} - {{ moedasUsuario() }} moedas</p>
+          <p>{{ nomeUsuario() }} - Nível {{ nivelUsuario() }} - {{ moedasUsuario() }} moedas</p>
         </div>
       </div>
 
@@ -33,9 +33,9 @@
     <section class="action-panel">
       <div class="header-section">
         <div class="header-copy">
-          <h2 class="action-title">Acao Imediata</h2>
+          <h2 class="action-title">Ação Imediata</h2>
           <p class="action-subtitle">
-            {{ rotineDescription() || 'Organize as proximas acoes da rotina.' }}
+            {{ rotineDescription() || 'Organize as próximas ações da rotina.' }}
           </p>
         </div>
 
@@ -44,7 +44,7 @@
           <span>Nova Tarefa</span>
         </button>
 
-        <div class="streak-badge">{{ seqenciaCompletamento() }} Sequencia</div>
+        <div class="streak-badge">{{ seqenciaCompletamento() }} Sequência</div>
       </div>
 
       <div class="progress-container">
@@ -62,23 +62,13 @@
           <div class="task-title-row">
             <h3 class="task-title">{{ tarefa.title }}</h3>
             <div class="task-icon-actions">
-              <button
-                class="task-icon-btn"
-                type="button"
-                aria-label="Editar tarefa"
-                (click)="openEditTask(tarefa)"
-              >
+              <button class="task-icon-btn" type="button" aria-label="Editar tarefa" (click)="openEditTask(tarefa)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
                 </svg>
               </button>
-              <button
-                class="task-icon-btn task-icon-btn--danger"
-                type="button"
-                aria-label="Excluir tarefa"
-                (click)="deleteTask(tarefa.id)"
-              >
+              <button class="task-icon-btn task-icon-btn--danger" type="button" aria-label="Excluir tarefa" (click)="deleteTask(tarefa.id)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M3 6h18" />
                   <path d="M8 6V4h8v2" />
@@ -91,11 +81,8 @@
 
           <p class="task-description" *ngIf="tarefa.description">{{ tarefa.description }}</p>
           <div class="task-meta">
-            <span
-              class="task-state"
-              [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')"
-            >
-              {{ tarefa.completed ? 'Concluida' : 'Pendente' }}
+            <span class="task-state" [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')">
+              {{ tarefa.completed ? 'Concluída' : 'Pendente' }}
             </span>
             <span class="task-importance" [ngClass]="getImportanceClass(tarefa)">
               {{ getImportanceLabel(tarefa) }}
@@ -105,11 +92,7 @@
         </div>
 
         <div class="task-right">
-          <button
-            class="btn-action btn-iniciar"
-            [disabled]="taskActionBusy()"
-            (click)="completeTask(tarefa.id)"
-          >
+          <button class="btn-action btn-iniciar" [disabled]="taskActionBusy()" (click)="completeTask(tarefa.id)">
             Concluir
           </button>
         </div>
@@ -119,32 +102,18 @@
     <h2 class="section-title" *ngIf="tarefasRestante().length > 0">Restante</h2>
 
     <div class="tasks-section" *ngIf="tarefasRestante().length > 0">
-      <div
-        *ngFor="let tarefa of tarefasRestante()"
-        class="task-card secondary"
-        [ngClass]="{ 'task-completed': tarefa.completed }"
-      >
+      <div *ngFor="let tarefa of tarefasRestante()" class="task-card secondary" [ngClass]="{ 'task-completed': tarefa.completed }">
         <div class="task-left">
           <div class="task-title-row">
             <h3 class="task-title">{{ tarefa.title }}</h3>
             <div class="task-icon-actions">
-              <button
-                class="task-icon-btn"
-                type="button"
-                aria-label="Editar tarefa"
-                (click)="openEditTask(tarefa)"
-              >
+              <button class="task-icon-btn" type="button" aria-label="Editar tarefa" (click)="openEditTask(tarefa)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
                 </svg>
               </button>
-              <button
-                class="task-icon-btn task-icon-btn--danger"
-                type="button"
-                aria-label="Excluir tarefa"
-                (click)="deleteTask(tarefa.id)"
-              >
+              <button class="task-icon-btn task-icon-btn--danger" type="button" aria-label="Excluir tarefa" (click)="deleteTask(tarefa.id)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M3 6h18" />
                   <path d="M8 6V4h8v2" />
@@ -157,11 +126,8 @@
 
           <p class="task-description" *ngIf="tarefa.description">{{ tarefa.description }}</p>
           <div class="task-meta">
-            <span
-              class="task-state"
-              [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')"
-            >
-              {{ tarefa.completed ? 'Concluida' : 'Pendente' }}
+            <span class="task-state" [ngClass]="'state-' + (tarefa.completed ? 'completed' : 'pending')">
+              {{ tarefa.completed ? 'Concluída' : 'Pendente' }}
             </span>
             <span class="task-importance" [ngClass]="getImportanceClass(tarefa)">
               {{ getImportanceLabel(tarefa) }}
@@ -171,12 +137,7 @@
         </div>
 
         <div class="task-right">
-          <button
-            *ngIf="!tarefa.completed"
-            class="btn-action btn-small"
-            [disabled]="taskActionBusy()"
-            (click)="completeTask(tarefa.id)"
-          >
+          <button *ngIf="!tarefa.completed" class="btn-action btn-small" [disabled]="taskActionBusy()" (click)="completeTask(tarefa.id)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="m5 12 4 4L19 6" />
             </svg>
@@ -193,23 +154,13 @@
           <div class="task-title-row">
             <h3 class="task-title">{{ tarefa.title }}</h3>
             <div class="task-icon-actions">
-              <button
-                class="task-icon-btn"
-                type="button"
-                aria-label="Editar tarefa"
-                (click)="openEditTask(tarefa)"
-              >
+              <button class="task-icon-btn" type="button" aria-label="Editar tarefa" (click)="openEditTask(tarefa)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
                 </svg>
               </button>
-              <button
-                class="task-icon-btn task-icon-btn--danger"
-                type="button"
-                aria-label="Excluir tarefa"
-                (click)="deleteTask(tarefa.id)"
-              >
+              <button class="task-icon-btn task-icon-btn--danger" type="button" aria-label="Excluir tarefa" (click)="deleteTask(tarefa.id)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M3 6h18" />
                   <path d="M8 6V4h8v2" />
@@ -222,7 +173,7 @@
 
           <p class="task-description" *ngIf="tarefa.description">{{ tarefa.description }}</p>
           <div class="task-meta">
-            <span class="task-state state-completed">Concluida</span>
+            <span class="task-state state-completed">Concluída</span>
             <span class="task-importance" [ngClass]="getImportanceClass(tarefa)">
               {{ getImportanceLabel(tarefa) }}
             </span>
@@ -239,39 +190,12 @@
   </ng-container>
 
   <div class="toast-layer" *ngIf="toastMessage() as message">
-    <app-toast
-      type="success"
-      title="Rotina atualizada"
-      [message]="message"
-      [duration]="2600"
-      (close)="closeToast()"
-    ></app-toast>
+    <app-toast type="success" title="Rotina atualizada" [message]="message" [duration]="2600" (close)="closeToast()"></app-toast>
   </div>
 
-  <app-task-form
-    *ngIf="isTaskFormOpen()"
-    [routineId]="routineId()"
-    [task]="selectedTask()"
-    [submitting]="isSubmittingTaskForm()"
-    (cancel)="closeTaskForm()"
-    (save)="submitTaskForm($event)"
-  ></app-task-form>
+  <app-task-form *ngIf="isTaskFormOpen()" [routineId]="routineId()" [task]="selectedTask()" [submitting]="isSubmittingTaskForm()" (cancel)="closeTaskForm()" (save)="submitTaskForm($event)"></app-task-form>
 
-  <app-confirm-dialog
-    *ngIf="isDeleteTaskDialogOpen()"
-    title="Excluir tarefa"
-    [message]="getDeleteTaskMessage()"
-    confirmLabel="Excluir tarefa"
-    [loading]="isDeletingTaskRequest()"
-    (decision)="confirmDeleteTask($event)"
-  ></app-confirm-dialog>
+  <app-confirm-dialog *ngIf="isDeleteTaskDialogOpen()" title="Excluir tarefa" [message]="getDeleteTaskMessage()" confirmLabel="Excluir tarefa" [loading]="isDeletingTaskRequest()" (decision)="confirmDeleteTask($event)"></app-confirm-dialog>
 
-  <app-confirm-dialog
-    *ngIf="isDeleteRoutineDialogOpen()"
-    title="Excluir rotina"
-    [message]="'Tem certeza que deseja excluir esta rotina? Esta acao remove todas as tarefas associadas.'"
-    confirmLabel="Excluir rotina"
-    [loading]="isDeletingRoutine()"
-    (decision)="confirmDeleteRoutine($event)"
-  ></app-confirm-dialog>
+  <app-confirm-dialog *ngIf="isDeleteRoutineDialogOpen()" title="Excluir rotina" [message]="'Tem certeza que deseja excluir esta rotina? Esta ação remove todas as tarefas associadas.'" confirmLabel="Excluir rotina" [loading]="isDeletingRoutine()" (decision)="confirmDeleteRoutine($event)"></app-confirm-dialog>
 </div>

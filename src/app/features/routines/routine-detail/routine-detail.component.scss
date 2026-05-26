@@ -38,10 +38,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-semibold);
   padding: var(--spacing-2) var(--spacing-4);
-  transition:
-    background-color var(--transition-base),
-    border-color var(--transition-base),
-    color var(--transition-base);
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
 }
 
 .ghost-action:hover {
@@ -104,10 +101,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-semibold);
   padding: 0 var(--spacing-4);
-  transition:
-    background-color var(--transition-base),
-    box-shadow var(--transition-base),
-    color var(--transition-base);
+  transition: background-color var(--transition-base), box-shadow var(--transition-base), color var(--transition-base);
 }
 
 .delete-routine-btn:hover {
@@ -165,11 +159,7 @@
   background: rgba(168, 85, 247, 0.14);
   color: #ffffff;
   cursor: pointer;
-  transition:
-    background-color var(--transition-base),
-    border-color var(--transition-base),
-    box-shadow var(--transition-base),
-    transform var(--transition-base);
+  transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .new-task-btn:hover {
@@ -234,11 +224,7 @@
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.035);
   padding: var(--spacing-4);
-  transition:
-    background-color var(--transition-base),
-    border-color var(--transition-base),
-    box-shadow var(--transition-base),
-    transform var(--transition-base);
+  transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .task-card:hover {
@@ -358,9 +344,7 @@
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition:
-    background-color var(--transition-base),
-    color var(--transition-base);
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
 .task-icon-btn svg {
@@ -391,10 +375,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-semibold);
   padding: 0 var(--spacing-5);
-  transition:
-    box-shadow var(--transition-base),
-    opacity var(--transition-base),
-    transform var(--transition-base);
+  transition: box-shadow var(--transition-base), opacity var(--transition-base), transform var(--transition-base);
 }
 
 .btn-action:disabled {
@@ -464,6 +445,134 @@
   right: var(--spacing-6);
   z-index: 60;
   width: min(420px, calc(100vw - 2rem));
+}
+
+
+// ==========================================================
+// CUSTOMIZAÇÃO DO DIÁLOGO INTERNO (ESTILO GAME/ESCURO NEON)
+// ==========================================================
+app-confirm-dialog {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  ::ng-deep {
+    .dialog-card,
+    .modal-box,
+    div[class*="dialog"],
+    div[class*="modal"] {
+      background-color: #12111a !important;
+      border: 1px solid rgba(168, 85, 247, 0.25) !important;
+      border-radius: 16px !important;
+      padding: 24px !important;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65) !important;
+    }
+
+    // ==========================================================
+    // SUBSTITUI A BOLA VERMELHA PELA SETA GLITCH
+    // ==========================================================
+    .dialog-icon,
+    .modal-icon,
+    .icon-container,
+    .alert-icon,
+    div[class*="icon"] {
+      // Remove completamente a aparência da bola vermelha
+      background: transparent !important;
+      box-shadow: none !important;
+      width: auto !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      margin-bottom: 8px !important;
+      display: inline-block !important;
+
+      // Esconde qualquer SVG nativo ou ícone dentro da bola
+      svg, img, i {
+        display: none !important;
+      }
+
+      // Adiciona o símbolo de Voltar (<) com o efeito Glitch
+      &::before {
+        content: '<' !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 1.8rem !important;
+        font-weight: 900 !important;
+        color: #ffffff !important;
+        text-shadow:
+          -2px 0 0 #0ea5e9, // Sombra Ciano
+          2px 0 0 #ef4444 !important;  // Sombra Vermelha
+        display: block !important;
+        line-height: 1 !important;
+        cursor: pointer !important;
+        transition: transform 0.2s ease !important;
+      }
+
+      // Se quiser que ela tenha animação ao passar o mouse
+      &:hover::before {
+        transform: scale(1.15) translateX(-2px) !important;
+      }
+    }
+
+    .dialog-category,
+    .action-type,
+    span[class*="type"] {
+      color: #ef4444 !important;
+      font-size: 0.75rem !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.06em !important;
+      margin-bottom: 8px !important;
+      display: block;
+    }
+
+    h2, .dialog-title {
+      color: #ffffff !important;
+      font-size: 1.45rem !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.02em !important;
+    }
+
+    p, .dialog-message {
+      color: #9ca3af !important;
+      font-size: 0.92rem !important;
+      line-height: 1.6 !important;
+    }
+
+    button {
+      padding: 10px 22px !important;
+      border-radius: 9999px !important;
+      font-size: 0.88rem !important;
+      font-weight: 600 !important;
+      border: none !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease-in-out !important;
+    }
+
+    .btn-cancel,
+    button[class*="cancel"],
+    button:first-of-type {
+      background-color: #24222f !important;
+      color: #d1d5db !important;
+
+      &:hover {
+        background-color: #302e3f !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .btn-confirm,
+    button[class*="confirm"],
+    button:last-of-type {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3) !important;
+
+      &:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45) !important;
+      }
+    }
+  }
 }
 
 @media (max-width: 768px) {

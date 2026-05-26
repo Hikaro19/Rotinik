@@ -14,7 +14,7 @@ import {
 export class AuthService {
   // Separamos as rotas para refletir os Controllers do C#
   private readonly userUrl = `${environment.apiUrl}/user`;
-  private readonly authUrl = `${environment.apiUrl}/auth`;
+  private readonly authUrl = `${environment.apiUrl}/user`;
 
   constructor(private readonly http: HttpClient) { }
 

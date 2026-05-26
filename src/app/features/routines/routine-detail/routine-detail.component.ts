@@ -136,7 +136,7 @@ export class RoutineDetailComponent implements OnInit {
       },
       error: () => {
         this.isSubmittingTaskForm.set(false);
-        this.localErrorMessage.set('Nao foi possivel salvar a tarefa.');
+        this.localErrorMessage.set('Não foi possível salvar a tarefa.');
       },
     });
   }
@@ -163,14 +163,14 @@ export class RoutineDetailComponent implements OnInit {
         next: (updatedRoutine) => {
           this.routineService.syncRoutineFromApi(updatedRoutine);
           this.routineDetailFacade.refreshRoutine();
-          this.toastMessage.set('Tarefa excluida.');
+          this.toastMessage.set('Tarefa excluída.');
           this.isDeletingTaskRequest.set(false);
           this.isDeleteTaskDialogOpen.set(false);
           this.taskPendingDeletion.set(null);
         },
         error: () => {
           this.isDeletingTaskRequest.set(false);
-          this.localErrorMessage.set('Nao foi possivel excluir a tarefa.');
+          this.localErrorMessage.set('Não foi possível excluir a tarefa.');
           this.isDeleteTaskDialogOpen.set(false);
           this.taskPendingDeletion.set(null);
         },
@@ -206,7 +206,7 @@ export class RoutineDetailComponent implements OnInit {
         },
         error: () => {
           this.isDeletingRoutine.set(false);
-          this.localErrorMessage.set('Nao foi possivel excluir a rotina.');
+          this.localErrorMessage.set('Não foi possível excluir a rotina.');
           this.isDeleteRoutineDialogOpen.set(false);
         },
       });
@@ -224,9 +224,9 @@ export class RoutineDetailComponent implements OnInit {
   getImportanceLabel(task: Task): string {
     const labels: Record<Task['importance'], string> = {
       baixa: 'Baixa',
-      media: 'Media',
+      media: 'Média',
       alta: 'Alta',
-      critica: 'Critica',
+      critica: 'Crítica',
     };
 
     return labels[task.importance];
