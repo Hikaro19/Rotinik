@@ -2,7 +2,9 @@
   <div class="welcome-card">
     <div class="welcome-content">
       <h2 class="welcome-title">Ola, {{ nomeUsuario() }}!</h2>
-      <p class="welcome-subtitle">Nivel {{ nivelUsuario() }} • {{ moedas() }} moedas</p>
+      <p class="welcome-subtitle">
+        <span *ngIf="usernameUsuario()">&#64;{{ usernameUsuario() }} • </span>Nivel {{ nivelUsuario() }} • {{ moedas() }} moedas
+      </p>
     </div>
 
     <div class="progress-circle">

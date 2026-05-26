@@ -22,6 +22,11 @@ export class HomeFacadeService {
     return usuario?.getNome() ?? 'Bem-Vindo';
   });
 
+  readonly usernameUsuario = computed(() => {
+    const usuario = this.usuarioAtual();
+    return usuario?.getUserName() ?? '';
+  });
+
   readonly nivelUsuario = this.routineService.userLevel;
   readonly progressoNivel = this.routineService.userLevelProgress;
   readonly moedas = this.routineService.userCoins;

@@ -22,8 +22,9 @@ export class Usuario {
   private perfil: Perfil;
   private dataCriacao: Date = new Date();
   private ultimaAtividade: Date = new Date();
+  private userName: string;
 
-  constructor(nome: string, email: string) {
+  constructor(nome: string, email: string, userName: string = '') {
     if (!nome || nome.trim().length === 0) {
       throw new Error('Nome do usuário não pode estar vazio');
     }
@@ -34,6 +35,7 @@ export class Usuario {
     this.id = uuid();
     this.nome = nome;
     this.email = email;
+    this.userName = userName;
     this.perfil = new Perfil(nome);
   }
 
@@ -41,12 +43,26 @@ export class Usuario {
   // GETTERS (Leitura Pública)
   // ─────────────────────────────────────────────────────────────
 
+  static reconstituir(id: string, nome: string, email: string, nivel: number, xp: number, moedas: number, userName: string = ''): Usuario {
+    const u = new Usuario(nome, email, userName);
+    (u as any).id = id;
+    (u as any).nivelAtual = nivel;
+    (u as any).experienciaAtual = xp;
+    (u as any).experienciaTotal = xp;
+    (u as any).moedas = moedas;
+    return u;
+  }
+
   getId(): string {
     return this.id;
   }
 
   getNome(): string {
     return this.nome;
+  }
+
+  getUserName(): string {
+    return this.userName || '';
   }
 
   getEmail(): string {

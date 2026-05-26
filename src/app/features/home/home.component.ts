@@ -26,6 +26,7 @@ export class HomeComponent {
   maiorStreak = this.homeFacade.maiorStreak;
   usuarioAtual = this.homeFacade.usuarioAtual;
   nomeUsuario = this.homeFacade.nomeUsuario;
+  usernameUsuario = this.homeFacade.usernameUsuario;
   nivelUsuario = this.homeFacade.nivelUsuario;
   progressoNivel = this.homeFacade.progressoNivel;
   moedas = this.homeFacade.moedas;

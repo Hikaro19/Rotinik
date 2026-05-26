@@ -1,6 +1,7 @@
 export interface RoutineUserDto {
   id: string;
   name: string;
+  userName: string;
   email: string;
   level: number;
   currentXp: number;
@@ -25,23 +26,24 @@ export interface RoutineTaskDto {
 }
 
 export interface RoutineSummaryResponse {
-  id: string;
+  id: number;
   userId?: number;
-  name: string;
+  title: string;
   description?: string;
-  theme?: string;
+  category?: string;
   isTemplate: boolean;
   taskCount: number;
   createdAt: string;
 }
 
 export interface RoutineDto {
-  id: string;
+  id: number;
   userId?: number;
-  name: string;
+  title: string;
   description?: string;
-  theme?: string;
-  isTemplate: boolean;
+  category?: string;
+  frequency?: string;
+  isDefault?: boolean;
   createdAt: string;
   tasks: RoutineTaskDto[];
 }
@@ -52,15 +54,17 @@ export interface RoutinesSnapshotDto {
 }
 
 export interface CreateRoutineRequestDto {
-  name: string;
+  title: string;
   description?: string;
-  theme?: string;
+  category?: string;
+  frequency?: string;
 }
 
 export interface UpdateRoutineRequestDto {
-  name?: string;
+  title?: string;
   description?: string;
-  theme?: string;
+  category?: string;
+  frequency?: string;
 }
 
 export interface CreateTaskRequestDto {

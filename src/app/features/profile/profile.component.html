@@ -6,8 +6,10 @@
           <span class="avatar-icon">👤</span>
         </div>
         <div class="info">
-          <h1 class="username">Jogador #{{ playerSignal().level }}</h1>
-          <p class="member-since">Membro desde {{ formatDate(memberSince()) }}</p>
+          <h1 class="username">{{ playerSignal().name }}</h1>
+          <p class="member-since">
+            <span *ngIf="playerSignal().userName">&#64;{{ playerSignal().userName }} • </span>Membro desde {{ formatDate(memberSince()) }}
+          </p>
         </div>
       </div>
 

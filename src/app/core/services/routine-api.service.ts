@@ -9,6 +9,7 @@ import {
   CreateTaskRequestDto,
   RoutineDto,
   RoutineSummaryResponse,
+  RoutinesSnapshotDto,
   UpdateRoutineRequestDto,
 } from '@core/models/api';
 
@@ -19,34 +20,16 @@ export class RoutineApiService {
   private readonly baseUrl = `${environment.apiBaseUrl}/Routine`;
 
   /**
-   * Obtém todas as rotinas resumidas e busca os detalhes de cada uma em paralelo.
-   * Blindado com catchError para evitar que falhas individuais zerem a listagem completa.
+   * Obtém o snapshot completo (usuário + rotinas).
    */
-  getSnapshot(): Observable<RoutineDto[]> {
-    return this.getAll().pipe(
-      switchMap((summaries) => {
-        if (!summaries || summaries.length === 0) {
-          return of([]);
-        }
-
-        const detailRequests = summaries.map((s) =>
-          this.getById(s.id).pipe(
-            catchError((err) => {
-              console.error(`[RoutineApiService] Erro ao buscar detalhes da rotina individual (ID: ${s.id}):`, err);
-              return of(null); // Retorna nulo para não quebrar as demais requisições do forkJoin
-            })
-          )
-        );
-
-        return forkJoin(detailRequests).pipe(
-          map((results) => results.filter((r): r is RoutineDto => r !== null))
-        );
-      })
-    );
+  getSnapshot(): Observable<RoutinesSnapshotDto> {
+    return this.http.get<RoutinesSnapshotDto>(this.baseUrl);
   }
 
-  getAll(): Observable<RoutineSummaryResponse[]> {
-    return this.http.get<RoutineSummaryResponse[]>(this.baseUrl);
+  getAll(): Observable<RoutineDto[]> {
+    return this.getSnapshot().pipe(
+      map(res => res.routines)
+    );
   }
 
   getById(routineId: string | number): Observable<RoutineDto> {
