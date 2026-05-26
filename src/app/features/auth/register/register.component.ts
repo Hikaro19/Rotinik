@@ -55,7 +55,19 @@ export class RegisterComponent {
     this.authService.register(payload).subscribe({
       next: (res) => {
         console.log('[RegisterComponent] Cadastro realizado:', res);
-        this.router.navigate(['/auth/success']);
+        
+        // Fazer login automático logo após criar o usuário
+        this.authService.login({ email: payload.email, password: payload.password }).subscribe({
+          next: () => {
+             this.isLoading.set(false);
+             this.router.navigate(['/auth/success']);
+          },
+          error: (loginErr) => {
+             console.error('[RegisterComponent] Erro no auto-login:', loginErr);
+             this.isLoading.set(false);
+             this.router.navigate(['/auth/login']);
+          }
+        });
       },
       error: (err: HttpErrorResponse) => {
         console.error('[RegisterComponent] Erro no cadastro:', err);

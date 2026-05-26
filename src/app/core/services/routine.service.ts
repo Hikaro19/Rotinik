@@ -376,7 +376,7 @@ export class RoutineService {
       return;
     }
 
-    if (!environment.enableMockData && !routine.domainModel) {
+    if (!routine.domainModel) {
       this.updateTaskInApi(routineId, taskId, taskData);
       return;
     }

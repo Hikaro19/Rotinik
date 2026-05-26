@@ -19,15 +19,8 @@ export class RoutineMapperService {
       icon: 'RT',
       color: 'var(--purple-primary)',
     };
-<<<<<<< HEAD
-    const theme = routine.theme ? this.resolveRoutineTheme(routine.theme) : fallbackTheme;
-    const tasks = routine.tasks
-      ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id))
-      : [];
-=======
     const theme = routine.category ? this.resolveRoutineTheme(routine.category) : fallbackTheme;
     const tasks = routine.tasks ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id)) : [];
->>>>>>> feature/dev-test
 
     const totalXP = tasks.reduce((sum, task) => sum + (task.xpReward || 0), 0);
     const totalCoins = tasks.reduce((sum, task) => sum + (task.coinReward || 0), 0);

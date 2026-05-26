@@ -1,7 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HomeFacadeService } from '@core/services/home-facade.service';
+import { RoutineService } from '@core/services/routine.service';
+import { ProfileService } from '@core/services/profile.service';
 import { AppRoutineCardComponent } from '@shared/components/feature/routine-card/routine-card.component';
 
 @Component({
@@ -11,9 +13,16 @@ import { AppRoutineCardComponent } from '@shared/components/feature/routine-card
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly homeFacade = inject(HomeFacadeService);
+  private readonly routineService = inject(RoutineService);
+  private readonly profileService = inject(ProfileService);
+
+  ngOnInit(): void {
+    this.routineService.initialize();
+    this.profileService.initialize();
+  }
 
   activeTab = signal<'tarefas' | 'rotinas'>('rotinas');
   tarefaFiltro = signal<'todas' | 'pendente' | 'andamento' | 'concluida'>('todas');

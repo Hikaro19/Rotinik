@@ -9,12 +9,9 @@ import {
   CreateTaskRequestDto,
   RoutineDto,
   RoutineSummaryResponse,
-<<<<<<< HEAD
-  UpdateTaskRequestDto,
-=======
   RoutinesSnapshotDto,
->>>>>>> feature/dev-test
   UpdateRoutineRequestDto,
+  UpdateTaskRequestDto,
 } from '@core/models/api';
 
 @Injectable({ providedIn: 'root' })
@@ -26,35 +23,8 @@ export class RoutineApiService {
   /**
    * Obtém o snapshot completo (usuário + rotinas).
    */
-<<<<<<< HEAD
-  getSnapshot(): Observable<RoutineDto[]> {
-    return this.getAll().pipe(
-      switchMap((summaries) => {
-        if (!summaries || summaries.length === 0) {
-          return of([]);
-        }
-
-        const detailRequests = summaries.map((s) =>
-          this.getById(s.id).pipe(
-            catchError((err) => {
-              console.error(
-                `[RoutineApiService] Erro ao buscar detalhes da rotina individual (ID: ${s.id}):`,
-                err
-              );
-              return of(null); // Retorna nulo para não quebrar as demais requisições do forkJoin
-            })
-          )
-        );
-
-        return forkJoin(detailRequests).pipe(
-          map((results) => results.filter((r): r is RoutineDto => r !== null))
-        );
-      })
-    );
-=======
   getSnapshot(): Observable<RoutinesSnapshotDto> {
     return this.http.get<RoutinesSnapshotDto>(this.baseUrl);
->>>>>>> feature/dev-test
   }
 
   getAll(): Observable<RoutineDto[]> {
