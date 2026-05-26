@@ -6,7 +6,6 @@ export const environment = {
   signalRUrl: 'http://localhost:5025/hubs/gamification',
 
   // Feature flags
-  enableMockData: false,
   enableLogging: true,
   enableAnalytics: false,
 

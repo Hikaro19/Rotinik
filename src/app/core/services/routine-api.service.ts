@@ -9,7 +9,11 @@ import {
   CreateTaskRequestDto,
   RoutineDto,
   RoutineSummaryResponse,
+<<<<<<< HEAD
   UpdateTaskRequestDto,
+=======
+  RoutinesSnapshotDto,
+>>>>>>> feature/dev-test
   UpdateRoutineRequestDto,
 } from '@core/models/api';
 
@@ -20,9 +24,9 @@ export class RoutineApiService {
   private readonly baseUrl = `${environment.apiBaseUrl}/routine`;
 
   /**
-   * Obtém todas as rotinas resumidas e busca os detalhes de cada uma em paralelo.
-   * Blindado com catchError para evitar que falhas individuais zerem a listagem completa.
+   * Obtém o snapshot completo (usuário + rotinas).
    */
+<<<<<<< HEAD
   getSnapshot(): Observable<RoutineDto[]> {
     return this.getAll().pipe(
       switchMap((summaries) => {
@@ -47,10 +51,16 @@ export class RoutineApiService {
         );
       })
     );
+=======
+  getSnapshot(): Observable<RoutinesSnapshotDto> {
+    return this.http.get<RoutinesSnapshotDto>(this.baseUrl);
+>>>>>>> feature/dev-test
   }
 
-  getAll(): Observable<RoutineSummaryResponse[]> {
-    return this.http.get<RoutineSummaryResponse[]>(this.baseUrl);
+  getAll(): Observable<RoutineDto[]> {
+    return this.getSnapshot().pipe(
+      map(res => res.routines)
+    );
   }
 
   getById(routineId: string | number): Observable<RoutineDto> {

@@ -27,17 +27,17 @@ export class AuthService {
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
     console.log('[Rotinik Debug] Fazendo Login:', payload);
 
-    // Chama o AuthController para pegar o Token
-    return this.http.post<{ token: string, message: string }>(`${this.authUrl}/login`, payload).pipe(
+    // Chama o UserController para pegar o Token
+    return this.http.post<{ data: { accessToken: string, refreshToken: string }, message: string }>(`${this.userUrl}/login`, payload).pipe(
       tap((res) => {
         // Armazena o token ANTES do switchMap para o Interceptor pegar
-        localStorage.setItem(environment.tokenStorageKey, res.token);
+        localStorage.setItem(environment.tokenStorageKey, res.data.accessToken);
       }),
       switchMap((res) => {
         // Agora com o token salvo, chama o UserController para pegar os dados
         return this.http.get<UserMeDto>(`${this.userUrl}/me`).pipe(
           map((user) => ({
-            token: res.token,
+            token: res.data.accessToken,
             user: user,
             message: res.message || 'Login realizado com sucesso',
           }))

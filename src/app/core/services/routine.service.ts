@@ -10,7 +10,6 @@ import {
   UpdateRoutineRequestDto,
 } from '@core/models/api';
 import { RoutineViewModel, TaskViewModel } from '@core/models/view/routine-view.models';
-import { createMockRoutineUser } from '@core/mocks/routine.mock';
 import { getHttpErrorMessage } from '@core/http/http-error.utils';
 import { RoutineApiService } from './routine-api.service';
 import { RoutineMapperService } from './routine-mapper.service';
@@ -100,22 +99,7 @@ export class RoutineService {
     }
 
     this.isInitializedSignal.set(true);
-
-    if (environment.enableMockData) {
-      this.seedData();
-      return;
-    }
-
     this.loadSnapshotFromApi();
-  }
-
-  seedData(): void {
-    if (this.currentUserSignal()) {
-      return;
-    }
-
-    this.setCurrentUser(createMockRoutineUser());
-    this.syncRoutinesFromCurrentUser();
   }
 
   resetState(): void {
@@ -127,7 +111,7 @@ export class RoutineService {
   adicionarRotina(rotina: Rotina): Routine {
     const routineViewModel = this.routineMapper.mapDomainRoutineToViewModel(rotina);
 
-    if (!environment.enableMockData && !this.hasDomainData()) {
+    if (!this.hasDomainData()) {
       this.routinesSignal.update((routines) => [routineViewModel, ...routines]);
       this.createRoutineInApi(routineViewModel);
       return routineViewModel;
@@ -152,7 +136,7 @@ export class RoutineService {
       return;
     }
 
-    if (!environment.enableMockData && !routine.domainModel) {
+    if (!routine.domainModel) {
       this.routinesSignal.update((routines) =>
         routines.map((item) =>
           item.id === id ? { ...item, ...updates, tasks: updates.tasks ?? item.tasks } : item
@@ -186,7 +170,7 @@ export class RoutineService {
   }
 
   deleteRoutine(id: string): void {
-    if (!environment.enableMockData && !this.hasDomainData()) {
+    if (!this.hasDomainData()) {
       this.routinesSignal.update((routines) => routines.filter((routine) => routine.id !== id));
       this.deleteRoutineInApi(id);
       return;
@@ -219,7 +203,7 @@ export class RoutineService {
       return { xp: 0, coins: 0 };
     }
 
-    if (!environment.enableMockData && !routine.domainModel) {
+    if (!routine.domainModel) {
       const task = routine.tasks.find((item) => item.id === taskId);
       const reward = {
         xp: task?.xpReward ?? 0,
@@ -309,7 +293,7 @@ export class RoutineService {
       return;
     }
 
-    if (!environment.enableMockData && !routine.domainModel) {
+    if (!routine.domainModel) {
       this.addTaskInApi(routineId, taskData);
       return;
     }
@@ -357,7 +341,7 @@ export class RoutineService {
       return;
     }
 
-    if (!environment.enableMockData && !routine.domainModel) {
+    if (!routine.domainModel) {
       this.deleteTaskInApi(routineId, taskId);
       return;
     }
@@ -467,9 +451,23 @@ export class RoutineService {
       .getSnapshot()
       .pipe(take(1))
       .subscribe({
-        next: (routines) => {
-          console.log('[RoutineService] Rotinas mapeadas do banco:', routines);
-          this.hydrateFromApi(routines);
+        next: (snapshot) => {
+          console.log('[RoutineService] Snapshot carregado do banco:', snapshot);
+          
+          if (snapshot.user) {
+            const domainUser = Usuario.reconstituir(
+              snapshot.user.id,
+              snapshot.user.name,
+              snapshot.user.email,
+              snapshot.user.level,
+              snapshot.user.currentXp,
+              snapshot.user.coins,
+              snapshot.user.userName
+            );
+            this.setCurrentUser(domainUser);
+          }
+          
+          this.hydrateFromApi(snapshot.routines);
           this.finishOperation('loadSnapshot');
           this.isLoadingSignal.set(false);
         },
@@ -480,7 +478,6 @@ export class RoutineService {
             getHttpErrorMessage(error, 'Nao foi possivel carregar as rotinas do servidor.')
           );
           this.isLoadingSignal.set(false);
-          this.seedData();
         },
       });
   }
@@ -488,9 +485,10 @@ export class RoutineService {
   private createRoutineInApi(routine: Routine): void {
     this.startOperation('createRoutine');
     const payload: CreateRoutineRequestDto = {
-      name: routine.title,
+      title: routine.title,
       description: routine.description,
-      theme: routine.category ?? 'geral',
+      category: routine.category ?? 'geral',
+      frequency: routine.frequency,
     };
 
     this.routineApi
@@ -513,9 +511,10 @@ export class RoutineService {
     this.startOperation('updateRoutine');
     const payload: UpdateRoutineRequestDto = {};
 
-    if (updates.title !== undefined) payload.name = updates.title;
+    if (updates.title !== undefined) payload.title = updates.title;
     if (updates.description !== undefined) payload.description = updates.description;
-    if (updates.category !== undefined) payload.theme = updates.category;
+    if (updates.category !== undefined) payload.category = updates.category;
+    if (updates.frequency !== undefined) payload.frequency = updates.frequency;
 
     this.routineApi
       .update(routineId, payload)

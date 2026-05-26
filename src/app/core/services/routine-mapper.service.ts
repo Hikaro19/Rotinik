@@ -19,10 +19,15 @@ export class RoutineMapperService {
       icon: 'RT',
       color: 'var(--purple-primary)',
     };
+<<<<<<< HEAD
     const theme = routine.theme ? this.resolveRoutineTheme(routine.theme) : fallbackTheme;
     const tasks = routine.tasks
       ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id))
       : [];
+=======
+    const theme = routine.category ? this.resolveRoutineTheme(routine.category) : fallbackTheme;
+    const tasks = routine.tasks ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id)) : [];
+>>>>>>> feature/dev-test
 
     const totalXP = tasks.reduce((sum, task) => sum + (task.xpReward || 0), 0);
     const totalCoins = tasks.reduce((sum, task) => sum + (task.coinReward || 0), 0);
@@ -30,12 +35,12 @@ export class RoutineMapperService {
 
     return {
       id: routine.id.toString(),
-      title: routine.name,
+      title: routine.title,
       description: routine.description ?? '',
-      category: routine.theme,
+      category: routine.category,
       icon: theme.icon,
       color: theme.color,
-      frequency: 'daily', // Backend doesn't support frequency at the routine level yet
+      frequency: (routine.frequency as any) || 'daily',
       tasks: tasks,
       totalXP: totalXP,
       totalCoins: totalCoins,
