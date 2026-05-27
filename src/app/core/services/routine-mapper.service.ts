@@ -48,8 +48,8 @@ export class RoutineMapperService {
     return {
       id: task.taskId?.toString() ?? task.id.toString(),
       routineId: routineId.toString(),
-      title: task.taskTitle,
-      description: task.taskDescription,
+      title: task.title,
+      description: task.description,
       completed: task.isCompleted,
       importance: this.normalizeTaskImportance(task.importance),
       estimatedMinutes: task.estimatedMinutes ?? 30,

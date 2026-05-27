@@ -18,8 +18,8 @@ export interface RoutineTaskDto {
   id: string;
   routineId?: string | number;
   taskId?: string | number;
-  taskTitle: string;
-  taskDescription?: string;
+  title: string;
+  description?: string;
   isCompleted: boolean;
   importance?: TaskImportance;
   estimatedMinutes?: number;

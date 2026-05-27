@@ -39,6 +39,7 @@ describe('AuthService', () => {
     const mockUserResponse = {
       id: 1,
       name: 'Test',
+      userName: 'TestUser',
       email: 'test@test.com'
     };
 

@@ -127,9 +127,8 @@ export class RoutineDetailComponent implements OnInit {
       : this.routineApi.addTask(routineId, apiPayload);
 
     request$.pipe(take(1)).subscribe({
-      next: (updatedRoutine) => {
-        this.routineService.syncRoutineFromApi(updatedRoutine);
-        this.routineDetailFacade.refreshRoutine();
+      next: () => {
+        this.routineService.loadSnapshotFromApi();
         this.isSubmittingTaskForm.set(false);
         this.closeTaskForm();
         this.toastMessage.set(editingTask ? 'Tarefa atualizada.' : 'Tarefa criada.');
@@ -160,9 +159,8 @@ export class RoutineDetailComponent implements OnInit {
       .deleteTask(routineId, task.id)
       .pipe(take(1))
       .subscribe({
-        next: (updatedRoutine) => {
-          this.routineService.syncRoutineFromApi(updatedRoutine);
-          this.routineDetailFacade.refreshRoutine();
+        next: () => {
+          this.routineService.loadSnapshotFromApi();
           this.toastMessage.set('Tarefa excluída.');
           this.isDeletingTaskRequest.set(false);
           this.isDeleteTaskDialogOpen.set(false);

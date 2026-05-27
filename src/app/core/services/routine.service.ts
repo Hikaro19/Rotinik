@@ -444,7 +444,7 @@ export class RoutineService {
     this.operationErrorSignal.set(null);
   }
 
-  private loadSnapshotFromApi(): void {
+  loadSnapshotFromApi(): void {
     this.startOperation('loadSnapshot');
     this.isLoadingSignal.set(true);
     this.routineApi
@@ -560,8 +560,8 @@ export class RoutineService {
       .addTask(routineId, payload)
       .pipe(take(1))
       .subscribe({
-        next: (updatedRoutine) => {
-          this.replaceRoutineFromApi(routineId, updatedRoutine);
+        next: () => {
+          this.loadSnapshotFromApi();
           this.finishOperation('addTask');
         },
         error: (error) =>
@@ -585,8 +585,8 @@ export class RoutineService {
       .updateTask(routineId, taskId, payload)
       .pipe(take(1))
       .subscribe({
-        next: (updatedRoutine) => {
-          this.replaceRoutineFromApi(routineId, updatedRoutine);
+        next: () => {
+          this.loadSnapshotFromApi();
           this.finishOperation('updateTask');
         },
         error: (error) =>
@@ -603,8 +603,8 @@ export class RoutineService {
       .deleteTask(routineId, taskId)
       .pipe(take(1))
       .subscribe({
-        next: (updatedRoutine) => {
-          this.replaceRoutineFromApi(routineId, updatedRoutine);
+        next: () => {
+          this.loadSnapshotFromApi();
           this.finishOperation('deleteTask');
         },
         error: (error) =>
@@ -621,8 +621,8 @@ export class RoutineService {
       .completeTask(routineId, taskId)
       .pipe(take(1))
       .subscribe({
-        next: (response) => {
-          this.replaceRoutineFromApi(routineId, response.routine);
+        next: () => {
+          this.loadSnapshotFromApi();
           this.finishOperation('completeTask');
         },
         error: (error) =>

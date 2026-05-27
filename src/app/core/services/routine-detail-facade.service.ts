@@ -6,7 +6,7 @@ export class RoutineDetailFacadeService {
   private readonly routineService = inject(RoutineService);
 
   readonly routineId = signal<string>('');
-  readonly rotinaAtual = signal<Routine | undefined>(undefined);
+  readonly rotinaAtual = computed(() => this.routineService.getRoutineById(this.routineId()));
   readonly loading = signal<boolean>(true);
 
   readonly nomeUsuario = computed(() => {
@@ -47,7 +47,6 @@ export class RoutineDetailFacadeService {
   loadRoutine(id: string): void {
     this.routineId.set(id);
     this.loading.set(true);
-    this.rotinaAtual.set(this.routineService.getRoutineById(id));
     this.loading.set(false);
   }
 
@@ -83,6 +82,6 @@ export class RoutineDetailFacadeService {
   }
 
   refreshRoutine(): void {
-    this.rotinaAtual.set(this.routineService.getRoutineById(this.routineId()));
+    // computed signal updates automatically
   }
 }

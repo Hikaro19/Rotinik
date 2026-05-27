@@ -22,7 +22,7 @@ export class RotatinaRepository {
   readonly tarefasCompletas = this.homeFacade.tarefasCompletas;
 
   seedData(): void {
-    this.routineService.seedData();
+    // this.routineService.seedData();
   }
 
   criarRotina(titulo: string, descricao: string, frequencia: EFrequencia): Rotina {

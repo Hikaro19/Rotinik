@@ -57,25 +57,25 @@ export class RoutineApiService {
     return this.http.post<RoutineDto>(`${this.baseUrl}/templates/${templateId}/clone`, {});
   }
 
-  addTask(routineId: string, payload: CreateTaskRequestDto): Observable<RoutineDto> {
-    return this.http.post<RoutineDto>(`${this.baseUrl}/${routineId}/task`, payload);
+  addTask(routineId: string, payload: CreateTaskRequestDto): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/${routineId}/task`, payload);
   }
 
   updateTask(
     routineId: string,
     taskId: string,
     payload: UpdateTaskRequestDto
-  ): Observable<RoutineDto> {
-    return this.http.put<RoutineDto>(`${this.baseUrl}/${routineId}/task/${taskId}`, payload);
+  ): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${routineId}/task/${taskId}`, payload);
   }
 
-  deleteTask(routineId: string, taskId: string): Observable<RoutineDto> {
-    return this.http.delete<RoutineDto>(`${this.baseUrl}/${routineId}/task/${taskId}`);
+  deleteTask(routineId: string, taskId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${routineId}/task/${taskId}`);
   }
 
-  completeTask(routineId: string, taskId: string): Observable<CompleteTaskResponseDto> {
-    return this.http.post<CompleteTaskResponseDto>(
-      `${this.baseUrl}/${routineId}/tasks/${taskId}/complete`,
+  completeTask(routineId: string, taskId: string): Observable<any> {
+    return this.http.patch<any>(
+      `${this.baseUrl}/${routineId}/task/${taskId}/toggle`,
       {}
     );
   }
