@@ -12,7 +12,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly baseUrl = `${environment.apiUrl}/User`;
+  private readonly baseUrl = `${environment.apiUrl}/user`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -23,15 +23,17 @@ export class AuthService {
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
     console.log('[Rotinik Debug] Enviando:', payload);
-    return this.http.post<{ token: string }>(`${this.baseUrl}/login`, payload).pipe(
+    return this.http.post<{ data: { accessToken: string, refreshToken: string }, message: string }>(
+      `${this.baseUrl}/login`, payload
+    ).pipe(
       tap((res) => {
-        // Armazena o token para o auth.interceptor poder incluí-lo na chamada /me
-        localStorage.setItem(environment.tokenStorageKey, res.token);
+        localStorage.setItem(environment.tokenStorageKey, res.data.accessToken);
+        localStorage.setItem(environment.refreshTokenStorageKey, res.data.refreshToken);
       }),
       switchMap((res) => {
         return this.http.get<UserMeDto>(`${this.baseUrl}/me`).pipe(
           map((user) => ({
-            token: res.token,
+            token: res.data.accessToken,
             user: user,
             message: 'Login realizado com sucesso',
           }))

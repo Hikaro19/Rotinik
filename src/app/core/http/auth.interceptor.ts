@@ -3,7 +3,10 @@ import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const token = inject(AuthService).getToken();
+  const authService = inject(AuthService);
+  const token = authService.getToken();
+
+  console.log('[Interceptor] Chamado para:', request.url, '| Token:', token ? 'existe' : 'null');
 
   if (!token) {
     return next(request);
