@@ -1,4 +1,5 @@
 import { Rotina } from '@core/models/domain';
+import { TaskImportance } from '@core/models/api';
 
 export interface TaskViewModel {
   id: string;
@@ -6,6 +7,8 @@ export interface TaskViewModel {
   title: string;
   description?: string;
   completed: boolean;
+  importance: TaskImportance;
+  estimatedMinutes: number;
   xpReward: number;
   coinReward: number;
   dueDate?: Date;

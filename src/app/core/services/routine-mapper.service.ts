@@ -1,48 +1,60 @@
 import { Injectable } from '@angular/core';
-import { RoutineDto, RoutineTaskDto, RoutinesSnapshotDto } from '@core/models/api';
+import {
+  RoutineDto,
+  RoutineTaskDto,
+  RoutineSummaryResponse,
+  TaskImportance,
+} from '@core/models/api';
 import { Usuario, Rotina, Tarefa, EFrequencia, EDificuldadeTarefa } from '@core/models/domain';
 import { RoutineViewModel, TaskViewModel } from '@core/models/view/routine-view.models';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineMapperService {
-  mapSnapshotFromApi(snapshot: RoutinesSnapshotDto): RoutineViewModel[] {
-    return snapshot.routines.map((routine) => this.mapApiRoutineToViewModel(routine));
+  mapApiRoutinesToViewModels(routines: RoutineDto[]): RoutineViewModel[] {
+    return routines.map((routine) => this.mapApiRoutineToViewModel(routine));
   }
 
   mapApiRoutineToViewModel(routine: RoutineDto): RoutineViewModel {
     const fallbackTheme = {
-      icon: routine.icon ?? 'RT',
-      color: routine.color ?? 'var(--purple-primary)',
+      icon: 'RT',
+      color: 'var(--purple-primary)',
     };
     const theme = routine.category ? this.resolveRoutineTheme(routine.category) : fallbackTheme;
+    const tasks = routine.tasks ? routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id)) : [];
+
+    const totalXP = tasks.reduce((sum, task) => sum + (task.xpReward || 0), 0);
+    const totalCoins = tasks.reduce((sum, task) => sum + (task.coinReward || 0), 0);
+    const isCompleted = tasks.length > 0 && tasks.every((task) => task.completed);
 
     return {
-      id: routine.id,
+      id: routine.id.toString(),
       title: routine.title,
-      description: routine.description,
+      description: routine.description ?? '',
       category: routine.category,
-      icon: routine.icon ?? theme.icon,
-      color: routine.color ?? theme.color,
-      frequency: routine.frequency,
-      tasks: routine.tasks.map((task) => this.mapApiTaskToViewModel(task, routine.id)),
-      totalXP: routine.totalXp,
-      totalCoins: routine.totalCoins,
+      icon: theme.icon,
+      color: theme.color,
+      frequency: (routine.frequency as any) || 'daily',
+      tasks: tasks,
+      totalXP: totalXP,
+      totalCoins: totalCoins,
       createdDate: new Date(routine.createdAt),
-      completionStreak: routine.completionStreak,
-      lastCompletedDate: routine.lastCompletedAt ? new Date(routine.lastCompletedAt) : undefined,
-      isCompleted: routine.isCompleted,
+      completionStreak: 0, // Wait for FMRT_14 fully
+      lastCompletedDate: undefined,
+      isCompleted: isCompleted,
     };
   }
 
-  mapApiTaskToViewModel(task: RoutineTaskDto, routineId: string): TaskViewModel {
+  mapApiTaskToViewModel(task: RoutineTaskDto, routineId: string | number): TaskViewModel {
     return {
-      id: task.id,
-      routineId,
-      title: task.title,
-      description: task.description,
+      id: task.taskId?.toString() ?? task.id.toString(),
+      routineId: routineId.toString(),
+      title: task.taskTitle,
+      description: task.taskDescription,
       completed: task.isCompleted,
-      xpReward: task.xpReward,
-      coinReward: task.coinReward,
+      importance: this.normalizeTaskImportance(task.importance),
+      estimatedMinutes: task.estimatedMinutes ?? 30,
+      xpReward: task.xpReward ?? 0,
+      coinReward: task.coinReward ?? 0,
       order: task.order,
       completedDate: task.completedAt ? new Date(task.completedAt) : undefined,
     };
@@ -65,6 +77,8 @@ export class RoutineMapperService {
         title: task.getTitulo(),
         description: task.getDescricao(),
         completed: task.ehCompleta(),
+        importance: 'media',
+        estimatedMinutes: 30,
         xpReward: task.getXPRecompensa(),
         coinReward: task.getMoedasRecompensa(),
         order: index + 1,
@@ -80,39 +94,34 @@ export class RoutineMapperService {
     };
   }
 
-  createUserFromApiSnapshot(snapshot: RoutinesSnapshotDto): Usuario {
-    const user = new Usuario(snapshot.user.name, snapshot.user.email);
-    const totalXp = Math.max(snapshot.user.totalXp, 0);
-
-    if (totalXp > 0) {
-      user.adicionarXP(totalXp, 'API snapshot');
-    }
-
-    const currentCoins = user.getMoedas();
-    const targetCoins = snapshot.user.coins;
-
-    if (targetCoins > currentCoins) {
-      user.ganharMoedas(targetCoins - currentCoins);
-    } else if (targetCoins < currentCoins) {
-      user.gastarMoedas(currentCoins - targetCoins);
-    }
-
-    return user;
-  }
-
   createDomainTask(taskData: {
     title: string;
     description?: string;
-    xpReward: number;
-    coinReward: number;
+    xpReward?: number;
+    coinReward?: number;
   }): Tarefa {
     return new Tarefa(
       taskData.title,
       taskData.description ?? '',
-      taskData.xpReward,
-      taskData.coinReward,
-      EDificuldadeTarefa.MEDIA,
+      taskData.xpReward ?? 0,
+      taskData.coinReward ?? 0,
+      EDificuldadeTarefa.MEDIA
     );
+  }
+
+  private normalizeTaskImportance(importance?: string): TaskImportance {
+    const normalized = importance?.trim().toLowerCase();
+
+    if (
+      normalized === 'baixa' ||
+      normalized === 'media' ||
+      normalized === 'alta' ||
+      normalized === 'critica'
+    ) {
+      return normalized;
+    }
+
+    return 'media';
   }
 
   private mapFrequency(frequency: EFrequencia): RoutineViewModel['frequency'] {

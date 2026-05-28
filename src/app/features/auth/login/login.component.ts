@@ -5,8 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
 import { AuthService } from '@core/services/auth.service';
-import { AppHttpError } from '@core/http/http-error.utils';
-import { environment } from '@environments/environment';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -45,19 +44,39 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     this.authService.login({ email, password }).subscribe({
-      next: (session) => {
-        console.log('[LoginComponent] Sessao autenticada:', session);
-        localStorage.setItem(environment.tokenStorageKey, session.token);
-        localStorage.setItem('rotinik_auth_user', JSON.stringify(session));
+      next: () => {
+        // Responsabilidade limpa: O AuthService já salvou o token. 
+        // O Componente apenas cuida do fluxo visual e roteamento.
         this.router.navigate(['/home']);
       },
-      error: (err: AppHttpError) => {
-        console.error('[LoginComponent] Falha na autenticacao:', err);
-        if (err.status === 401) {
-          this.formErrorMessage.set('Email ou senha inválidos.');
-        } else {
-          this.formErrorMessage.set(err.message ?? 'Erro ao conectar com o servidor. Tente novamente.');
+      error: (err: HttpErrorResponse) => {
+        console.error('[LoginComponent] Falha na autenticação:', err);
+
+        // 1. Intercepta erros de validação do C# (FluentValidation / HTTP 400)
+        if (err.status === 400 && err.error?.errors) {
+          const backendErrors = err.error.errors;
+
+          Object.keys(backendErrors).forEach(key => {
+            // Mapeia a chave do C# (Ex: 'Email') para o formato do Angular ('email')
+            const formControl = this.loginForm.get(key.toLowerCase());
+            if (formControl) {
+              // Injeta o erro do backend diretamente no controle visual
+              formControl.setErrors({ backend: backendErrors[key][0] });
+            }
+          });
+
+          this.formErrorMessage.set('Por favor, corrija os campos destacados.');
         }
+        // 2. Intercepta falha de credenciais (HTTP 401)
+        else if (err.status === 401) {
+          // Extrai a mensagem exata gerada pela nossa UnauthorizedException no C#
+          this.formErrorMessage.set(err.error?.message || 'Email ou senha incorretos.');
+        }
+        // 3. Fallback para queda de servidor ou falha de rede
+        else {
+          this.formErrorMessage.set('Erro ao conectar com o servidor. Tente novamente mais tarde.');
+        }
+
         this.isLoading.set(false);
       },
     });

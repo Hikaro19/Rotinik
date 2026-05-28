@@ -13,6 +13,7 @@ export interface UserLoginDto {
 export interface UserMeDto {
   id?: string | number;
   name: string;
+  userName: string;
   email: string;
   phone?: string;
 }

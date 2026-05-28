@@ -4,11 +4,15 @@ import { finalize } from 'rxjs';
 import { getHttpErrorMessage } from '../http/http-error.utils';
 import { UserLoginDto, UserRegistrationDto } from '../models/api/user-api.models';
 import { AuthService } from './auth.service';
+import { RoutineService } from './routine.service';
+import { ProfileService } from './profile.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacadeService {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly routineService = inject(RoutineService);
+  private readonly profileService = inject(ProfileService);
 
   private readonly loadingSignal = signal(false);
   private readonly errorMessageSignal = signal('');
@@ -59,6 +63,8 @@ export class AuthFacadeService {
   }
 
   logout(): void {
+    this.routineService.resetState();
+    this.profileService.resetProfile();
     this.authService.logout();
     this.sessionSignal.set(null);
     this.router.navigate(['/auth/login']);

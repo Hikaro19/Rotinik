@@ -1,16 +1,20 @@
 import { Injectable, inject, computed, signal } from '@angular/core';
 import { take } from 'rxjs/operators';
-import { environment } from '@environments/environment';
 import { ProfileSnapshotDto } from '@core/models/api';
-import {
-  createMockAchievements,
-  createMockHistoryItems,
-  createMockMemberSinceDate,
-  createMockProfileStats,
-  generateMockActivityHistory,
-} from '@core/mocks/profile.mock';
 import { getHttpErrorMessage } from '@core/http/http-error.utils';
 import { ProfileApiService } from './profile-api.service';
+
+const emptyStats: ProfileStats = {
+  totalXpEarned: 0,
+  totalCoinsEarned: 0,
+  totalCoinsSpent: 0,
+  routinesCreated: 0,
+  routinesCompleted: 0,
+  tasksCompleted: 0,
+  currentStreak: 0,
+  longestStreak: 0,
+  daysSinceStart: 0,
+};
 
 export interface Achievement {
   id: string;
@@ -54,11 +58,11 @@ export interface ProfileHistoryItem {
 export class ProfileService {
   private readonly profileApi = inject(ProfileApiService);
 
-  readonly achievementsSignal = signal<Achievement[]>(createMockAchievements() as Achievement[]);
-  readonly activityHistorySignal = signal<ActivityDay[]>(generateMockActivityHistory());
-  readonly memberSinceSignal = signal<Date>(createMockMemberSinceDate());
-  readonly historyItemsSignal = signal<ProfileHistoryItem[]>(createMockHistoryItems() as ProfileHistoryItem[]);
-  readonly profileStatsSignal = signal<ProfileStats>(createMockProfileStats());
+  readonly achievementsSignal = signal<Achievement[]>([]);
+  readonly activityHistorySignal = signal<ActivityDay[]>([]);
+  readonly memberSinceSignal = signal<Date>(new Date());
+  readonly historyItemsSignal = signal<ProfileHistoryItem[]>([]);
+  readonly profileStatsSignal = signal<ProfileStats>(emptyStats);
   readonly isInitializedSignal = signal(false);
   readonly isLoadingSignal = signal(false);
   readonly operationErrorSignal = signal<string | null>(null);
@@ -94,15 +98,18 @@ export class ProfileService {
     this.isInitializedSignal.set(true);
     this.operationErrorSignal.set(null);
 
-    if (environment.enableMockData) {
-      return;
-    }
-
     this.loadSnapshotFromApi();
   }
 
   hydrateFromApi(snapshot: ProfileSnapshotDto): void {
-    this.memberSinceSignal.set(new Date(snapshot.memberSince));
+    // Mantém a data de criação do membro (com fallback seguro caso venha nula)
+    this.memberSinceSignal.set(snapshot?.memberSince ? new Date(snapshot.memberSince) : new Date());
+
+    /* ===================================================================
+       COMENTADO TEMPORARIAMENTE: Evita erros de 'map' de propriedades
+       undefined enquanto o back-end em C# não implementa a gamificação.
+       ===================================================================
+
     this.achievementsSignal.set(
       snapshot.achievements.map((achievement) => ({
         id: achievement.id,
@@ -132,17 +139,23 @@ export class ProfileService {
         details: item.details,
       })),
     );
-    this.profileStatsSignal.set({
-      totalXpEarned: snapshot.stats.totalXpEarned,
-      totalCoinsEarned: snapshot.stats.totalCoinsEarned,
-      totalCoinsSpent: snapshot.stats.totalCoinsSpent,
-      routinesCreated: snapshot.stats.routinesCreated,
-      routinesCompleted: snapshot.stats.routinesCompleted,
-      tasksCompleted: snapshot.stats.tasksCompleted,
-      currentStreak: snapshot.stats.currentStreak,
-      longestStreak: snapshot.stats.longestStreak,
-      daysSinceStart: snapshot.stats.daysSinceStart,
-    });
+    */
+
+    // Se o back-end enviar estatísticas básicas, nós atualizamos.
+    // Caso contrário, evita quebrar o sinal.
+    if (snapshot?.stats) {
+      this.profileStatsSignal.set({
+        totalXpEarned: snapshot.stats.totalXpEarned,
+        totalCoinsEarned: snapshot.stats.totalCoinsEarned,
+        totalCoinsSpent: snapshot.stats.totalCoinsSpent,
+        routinesCreated: snapshot.stats.routinesCreated,
+        routinesCompleted: snapshot.stats.routinesCompleted,
+        tasksCompleted: snapshot.stats.tasksCompleted,
+        currentStreak: snapshot.stats.currentStreak,
+        longestStreak: snapshot.stats.longestStreak,
+        daysSinceStart: snapshot.stats.daysSinceStart,
+      });
+    }
   }
 
   getAchievements(): Achievement[] {
@@ -198,7 +211,7 @@ export class ProfileService {
     this.achievementsSignal.set([]);
     this.activityHistorySignal.set([]);
     this.historyItemsSignal.set([]);
-    this.profileStatsSignal.set(createMockProfileStats());
+    this.profileStatsSignal.set(emptyStats);
     this.isInitializedSignal.set(false);
   }
 

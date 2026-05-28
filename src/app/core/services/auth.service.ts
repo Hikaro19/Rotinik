@@ -12,30 +12,34 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly baseUrl = `${environment.apiUrl}/user`;
+  // Separamos as rotas para refletir os Controllers do C#
+  private readonly userUrl = `${environment.apiUrl}/user`;
+  private readonly authUrl = `${environment.apiUrl}/user`;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) { }
 
   register(payload: UserRegistrationDto): Observable<UserRegisterResponseDto> {
-    console.log('[Rotinik Debug] Enviando:', payload);
-    return this.http.post<UserRegisterResponseDto>(this.baseUrl, payload);
+    console.log('[Rotinik Debug] Registrando:', payload);
+    // Usa o UserController
+    return this.http.post<UserRegisterResponseDto>(this.userUrl, payload);
   }
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
-    console.log('[Rotinik Debug] Enviando:', payload);
-    return this.http.post<{ data: { accessToken: string, refreshToken: string }, message: string }>(
-      `${this.baseUrl}/login`, payload
-    ).pipe(
+    console.log('[Rotinik Debug] Fazendo Login:', payload);
+
+    // Chama o UserController para pegar o Token
+    return this.http.post<{ data: { accessToken: string, refreshToken: string }, message: string }>(`${this.userUrl}/login`, payload).pipe(
       tap((res) => {
+        // Armazena o token ANTES do switchMap para o Interceptor pegar
         localStorage.setItem(environment.tokenStorageKey, res.data.accessToken);
-        localStorage.setItem(environment.refreshTokenStorageKey, res.data.refreshToken);
       }),
       switchMap((res) => {
-        return this.http.get<UserMeDto>(`${this.baseUrl}/me`).pipe(
+        // Agora com o token salvo, chama o UserController para pegar os dados
+        return this.http.get<UserMeDto>(`${this.userUrl}/me`).pipe(
           map((user) => ({
             token: res.data.accessToken,
             user: user,
-            message: 'Login realizado com sucesso',
+            message: res.message || 'Login realizado com sucesso',
           }))
         );
       }),
@@ -66,6 +70,7 @@ export class AuthService {
   }
 
   recuperarSenha(email: string): Observable<void> {
+    // Mantido o mock por enquanto, até criarmos a rota real no C#
     console.log(`[AuthService] Recuperacao de senha solicitada para: ${email}`);
     return timer(1200).pipe(map(() => void 0));
   }

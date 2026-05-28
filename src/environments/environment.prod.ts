@@ -6,7 +6,6 @@ export const environment = {
   signalRUrl: 'https://api.rotinik.com/hubs/gamification',
   
   // Feature flags
-  enableMockData: false,
   enableLogging: false,
   enableAnalytics: true,
   

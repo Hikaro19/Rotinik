@@ -1,6 +1,9 @@
+export type TaskImportance = 'baixa' | 'media' | 'alta' | 'critica';
+
 export interface RoutineUserDto {
   id: string;
   name: string;
+  userName: string;
   email: string;
   level: number;
   currentXp: number;
@@ -13,30 +16,40 @@ export interface RoutineUserDto {
 
 export interface RoutineTaskDto {
   id: string;
-  title: string;
-  description?: string;
+  routineId?: string | number;
+  taskId?: string | number;
+  taskTitle: string;
+  taskDescription?: string;
   isCompleted: boolean;
-  xpReward: number;
-  coinReward: number;
+  importance?: TaskImportance;
+  estimatedMinutes?: number;
+  xpReward?: number;
+  coinReward?: number;
   order: number;
   completedAt?: string;
 }
 
-export interface RoutineDto {
-  id: string;
+export interface RoutineSummaryResponse {
+  id: number;
+  userId?: number;
   title: string;
-  description: string;
-  category: string;
-  icon?: string;
-  color?: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
-  tasks: RoutineTaskDto[];
-  totalXp: number;
-  totalCoins: number;
+  description?: string;
+  category?: string;
+  isTemplate: boolean;
+  taskCount: number;
   createdAt: string;
-  completionStreak: number;
-  lastCompletedAt?: string;
-  isCompleted: boolean;
+}
+
+export interface RoutineDto {
+  id: number;
+  userId?: number;
+  title: string;
+  description?: string;
+  category?: string;
+  frequency?: string;
+  isDefault?: boolean;
+  createdAt: string;
+  tasks: RoutineTaskDto[];
 }
 
 export interface RoutinesSnapshotDto {
@@ -46,23 +59,30 @@ export interface RoutinesSnapshotDto {
 
 export interface CreateRoutineRequestDto {
   title: string;
-  description: string;
-  category: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
+  description?: string;
+  category?: string;
+  frequency?: string;
 }
 
 export interface UpdateRoutineRequestDto {
   title?: string;
   description?: string;
   category?: string;
-  frequency?: 'daily' | 'weekly' | 'monthly';
+  frequency?: string;
 }
 
 export interface CreateTaskRequestDto {
   title: string;
   description?: string;
-  xpReward: number;
-  coinReward: number;
+  estimatedMinutes: number;
+  importance: TaskImportance;
+}
+
+export interface UpdateTaskRequestDto {
+  title: string;
+  description?: string;
+  estimatedMinutes: number;
+  importance: TaskImportance;
 }
 
 export interface CompleteTaskResponseDto {

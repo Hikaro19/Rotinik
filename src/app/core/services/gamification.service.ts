@@ -7,6 +7,7 @@ import { RoutineService } from './routine.service';
 export interface GamePlayer {
   id: string;
   name: string;
+  userName: string;
   email: string;
   level: number;
   currentXP: number;
@@ -38,6 +39,7 @@ export class GamificationService {
     return {
       id: user?.getId() ?? 'user-001',
       name: user?.getNome() ?? 'Jogador',
+      userName: user?.getUserName() ?? 'jogador',
       email: user?.getEmail() ?? 'player@rotinik.com',
       level: user?.getNivel() ?? 1,
       currentXP: user?.getExperiencia() ?? 0,
@@ -150,6 +152,5 @@ export class GamificationService {
     this.achievementIdsSignal.set([]);
     this.transactionsSignal.set([]);
     this.routineService.resetState();
-    this.routineService.seedData();
   }
 }

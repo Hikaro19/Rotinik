@@ -1,6 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '@core/services/auth.service';
+import { RoutineService } from '@core/services/routine.service';
+import { ProfileService } from '@core/services/profile.service';
 
 @Component({
   selector: 'app-options',
@@ -118,7 +121,10 @@ import { Router } from '@angular/router';
   `],
 })
 export class OptionsComponent {
-  private router = inject(Router);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly routineService = inject(RoutineService);
+  private readonly profileService = inject(ProfileService);
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
@@ -140,7 +146,9 @@ export class OptionsComponent {
   }
 
   logout() {
-    // Implementar logout (limpar sessão, token, etc.) depois
+    this.routineService.resetState();
+    this.profileService.resetProfile();
+    this.authService.logout();
     this.router.navigate(['/auth/login']);
   }
 }

@@ -8,7 +8,8 @@
     "build": "ng build",
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "ng lint",
     "format": "prettier --write \"src/**/*.{ts,scss,html}\"",
     "format:check": "prettier --check \"src/**/*.{ts,scss,html}\""
@@ -28,19 +29,18 @@
     "zone.js": "^0.14.0"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.5.2",
     "@angular-devkit/build-angular": "^18.2.21",
     "@angular/cli": "^18.2.21",
     "@angular/compiler-cli": "^18.2.14",
-    "@types/jasmine": "~5.1.0",
     "@types/node": "^20.0.0",
     "@types/uuid": "^10.0.0",
-    "jasmine-core": "~5.1.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
+    "@vitest/coverage-v8": "^4.1.7",
+    "jsdom": "^29.1.1",
     "prettier": "^3.0.0",
-    "typescript": "~5.5.4"
+    "typescript": "~5.5.4",
+    "vite": "^8.0.14",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.7"
   }
 }
