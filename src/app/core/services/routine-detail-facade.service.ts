@@ -59,6 +59,15 @@ export class RoutineDetailFacadeService {
     this.refreshRoutine();
   }
 
+  updateRoutine(updates: Partial<Routine>): void {
+    if (!this.routineId()) {
+      return;
+    }
+
+    this.routineService.updateRoutine(this.routineId(), updates);
+    this.refreshRoutine();
+  }
+
   uncompleteTask(taskId: string): void {
     if (!this.routineId()) {
       return;

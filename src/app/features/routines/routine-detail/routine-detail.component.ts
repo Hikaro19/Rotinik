@@ -7,13 +7,14 @@ import { RoutineApiService } from '@core/services/routine-api.service';
 import { RoutineService, Task } from '@core/services/routine.service';
 import { RoutineDetailFacadeService } from '@core/services/routine-detail-facade.service';
 import { TaskFormComponent, TaskFormValue } from './task-form/task-form.component';
+import { RoutineFormComponent } from './routine-form/routine-form.component';
 import { AppToastComponent } from '@shared/components/ui/toast/toast.component';
 import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-routine-detail',
   standalone: true,
-  imports: [CommonModule, TaskFormComponent, AppToastComponent, ConfirmDialogComponent],
+  imports: [CommonModule, TaskFormComponent, RoutineFormComponent, AppToastComponent, ConfirmDialogComponent],
   templateUrl: './routine-detail.component.html',
   styleUrl: './routine-detail.component.scss',
 })
@@ -245,5 +246,32 @@ export class RoutineDetailComponent implements OnInit {
 
   backToRoutines(): void {
     this.router.navigate(['/routines']);
+  }
+
+  readonly isRoutineFormOpen = signal(false);
+
+  openEditRoutineDialog(): void {
+    this.isRoutineFormOpen.set(true);
+  }
+
+  closeRoutineForm(): void {
+    this.isRoutineFormOpen.set(false);
+  }
+
+  submitRoutineForm(payload: import('./routine-form/routine-form.component').RoutineFormValue): void {
+    const routineId = this.routineId();
+    if (!routineId) return;
+
+    this.localErrorMessage.set(null);
+    this.routineDetailFacade.updateRoutine({
+      title: payload.title,
+      description: payload.description,
+      category: payload.category,
+      frequency: payload.frequency as any
+    });
+    
+    // Simular o comportamento reativo já que a API handle o state no RoutineService
+    this.toastMessage.set('Rotina atualizada.');
+    this.closeRoutineForm();
   }
 }

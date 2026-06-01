@@ -140,6 +140,7 @@
   font-size: var(--font-size-xs);
 }
 
+.edit-routine-btn,
 .new-task-btn,
 .streak-badge {
   display: inline-flex;
@@ -154,6 +155,7 @@
   white-space: nowrap;
 }
 
+.edit-routine-btn,
 .new-task-btn {
   border: 1px solid rgba(168, 85, 247, 0.45);
   background: rgba(168, 85, 247, 0.14);
@@ -162,6 +164,7 @@
   transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
 
+.edit-routine-btn:hover,
 .new-task-btn:hover {
   border-color: #d946ef;
   background: rgba(168, 85, 247, 0.22);

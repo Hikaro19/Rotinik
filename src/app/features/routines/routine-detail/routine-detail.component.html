@@ -25,9 +25,18 @@
         </div>
       </div>
 
-      <button type="button" class="delete-routine-btn" (click)="openDeleteRoutineDialog()">
-        Excluir Rotina
-      </button>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button type="button" class="edit-routine-btn" (click)="openEditRoutineDialog()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 1.25rem; height: 1.25rem; display: inline-block; vertical-align: text-bottom; margin-right: 0.25rem;">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+          </svg>
+          Editar Rotina
+        </button>
+        <button type="button" class="delete-routine-btn" (click)="openDeleteRoutineDialog()">
+          Excluir Rotina
+        </button>
+      </div>
     </div>
 
     <section class="action-panel">
@@ -190,10 +199,12 @@
   </ng-container>
 
   <div class="toast-layer" *ngIf="toastMessage() as message">
-    <app-toast type="success" title="Rotina atualizada" [message]="message" [duration]="2600" (close)="closeToast()"></app-toast>
+    <app-toast type="success" title="Sucesso" [message]="message" [duration]="2600" (close)="closeToast()"></app-toast>
   </div>
 
   <app-task-form *ngIf="isTaskFormOpen()" [routineId]="routineId()" [task]="selectedTask()" [submitting]="isSubmittingTaskForm()" (cancel)="closeTaskForm()" (save)="submitTaskForm($event)"></app-task-form>
+  
+  <app-routine-form *ngIf="isRoutineFormOpen()" [routine]="rotinaAtual()" [submitting]="isBusy()" (cancel)="closeRoutineForm()" (save)="submitRoutineForm($event)"></app-routine-form>
 
   <app-confirm-dialog *ngIf="isDeleteTaskDialogOpen()" title="Excluir tarefa" [message]="getDeleteTaskMessage()" confirmLabel="Excluir tarefa" [loading]="isDeletingTaskRequest()" (decision)="confirmDeleteTask($event)"></app-confirm-dialog>
 
