@@ -38,7 +38,6 @@
   align-items: center;
   gap: var(--spacing-2);
 
-  // ─ Com ícone
   &--has-icon {
     .app-input {
       padding-left: var(--spacing-10);
@@ -53,23 +52,20 @@
 .app-input {
   @include input-base;
 
-  // ─ Estilos customizados
   flex: 1;
   padding: var(--spacing-3) var(--spacing-5);
   background: var(--bg-input);
-  border: 1px solid #3F1368;
+  border: 1px solid var(--purple-border);
   color: var(--text-primary);
   font-family: var(--font-body);
   font-size: var(--font-size-base);
   border-radius: var(--radius-pill);
   transition: all var(--transition-base);
 
-  // ─ Placeholder
   &::placeholder {
     color: var(--text-muted);
   }
 
-  // ─ Focus state
   &:focus {
     outline: none;
     border-color: var(--purple-neon);
@@ -77,21 +73,18 @@
     box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.15);
   }
 
-  // ─ Hover state
   &:hover:not(:disabled):not(:focus) {
     border-color: var(--text-secondary);
   }
 
-  // ─ Disabled state
   &:disabled {
     background: var(--bg-hover);
     color: var(--text-disabled);
-    border-color: #3F1368;
+    border-color: var(--purple-border);
     cursor: not-allowed;
     opacity: 0.6;
   }
 
-  // ─ Error state
   &--error {
     border-color: var(--game-danger);
 
@@ -100,7 +93,6 @@
     }
   }
 
-  // ─ Focused state
   &--focused {
     border-color: var(--purple-neon);
     box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.15);
@@ -121,8 +113,7 @@
   color: var(--text-secondary);
   font-size: var(--font-size-lg);
 
-  // Ajustar quando input tem erro
-  .app-input-container {
+  .app-input-container & {
     .app-input--error ~ & {
       color: var(--game-danger);
     }
@@ -208,7 +199,7 @@
 }
 
 // ============================================================================
-// 📱 RESPONSIVE
+// 📱 RESPONSIVE & ACCESSIBILITY & PERFORMANCE
 // ============================================================================
 
 @media (max-width: 480px) {
@@ -222,27 +213,21 @@
   }
 }
 
-// ============================================================================
-// ♿ ACCESSIBILITY
-// ============================================================================
-
 .app-input:focus-visible {
   outline: 2px solid var(--purple-neon);
   outline-offset: 2px;
 }
 
-// High contrast mode
 @media (prefers-contrast: more) {
   .app-input {
     border-width: 2px;
-  }
 
-  .app-input--error {
-    border-color: var(--game-danger);
+    &--error {
+      border-color: var(--game-danger);
+    }
   }
 }
 
-// Reduced motion
 @media (prefers-reduced-motion: reduce) {
   .app-input,
   .app-input-password-toggle {

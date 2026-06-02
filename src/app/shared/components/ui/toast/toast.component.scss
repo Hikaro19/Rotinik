@@ -7,7 +7,7 @@
   padding: var(--spacing-4);
   border-radius: var(--radius-md);
   background-color: var(--bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-lg);
   max-width: 400px;
   width: 100%;
@@ -20,33 +20,25 @@
   &--success {
     border-left-color: var(--game-success);
 
-    .app-toast__icon {
-      color: var(--game-success);
-    }
+    .app-toast__icon { color: var(--game-success); }
   }
 
   &--error {
     border-left-color: var(--game-danger);
 
-    .app-toast__icon {
-      color: var(--game-danger);
-    }
+    .app-toast__icon { color: var(--game-danger); }
   }
 
   &--warning {
     border-left-color: var(--game-warning);
 
-    .app-toast__icon {
-      color: var(--game-warning);
-    }
+    .app-toast__icon { color: var(--game-warning); }
   }
 
   &--info {
     border-left-color: var(--purple-neon);
 
-    .app-toast__icon {
-      color: var(--purple-neon);
-    }
+    .app-toast__icon { color: var(--purple-neon); }
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -117,13 +109,8 @@
       stroke-width: 2;
     }
 
-    &:hover {
-      color: var(--text-primary);
-    }
-
-    &:active {
-      transform: scale(0.9);
-    }
+    &:hover { color: var(--text-primary); }
+    &:active { transform: scale(0.9); }
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -145,12 +132,8 @@
 // ─────────────────────────────────────────────────────────────────────
 
 @keyframes progress-bar {
-  from {
-    width: 100%;
-  }
-  to {
-    width: 0;
-  }
+  from { width: 100%; }
+  to { width: 0; }
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -160,12 +143,8 @@
 @media (max-width: 768px) {
   .app-toast {
     max-width: calc(100vw - var(--spacing-4));
-    width: 100%;
 
-    &__title {
-      font-size: var(--font-size-xs);
-    }
-
+    &__title,
     &__message {
       font-size: var(--font-size-xs);
     }
@@ -178,11 +157,7 @@
     padding: var(--spacing-3);
     gap: var(--spacing-2);
 
-    &__icon {
-      width: 20px;
-      height: 20px;
-    }
-
+    &__icon,
     &__close {
       width: 20px;
       height: 20px;

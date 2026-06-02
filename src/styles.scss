@@ -47,6 +47,13 @@ body {
   --purple-gradient-end: #5B21B6;
   --brand-gradient: linear-gradient(135deg, #A855F7 0%, #5B21B6 100%);
 
+  // ─ Refactoring Tokens (Shared variables)
+  --purple-border: #3F1368;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --accent-purple: #667eea;
+  --gradient-accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --shadow-accent: 0 4px 12px rgba(102, 126, 234, 0.3);
+
   // ─ Textos
   --text-primary: #FFFFFF;        // Títulos e texto principal
   --text-secondary: #A78BFA;      // Texto secundário (help, hints)
@@ -240,6 +247,16 @@ body {
   }
   50% {
     text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(20px) translateX(-10px);
   }
 }
 
