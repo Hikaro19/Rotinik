@@ -19,12 +19,12 @@ export class HomeFacadeService {
 
   readonly nomeUsuario = computed(() => {
     const usuario = this.usuarioAtual();
-    return usuario?.getNome() ?? 'Bem-Vindo';
+    return usuario?.name ?? 'Bem-Vindo';
   });
 
   readonly usernameUsuario = computed(() => {
     const usuario = this.usuarioAtual();
-    return usuario?.getUserName() ?? '';
+    return usuario?.userName ?? '';
   });
 
   readonly nivelUsuario = this.routineService.userLevel;

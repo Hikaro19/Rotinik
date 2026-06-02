@@ -1,750 +1,244 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { take } from 'rxjs/operators';
-import { environment } from '@environments/environment';
-import { Usuario } from '../../users/models/usuario';
-import { Rotina } from '../models/rotina';
-import {
-  CreateRoutineRequestDto,
-  CreateTaskRequestDto,
-  RoutineDto,
-  UpdateTaskRequestDto,
-  UpdateRoutineRequestDto,
-} from '../models/routine-api.models';
 import { RoutineViewModel, TaskViewModel } from '../models/routine-view.models';
-import { getHttpErrorMessage } from '@core/http/http-error.utils';
 import { RoutineApiService } from './routine-api.service';
 import { RoutineMapperService } from './routine-mapper.service';
+import { getHttpErrorMessage } from '@core/http/http-error.utils';
+import { CreateRoutineRequestDto, UpdateRoutineRequestDto, CreateTaskRequestDto, UpdateTaskRequestDto } from '../models/routine-api.models';
+// Remoção das classes de Domínio (Usuario, Rotina, Tarefa) 
 
 export type Task = TaskViewModel;
 export type Routine = RoutineViewModel;
-type TaskMutationData = Pick<Task, 'title' | 'importance' | 'estimatedMinutes'> &
-  Partial<Pick<Task, 'description'>>;
-type RoutineOperation =
-  | 'loadSnapshot'
-  | 'createRoutine'
-  | 'updateRoutine'
-  | 'deleteRoutine'
-  | 'addTask'
-  | 'updateTask'
-  | 'deleteTask'
-  | 'completeTask';
+type TaskMutationData = Pick<Task, 'title' | 'importance' | 'estimatedMinutes'> & Partial<Pick<Task, 'description'>>;
+type RoutineOperation = 'loadSnapshot' | 'createRoutine' | 'updateRoutine' | 'deleteRoutine' | 'addTask' | 'updateTask' | 'deleteTask' | 'completeTask';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineService {
   private readonly routineApi = inject(RoutineApiService);
   private readonly routineMapper = inject(RoutineMapperService);
 
-  private readonly currentUserState = signal<Usuario | null>(null);
-  private readonly userRevision = signal(0);
-  private readonly isInitializedSignal = signal(false);
-  readonly currentUserSignal = computed(() => {
-    this.userRevision();
-    return this.currentUserState();
-  });
+  // Usuário substituído por dados simples em ViewModels (SRP aplicado)
+  readonly currentUserSignal = signal<any>(null);
 
   readonly routinesSignal = signal<Routine[]>([]);
   readonly isLoadingSignal = signal(false);
   private readonly pendingOperationsState = signal<Record<RoutineOperation, boolean>>({
-    loadSnapshot: false,
-    createRoutine: false,
-    updateRoutine: false,
-    deleteRoutine: false,
-    addTask: false,
-    updateTask: false,
-    deleteTask: false,
-    completeTask: false,
+    loadSnapshot: false, createRoutine: false, updateRoutine: false, deleteRoutine: false,
+    addTask: false, updateTask: false, deleteTask: false, completeTask: false,
   });
   readonly operationErrorSignal = signal<string | null>(null);
 
   readonly totalRoutines = computed(() => this.routinesSignal().length);
-  readonly completedRoutines = computed(
-    () => this.routinesSignal().filter((routine) => routine.isCompleted).length
-  );
-  readonly totalPossibleXP = computed(() =>
-    this.routinesSignal().reduce((sum, routine) => sum + routine.totalXP, 0)
-  );
-  readonly totalPendingTasks = computed(() =>
-    this.routinesSignal().reduce(
-      (sum, routine) => sum + routine.tasks.filter((task) => !task.completed).length,
-      0
-    )
-  );
-  readonly longestStreak = computed(() =>
-    this.routinesSignal().reduce((max, routine) => Math.max(max, routine.completionStreak), 0)
-  );
+  readonly completedRoutines = computed(() => this.routinesSignal().filter(r => r.isCompleted).length);
+  readonly totalPossibleXP = computed(() => this.routinesSignal().reduce((sum, r) => sum + r.totalXP, 0));
+  readonly totalPendingTasks = computed(() => this.routinesSignal().reduce((sum, r) => sum + r.tasks.filter(t => !t.completed).length, 0));
+  readonly longestStreak = computed(() => this.routinesSignal().reduce((max, r) => Math.max(max, r.completionStreak), 0));
 
-  readonly userLevel = computed(() => this.currentUserSignal()?.getNivel() ?? 0);
-  readonly userXP = computed(() => this.currentUserSignal()?.getExperiencia() ?? 0);
-  readonly userCoins = computed(() => this.currentUserSignal()?.getMoedas() ?? 0);
-  readonly userLevelProgress = computed(
-    () => this.currentUserSignal()?.calcularProgressoNivel() ?? 0
-  );
-  readonly xpToNextLevel = computed(() => {
-    const user = this.currentUserSignal();
-    if (!user) return 0;
-    return Math.floor(100 * Math.pow(user.getNivel(), 1.5));
-  });
-  readonly isMutatingSignal = computed(() =>
-    Object.entries(this.pendingOperationsState())
-      .filter(([key]) => key !== 'loadSnapshot')
-      .some(([, isPending]) => isPending)
-  );
+  readonly userLevel = computed(() => this.currentUserSignal()?.level ?? 0);
+  readonly userXP = computed(() => this.currentUserSignal()?.currentXp ?? 0);
+  readonly userCoins = computed(() => this.currentUserSignal()?.coins ?? 0);
+  readonly userLevelProgress = computed(() => this.currentUserSignal()?.levelProgress ?? 0);
+
+  readonly isMutatingSignal = computed(() => Object.entries(this.pendingOperationsState()).filter(([key]) => key !== 'loadSnapshot').some(([, isPending]) => isPending));
   readonly isCreatingRoutineSignal = computed(() => this.pendingOperationsState().createRoutine);
   readonly isCompletingTaskSignal = computed(() => this.pendingOperationsState().completeTask);
   readonly isUpdatingTaskSignal = computed(() => this.pendingOperationsState().updateTask);
   readonly isDeletingTaskSignal = computed(() => this.pendingOperationsState().deleteTask);
+  private readonly isInitializedSignal = signal(false);
+
+  readonly xpToNextLevel = computed(() => {
+    const user = this.currentUserSignal();
+    if (!user) return 0;
+    return Math.floor(100 * Math.pow(user.level || 1, 1.5));
+  });
 
   initialize(): void {
-    if (this.isInitializedSignal() || this.isLoadingSignal()) {
-      return;
-    }
+    if (this.isInitializedSignal() || this.isLoadingSignal()) return;
     this.loadSnapshotFromApi();
   }
 
-  resetState(): void {
-    this.currentUserState.set(null);
-    this.routinesSignal.set([]);
-    this.isInitializedSignal.set(false);
-  }
-
-  adicionarRotina(rotina: Rotina): Routine {
-    const routineViewModel = this.routineMapper.mapDomainRoutineToViewModel(rotina);
-
-    if (!this.hasDomainData()) {
-      this.routinesSignal.update((routines) => [routineViewModel, ...routines]);
-      this.createRoutineInApi(routineViewModel);
-      return routineViewModel;
-    }
-
-    if (!this.hasDomainData()) {
-      this.routinesSignal.update((routines) => [routineViewModel, ...routines]);
-      return routineViewModel;
-    }
-
-    const user = this.requireCurrentUser();
-    user.adicionarRotina(rotina);
-
-    this.bumpUserRevision();
-    this.routinesSignal.update((routines) => [routineViewModel, ...routines]);
-    return routineViewModel;
-  }
-
-  updateRoutine(id: string, updates: Partial<Routine>): void {
-    const routine = this.getRoutineById(id);
-    if (!routine) {
-      return;
-    }
-
-    if (!routine.domainModel) {
-      this.routinesSignal.update((routines) =>
-        routines.map((item) =>
-          item.id === id ? { ...item, ...updates, tasks: updates.tasks ?? item.tasks } : item
-        )
-      );
-      this.updateRoutineInApi(id, updates);
-      return;
-    }
-
-    if (routine.domainModel && (updates.title || updates.description)) {
-      routine.domainModel.atualizar(
-        updates.title ?? routine.title,
-        updates.description ?? routine.description
-      );
-      this.bumpUserRevision();
-      this.syncRoutinesFromCurrentUser();
-      return;
-    }
-
-    this.routinesSignal.update((routines) =>
-      routines.map((item) =>
-        item.id === id
-          ? {
-            ...item,
-            ...updates,
-            tasks: updates.tasks ?? item.tasks,
-          }
-          : item
-      )
-    );
-  }
-
-  deleteRoutine(id: string): void {
-    if (!this.hasDomainData()) {
-      this.routinesSignal.update((routines) => routines.filter((routine) => routine.id !== id));
-      this.deleteRoutineInApi(id);
-      return;
-    }
-
-    if (this.hasDomainData()) {
-      const user = this.requireCurrentUser();
-      user.removerRotina(id);
-      this.bumpUserRevision();
-    }
-
-    this.routinesSignal.update((routines) => routines.filter((routine) => routine.id !== id));
-  }
-
   getRoutineById(id: string): Routine | undefined {
-    return this.routinesSignal().find((routine) => routine.id === id);
+    return this.routinesSignal().find(r => r.id === id);
   }
 
-  getAllRoutines(): Routine[] {
-    return this.routinesSignal();
+  // --- API Integrations (YAGNI: Sem lógica duplicada de Domínio, apenas reatividade e API) ---
+
+  loadSnapshotFromApi(): void {
+    this.startOperation('loadSnapshot');
+    this.isLoadingSignal.set(true);
+
+    this.routineApi.getSnapshot().pipe(take(1)).subscribe({
+      next: (snapshot) => {
+        if (snapshot.user) this.currentUserSignal.set(snapshot.user);
+        this.routinesSignal.set(this.routineMapper.mapApiRoutinesToViewModels(snapshot.routines));
+        this.isInitializedSignal.set(true);
+        this.finishOperation('loadSnapshot');
+        this.isLoadingSignal.set(false);
+      },
+      error: (error) => {
+        this.failOperation('loadSnapshot', getHttpErrorMessage(error, 'Não foi possível carregar os dados.'));
+        this.isLoadingSignal.set(false);
+      },
+    });
   }
 
-  getRoutinesByFrequency(frequency: Routine['frequency']): Routine[] {
-    return this.routinesSignal().filter((routine) => routine.frequency === frequency);
+  createRoutine(payload: CreateRoutineRequestDto): void {
+    this.startOperation('createRoutine');
+    this.routineApi.create(payload).pipe(take(1)).subscribe({
+      next: () => {
+        this.loadSnapshotFromApi(); // Sincroniza do servidor após sucesso
+        this.finishOperation('createRoutine');
+      },
+      error: (error) => this.failOperation('createRoutine', getHttpErrorMessage(error, 'Falha ao criar rotina.')),
+    });
+  }
+
+  updateRoutine(routineId: string, payload: UpdateRoutineRequestDto): void {
+    this.startOperation('updateRoutine');
+    this.routineApi.update(routineId, payload).pipe(take(1)).subscribe({
+      next: () => {
+        this.loadSnapshotFromApi();
+        this.finishOperation('updateRoutine');
+      },
+      error: (error) => this.failOperation('updateRoutine', getHttpErrorMessage(error, 'Falha ao atualizar.')),
+    });
+  }
+
+  deleteRoutine(routineId: string): void {
+    this.startOperation('deleteRoutine');
+    this.routineApi.delete(routineId).pipe(take(1)).subscribe({
+      next: () => {
+        this.routinesSignal.update(routines => routines.filter(r => r.id !== routineId));
+        this.finishOperation('deleteRoutine');
+      },
+      error: (error) => this.failOperation('deleteRoutine', getHttpErrorMessage(error, 'Falha ao excluir.')),
+    });
   }
 
   completeTask(routineId: string, taskId: string): { xp: number; coins: number } {
-    const routine = this.getRoutineById(routineId);
-    if (!routine) {
-      return { xp: 0, coins: 0 };
-    }
+    this.startOperation('completeTask');
 
-    if (!routine.domainModel) {
-      const task = routine.tasks.find((item) => item.id === taskId);
-      const reward = {
-        xp: task?.xpReward ?? 0,
-        coins: task?.coinReward ?? 0,
-      };
-      this.completeTaskInApi(routineId, taskId);
-      return reward;
-    }
+    let xpRecompensa = 0;
+    let moedasRecompensa = 0;
 
-    if (routine.domainModel) {
-      return this.completeDomainTask(routineId, taskId);
-    }
+    // 1. Optimistic Update nas Rotinas
+    this.routinesSignal.update(routines => routines.map(r => {
+      if (r.id !== routineId) return r;
 
-    let reward = { xp: 0, coins: 0 };
-    this.routinesSignal.update((routines) =>
-      routines.map((item) => {
-        if (item.id !== routineId) {
-          return item;
+      const tasks = r.tasks.map(t => {
+        if (t.id === taskId) {
+          xpRecompensa = t.xpReward || 0;
+          moedasRecompensa = t.coinReward || 0;
+          return { ...t, completed: true, completedDate: new Date() };
         }
+        return t;
+      });
 
-        const tasks = item.tasks.map((task) => {
-          if (task.id !== taskId || task.completed) {
-            return task;
-          }
+      const isCompleted = tasks.length > 0 && tasks.every(t => t.completed);
+      return { ...r, tasks, isCompleted };
+    }));
 
-          reward = { xp: task.xpReward, coins: task.coinReward };
-          return {
-            ...task,
-            completed: true,
-            completedDate: new Date(),
-          };
-        });
-
-        const isCompleted = tasks.length > 0 && tasks.every((task) => task.completed);
-        return {
-          ...item,
-          tasks,
-          isCompleted,
-          lastCompletedDate: isCompleted ? new Date() : item.lastCompletedDate,
-          completionStreak: isCompleted ? item.completionStreak + 1 : item.completionStreak,
-        };
-      })
-    );
-
-    if (reward.xp > 0 || reward.coins > 0) {
-      this.applyRewardsToCurrentUser(reward.xp, reward.coins, `Tarefa: ${routine.title}`);
+    // 2. Optimistic Update no Usuário (Soma XP e Moedas na hora para a UI piscar)
+    if (xpRecompensa > 0 || moedasRecompensa > 0) {
+      this.currentUserSignal.update(user => user ? {
+        ...user,
+        currentXp: (user.currentXp || 0) + xpRecompensa,
+        coins: (user.coins || 0) + moedasRecompensa
+      } : user);
     }
 
-    return reward;
+    // 3. Chamada à API
+    this.routineApi.completeTask(routineId, taskId).pipe(take(1)).subscribe({
+      next: () => {
+        this.loadSnapshotFromApi(); // Sincroniza dados oficiais do servidor
+        this.finishOperation('completeTask');
+      },
+      error: (error) => {
+        this.loadSnapshotFromApi(); // Reverte a UI em caso de erro
+        this.failOperation('completeTask', getHttpErrorMessage(error, 'Falha ao completar tarefa.'));
+      }
+    });
+
+    // 4. Retorna para o TaskExecutionComponent saber quanto mostrar na animação
+    return { xp: xpRecompensa, coins: moedasRecompensa };
   }
 
   uncompleteTask(routineId: string, taskId: string): void {
-    const routine = this.getRoutineById(routineId);
-    if (!routine) {
-      return;
-    }
+    this.startOperation('completeTask'); // Reutilizamos o state de loading de completar tarefa
 
-    if (routine.domainModel) {
-      const domainTask = this.requireCurrentUser().obterRotina(routineId)?.obterTarefa(taskId);
-      if (!domainTask) {
-        return;
+    // Optimistic Update UI (Desmarca imediatamente na tela)
+    this.routinesSignal.update(routines => routines.map(r => r.id === routineId ? {
+      ...r, tasks: r.tasks.map(t => t.id === taskId ? { ...t, completed: false, completedDate: undefined } : t)
+    } : r));
+
+    // Chama o endpoint de toggle da API
+    this.routineApi.completeTask(routineId, taskId).pipe(take(1)).subscribe({
+      next: () => {
+        this.loadSnapshotFromApi(); // Sincroniza dados oficiais
+        this.finishOperation('completeTask');
+      },
+      error: (error) => {
+        this.loadSnapshotFromApi(); // Reverte a UI em caso de erro
+        this.failOperation('completeTask', getHttpErrorMessage(error, 'Falha ao desmarcar tarefa.'));
       }
-
-      domainTask.voltarParaPendente();
-      this.syncRoutinesFromCurrentUser();
-      return;
-    }
-
-    this.routinesSignal.update((routines) =>
-      routines.map((item) =>
-        item.id === routineId
-          ? {
-            ...item,
-            isCompleted: false,
-            tasks: item.tasks.map((task) =>
-              task.id === taskId ? { ...task, completed: false, completedDate: undefined } : task
-            ),
-          }
-          : item
-      )
-    );
-  }
-
-  addTaskToRoutine(routineId: string, taskData: TaskMutationData): void {
-    const routine = this.getRoutineById(routineId);
-    if (!routine) {
-      return;
-    }
-
-    if (!routine.domainModel) {
-      this.addTaskInApi(routineId, taskData);
-      return;
-    }
-
-    if (routine.domainModel) {
-      const task = this.routineMapper.createDomainTask(taskData);
-
-      routine.domainModel.adicionarTarefa(task);
-      this.syncRoutinesFromCurrentUser();
-      return;
-    }
-
-    this.routinesSignal.update((routines) =>
-      routines.map((item) => {
-        if (item.id !== routineId) {
-          return item;
-        }
-
-        const newTask: Task = {
-          id: `task-${routineId}-${Date.now()}`,
-          routineId,
-          title: taskData.title,
-          description: taskData.description,
-          importance: taskData.importance,
-          estimatedMinutes: taskData.estimatedMinutes,
-          completed: false,
-          xpReward: 0,
-          coinReward: 0,
-          order: item.tasks.length + 1,
-        };
-
-        return {
-          ...item,
-          tasks: [...item.tasks, newTask],
-          totalXP: item.totalXP + newTask.xpReward,
-          totalCoins: item.totalCoins + newTask.coinReward,
-        };
-      })
-    );
+    });
   }
 
   deleteTask(routineId: string, taskId: string): void {
-    const routine = this.getRoutineById(routineId);
-    if (!routine) {
-      return;
-    }
-
-    if (!routine.domainModel) {
-      this.deleteTaskInApi(routineId, taskId);
-      return;
-    }
-
-    if (routine.domainModel) {
-      routine.domainModel.removerTarefa(taskId);
-      this.syncRoutinesFromCurrentUser();
-      return;
-    }
-
-    this.routinesSignal.update((routines) =>
-      routines.map((item) => {
-        if (item.id !== routineId) {
-          return item;
-        }
-
-        const tasks = item.tasks.filter((task) => task.id !== taskId);
-        return {
-          ...item,
-          tasks,
-          totalXP: tasks.reduce((sum, task) => sum + task.xpReward, 0),
-          totalCoins: tasks.reduce((sum, task) => sum + task.coinReward, 0),
-          isCompleted: tasks.length > 0 && tasks.every((task) => task.completed),
-        };
-      })
-    );
-  }
-
-  updateTask(routineId: string, taskId: string, taskData: TaskMutationData): void {
-    const routine = this.getRoutineById(routineId);
-    if (!routine) {
-      return;
-    }
-
-    if (!routine.domainModel) {
-      this.updateTaskInApi(routineId, taskId, taskData);
-      return;
-    }
-
-    this.routinesSignal.update((routines) =>
-      routines.map((item) => {
-        if (item.id !== routineId) {
-          return item;
-        }
-
-        const tasks = item.tasks.map((task) =>
-          task.id === taskId
-            ? {
-              ...task,
-              title: taskData.title,
-              description: taskData.description,
-              importance: taskData.importance,
-              estimatedMinutes: taskData.estimatedMinutes,
-            }
-            : task
-        );
-
-        return {
-          ...item,
-          tasks,
-          totalXP: tasks.reduce((sum, task) => sum + task.xpReward, 0),
-          totalCoins: tasks.reduce((sum, task) => sum + task.coinReward, 0),
-        };
-      })
-    );
-  }
-
-  syncRoutineFromApi(routine: RoutineDto): void {
-    this.replaceRoutineFromApi(routine.id.toString(), routine);
-  }
-
-  removeRoutineFromState(routineId: string): void {
-    this.routinesSignal.update((routines) =>
-      routines.filter((routine) => routine.id !== routineId)
-    );
-  }
-
-  addCoins(amount: number): void {
-    const user = this.requireCurrentUser();
-    user.ganharMoedas(amount);
-    this.bumpUserRevision();
-  }
-
-  spendCoins(amount: number): boolean {
-    const user = this.requireCurrentUser();
-    const success = user.gastarMoedas(amount);
-
-    if (success) {
-      this.bumpUserRevision();
-    }
-
-    return success;
-  }
-
-  hydrateFromApi(routines: RoutineDto[]): void {
-    this.setRoutines(this.routineMapper.mapApiRoutinesToViewModels(routines));
+    this.startOperation('deleteTask');
+    this.routineApi.deleteTask(routineId, taskId).pipe(take(1)).subscribe({
+      next: () => {
+        this.loadSnapshotFromApi();
+        this.finishOperation('deleteTask');
+      },
+      error: (error) => this.failOperation('deleteTask', getHttpErrorMessage(error, 'Falha ao remover a tarefa.'))
+    });
   }
 
   clearOperationError(): void {
     this.operationErrorSignal.set(null);
   }
 
-  loadSnapshotFromApi(): void {
-    this.startOperation('loadSnapshot');
-    this.isLoadingSignal.set(true);
-
-    this.routineApi
-      .getSnapshot()
-      .pipe(take(1))
-      .subscribe({
-        next: (snapshot) => {
-          if (snapshot.user) {
-            const domainUser = Usuario.reconstituir(
-              snapshot.user.id,
-              snapshot.user.name,
-              snapshot.user.email,
-              snapshot.user.level,
-              snapshot.user.currentXp,
-              snapshot.user.coins,
-              snapshot.user.userName
-            );
-            this.setCurrentUser(domainUser);
-          }
-
-          this.hydrateFromApi(snapshot.routines);
-          this.isInitializedSignal.set(true); // Marca inicialização no sucesso
-          this.finishOperation('loadSnapshot');
-          this.isLoadingSignal.set(false);
-        },
-        error: (error) => {
-          this.isInitializedSignal.set(false); // Reseta para permitir retentativa no futuro
-          this.failOperation(
-            'loadSnapshot',
-            getHttpErrorMessage(error, 'Nao foi possivel carregar as rotinas do servidor.')
-          );
-          this.isLoadingSignal.set(false);
-        },
-      });
-  }
-
-  private createRoutineInApi(routine: Routine): void {
-    this.startOperation('createRoutine');
-    const payload: CreateRoutineRequestDto = {
-      title: routine.title,
-      description: routine.description,
-      category: routine.category ?? 'geral',
-      frequency: routine.frequency,
-    };
-
-    this.routineApi
-      .create(payload)
-      .pipe(take(1))
-      .subscribe({
-        next: (createdRoutine) => {
-          this.replaceRoutineFromApi(routine.id, createdRoutine);
-          this.finishOperation('createRoutine');
-        },
-        error: (error) =>
-          this.failOperation(
-            'createRoutine',
-            getHttpErrorMessage(error, 'Nao foi possivel criar a rotina agora.')
-          ),
-      });
-  }
-
-  private updateRoutineInApi(routineId: string, updates: Partial<Routine>): void {
-    this.startOperation('updateRoutine');
-    const payload: UpdateRoutineRequestDto = {};
-
-    if (updates.title !== undefined) payload.title = updates.title;
-    if (updates.description !== undefined) payload.description = updates.description;
-    if (updates.category !== undefined) payload.category = updates.category;
-    if (updates.frequency !== undefined) payload.frequency = updates.frequency;
-
-    this.routineApi
-      .update(routineId, payload)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.finishOperation('updateRoutine');
-        },
-        error: (error) =>
-          this.failOperation(
-            'updateRoutine',
-            getHttpErrorMessage(error, 'Nao foi possivel atualizar a rotina.')
-          ),
-      });
-  }
-
-  private deleteRoutineInApi(routineId: string): void {
-    this.startOperation('deleteRoutine');
-    this.routineApi
-      .delete(routineId)
-      .pipe(take(1))
-      .subscribe({
-        next: () => this.finishOperation('deleteRoutine'),
-        error: (error) =>
-          this.failOperation(
-            'deleteRoutine',
-            getHttpErrorMessage(error, 'Nao foi possivel remover a rotina.')
-          ),
-      });
-  }
-
-  private addTaskInApi(routineId: string, taskData: TaskMutationData): void {
-    this.startOperation('addTask');
-    const payload: CreateTaskRequestDto = {
-      title: taskData.title,
-      description: taskData.description,
-      estimatedMinutes: taskData.estimatedMinutes,
-      importance: taskData.importance,
-    };
-
-    this.routineApi
-      .addTask(routineId, payload)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.loadSnapshotFromApi();
-          this.finishOperation('addTask');
-        },
-        error: (error) =>
-          this.failOperation(
-            'addTask',
-            getHttpErrorMessage(error, 'Nao foi possivel adicionar a tarefa.')
-          ),
-      });
-  }
-
-  private updateTaskInApi(routineId: string, taskId: string, taskData: TaskMutationData): void {
-    this.startOperation('updateTask');
-    const payload: UpdateTaskRequestDto = {
-      title: taskData.title,
-      description: taskData.description,
-      estimatedMinutes: taskData.estimatedMinutes,
-      importance: taskData.importance,
-    };
-
-    this.routineApi
-      .updateTask(routineId, taskId, payload)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.loadSnapshotFromApi();
-          this.finishOperation('updateTask');
-        },
-        error: (error) =>
-          this.failOperation(
-            'updateTask',
-            getHttpErrorMessage(error, 'Nao foi possivel atualizar a tarefa.')
-          ),
-      });
-  }
-
-  private deleteTaskInApi(routineId: string, taskId: string): void {
-    this.startOperation('deleteTask');
-    this.routineApi
-      .deleteTask(routineId, taskId)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.loadSnapshotFromApi();
-          this.finishOperation('deleteTask');
-        },
-        error: (error) =>
-          this.failOperation(
-            'deleteTask',
-            getHttpErrorMessage(error, 'Nao foi possivel remover a tarefa.')
-          ),
-      });
-  }
-
-  private completeTaskInApi(routineId: string, taskId: string): void {
-    this.startOperation('completeTask');
-    this.routineApi
-      .completeTask(routineId, taskId)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.loadSnapshotFromApi();
-          this.finishOperation('completeTask');
-        },
-        error: (error) =>
-          this.failOperation(
-            'completeTask',
-            getHttpErrorMessage(error, 'Nao foi possivel concluir a tarefa.')
-          ),
-      });
-  }
-
-  private completeDomainTask(routineId: string, taskId: string): { xp: number; coins: number } {
-    const user = this.requireCurrentUser();
-    const routine = user.obterRotina(routineId);
-    const task = routine?.obterTarefa(taskId);
-
-    if (!routine || !task || task.ehCompleta()) {
-      return { xp: 0, coins: 0 };
-    }
-
-    task.concluir();
-    user.adicionarXP(task.getXPRecompensa(), `Tarefa: ${task.getTitulo()}`);
-    user.ganharMoedas(task.getMoedasRecompensa());
-
-    if (
-      routine.getTarefas().length > 0 &&
-      routine.getTarefas().every((item) => item.ehCompleta())
-    ) {
-      try {
-        routine.marcarCompleta();
-      } catch {
-        // noop
-      }
-    }
-
-    this.bumpUserRevision();
-    this.syncRoutinesFromCurrentUser();
-
-    return {
-      xp: task.getXPRecompensa(),
-      coins: task.getMoedasRecompensa(),
-    };
-  }
-
-  private applyRewardsToCurrentUser(xp: number, coins: number, reason: string): void {
-    const user = this.currentUserState();
-    if (!user) {
-      return;
-    }
-
-    if (xp > 0) {
-      user.adicionarXP(xp, reason);
-    }
-
-    if (coins > 0) {
-      user.ganharMoedas(coins);
-    }
-
-    this.bumpUserRevision();
-  }
-
-  private syncRoutinesFromCurrentUser(): void {
-    const user = this.currentUserState();
-
-    if (!user) {
-      if (this.routinesSignal().length === 0) {
-        this.setRoutines([]);
-      }
-      return;
-    }
-
-    this.bumpUserRevision();
-    this.setRoutines(
-      user.getRotinas().map((routine) => this.routineMapper.mapDomainRoutineToViewModel(routine))
-    );
-  }
-
-  private requireCurrentUser(): Usuario {
-    const user = this.currentUserState();
-    if (!user) {
-      throw new Error('Usuario nao inicializado');
-    }
-    return user;
-  }
-
-  private hasDomainData(): boolean {
-    return this.routinesSignal().some((routine) => !!routine.domainModel);
-  }
-
-  private setCurrentUser(user: Usuario | null): void {
-    this.currentUserState.set(user);
-    this.bumpUserRevision();
-  }
-
-  private setRoutines(routines: Routine[]): void {
-    this.routinesSignal.set(routines);
-  }
-
-  private replaceRoutineFromApi(routineId: string, routine: RoutineDto): void {
-    const mappedRoutine = this.routineMapper.mapApiRoutineToViewModel(routine);
-    this.routinesSignal.update((routines) => {
-      const hasExisting = routines.some((item) => item.id === routineId);
-      if (!hasExisting) {
-        return [mappedRoutine, ...routines];
-      }
-
-      return routines.map((item) => (item.id === routineId ? mappedRoutine : item));
-    });
-  }
-
-  private bumpUserRevision(): void {
-    this.userRevision.update((revision) => revision + 1);
-  }
-
   private startOperation(operation: RoutineOperation): void {
     this.operationErrorSignal.set(null);
-    this.pendingOperationsState.update((state) => ({ ...state, [operation]: true }));
+    this.pendingOperationsState.update(state => ({ ...state, [operation]: true }));
   }
 
   private finishOperation(operation: RoutineOperation): void {
-    this.pendingOperationsState.update((state) => ({ ...state, [operation]: false }));
+    this.pendingOperationsState.update(state => ({ ...state, [operation]: false }));
   }
 
   private failOperation(operation: RoutineOperation, message: string): void {
     this.operationErrorSignal.set(message);
-    this.pendingOperationsState.update((state) => ({ ...state, [operation]: false }));
+    this.pendingOperationsState.update(state => ({ ...state, [operation]: false }));
+  }
+
+  getAllRoutines(): Routine[] {
+    return this.routinesSignal();
+  }
+
+  resetState(): void {
+    this.currentUserSignal.set(null);
+    this.routinesSignal.set([]);
+    this.isInitializedSignal.set(false);
+  }
+
+  removeRoutineFromState(routineId: string): void {
+    this.routinesSignal.update(routines => routines.filter(r => r.id !== routineId));
+  }
+
+  addCoins(amount: number): void {
+    this.currentUserSignal.update(user =>
+      user ? { ...user, coins: (user.coins || 0) + amount } : user
+    );
+  }
+
+  spendCoins(amount: number): boolean {
+    const user = this.currentUserSignal();
+    if (!user || (user.coins || 0) < amount) {
+      return false;
+    }
+    this.currentUserSignal.update(u => ({ ...u, coins: u.coins - amount }));
+    return true;
   }
 }

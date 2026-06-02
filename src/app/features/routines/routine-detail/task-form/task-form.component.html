@@ -1,76 +1,41 @@
-<div class="modal-overlay" (click)="fecharModal()">
-  <div class="modal-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-    
-    <button type="button" class="btn-close" [disabled]="submitting" (click)="fecharModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
-      </svg>
-    </button>
+<app-modal [title]="isEditMode ? 'Atualizar Dados' : 'Criar Tarefa'"
+  [subtitle]="isEditMode ? 'Refino Tático' : 'Nova Missão'"
+  description="Defina os parâmetros da tarefa. O XP e a recompensa serão calculados automaticamente pelo sistema."
+  [submitting]="submitting" (close)="fecharModal()">
 
-    <div class="modal-header">
-      <p class="subtitle">{{ isEditMode ? 'Refino Tático' : 'Nova Missão' }}</p>
-      <h2 class="title">{{ isEditMode ? 'Atualizar Dados' : 'Criar Tarefa' }}</h2>
-      <p class="description">
-        Defina os parâmetros da tarefa. O XP e a recompensa serão calculados automaticamente pelo sistema baseados na complexidade e tempo.
-      </p>
+  <form class="modal-form" [formGroup]="taskForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>Título da Tarefa</label>
+      <input type="text" formControlName="title" placeholder="Ex: Treino de pernas completo" />
     </div>
 
-    <form class="modal-form" [formGroup]="taskForm" (ngSubmit)="onSubmit()">
-      
-      <div class="form-group">
-        <label>Título da Tarefa</label>
-        <input type="text" formControlName="title" placeholder="Ex: Treino de pernas completo" />
-        <span class="error-msg" *ngIf="taskForm.controls.title.touched && taskForm.controls.title.invalid">
-          Informe um título com pelo menos 3 caracteres.
-        </span>
-      </div>
+    <div class="form-group">
+      <label>Descrição (Contexto)</label>
+      <textarea rows="3" formControlName="description"></textarea>
+    </div>
 
-      <div class="form-group">
-        <label>Descrição (Contexto)</label>
-        <textarea rows="3" formControlName="description" placeholder="Descreva a execução para reduzir erros..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Nível de Importância (Multiplicador)</label>
-        <div class="pills-container">
-          <button
-            *ngFor="let option of importanceOptions"
-            type="button"
-            [class]="getImportanceClass(option.value)"
-            (click)="taskForm.controls.importance.setValue(option.value)"
-          >
-            <span class="dot"></span>
-            <span>{{ option.label }}</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Tempo de Conclusão</label>
-        <div class="input-with-suffix">
-          <input type="number" min="5" step="5" formControlName="estimatedMinutes" placeholder="30" />
-          <span class="suffix">minutos</span>
-        </div>
-        <span class="error-msg" *ngIf="taskForm.controls.estimatedMinutes.touched && taskForm.controls.estimatedMinutes.invalid">
-          Informe ao menos 5 minutos.
-        </span>
-      </div>
-
-      <div class="summary-box">
-        <strong>{{ taskForm.controls.importance.value }}</strong>
-        <span class="summary-dot"></span>
-        <span>{{ taskForm.controls.estimatedMinutes.value }} min estimados</span>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-cancel" [disabled]="submitting" (click)="fecharModal()">
-          Cancelar
-        </button>
-        <button type="submit" class="btn-submit" [disabled]="submitting">
-          {{ isEditMode ? 'Salvar Alterações' : 'Criar Missão' }}
+    <div class="form-group">
+      <label>Nível de Importância</label>
+      <div class="pills-container">
+        <button *ngFor="let option of importanceOptions" type="button" [class]="getImportanceClass(option.value)"
+          (click)="taskForm.controls.importance.setValue(option.value)">
+          <span class="dot"></span><span>{{ option.label }}</span>
         </button>
       </div>
+    </div>
 
-    </form>
-  </div>
-</div>
+    <div class="form-group">
+      <label>Tempo de Conclusão</label>
+      <div class="input-with-suffix">
+        <input type="number" min="5" step="5" formControlName="estimatedMinutes" />
+        <span class="suffix">minutos</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" [disabled]="submitting" (click)="fecharModal()">Cancelar</button>
+      <button type="submit" class="btn-submit" [disabled]="submitting">{{ isEditMode ? 'Salvar' : 'Criar Missão'
+        }}</button>
+    </div>
+  </form>
+</app-modal>

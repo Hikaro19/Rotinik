@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs/operators';
+import { TaskItemComponent } from './task-item/task-item.component';
 import { CreateTaskRequestDto } from '../models/routine-api.models';
 import { RoutineApiService } from '../services/routine-api.service';
 import { RoutineService, Task } from '../services/routine.service';
@@ -14,10 +15,18 @@ import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/con
 @Component({
   selector: 'app-routine-detail',
   standalone: true,
-  imports: [CommonModule, TaskFormComponent, RoutineFormComponent, AppToastComponent, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    TaskFormComponent,
+    RoutineFormComponent,
+    AppToastComponent,
+    ConfirmDialogComponent,
+    TaskItemComponent
+  ],
   templateUrl: './routine-detail.component.html',
   styleUrl: './routine-detail.component.scss',
 })
+
 export class RoutineDetailComponent implements OnInit {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -269,7 +278,7 @@ export class RoutineDetailComponent implements OnInit {
       category: payload.category,
       frequency: payload.frequency as any
     });
-    
+
     // Simular o comportamento reativo já que a API handle o state no RoutineService
     this.toastMessage.set('Rotina atualizada.');
     this.closeRoutineForm();

@@ -1,12 +1,11 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
-import { type Routine, RoutineService } from './routine.service';
-import { Rotina } from '../models/rotina';
+import { Routine, RoutineService } from './routine.service';
+import { CreateRoutineRequestDto } from '../models/routine-api.models';
 
 @Injectable({ providedIn: 'root' })
 export class RoutinesFacadeService {
   private readonly routineService = inject(RoutineService);
 
-  // Inicializa o serviço caso a rota for acessada via URL / F5
   constructor() {
     this.routineService.initialize();
   }
@@ -25,40 +24,20 @@ export class RoutinesFacadeService {
     const filter = this.activeFilter();
     const routines = this.routines();
 
-    const visibleRoutines = filter === 'all'
-      ? routines
-      : routines.filter((routine) => {
-        if (!routine.frequency) return false;
-
-        const freqLower = routine.frequency.toString().toLowerCase();
-        const filterStr = String(filter).toLowerCase();
-
-        if (filterStr === 'daily') {
-          return freqLower === 'daily' || freqLower === 'diaria' || freqLower === '0';
-        }
-        if (filterStr === 'weekly') {
-          return freqLower === 'weekly' || freqLower === 'semanal' || freqLower === '1';
-        }
-        if (filterStr === 'monthly') {
-          return freqLower === 'monthly' || freqLower === 'mensal' || freqLower === '2';
-        }
-
-        return freqLower === filterStr;
-      });
+    const visibleRoutines = filter === 'all' ? routines : routines.filter(r => {
+      if (!r.frequency) return false;
+      return String(r.frequency).toLowerCase() === String(filter).toLowerCase();
+    });
 
     return visibleRoutines
       .filter((routine) => !routine.isCompleted || (routine.tasks && routine.tasks.length === 0))
       .sort((a, b) => {
         const totalA = a.tasks?.length ?? 0;
         const totalB = b.tasks?.length ?? 0;
-
         if (totalA === 0 && totalB === 0) return 0;
         if (totalA === 0) return 1;
         if (totalB === 0) return -1;
-
-        const progressA = a.tasks.filter((task) => task.completed).length / totalA;
-        const progressB = b.tasks.filter((task) => task.completed).length / totalB;
-        return progressB - progressA;
+        return (b.tasks.filter(t => t.completed).length / totalB) - (a.tasks.filter(t => t.completed).length / totalA);
       });
   });
 
@@ -70,7 +49,8 @@ export class RoutinesFacadeService {
     this.routineService.clearOperationError();
   }
 
-  createRoutine(rotina: Rotina): void {
-    this.routineService.adicionarRotina(rotina);
+  // Refatorado para enviar DTO diretamente
+  createRoutine(payload: CreateRoutineRequestDto): void {
+    this.routineService.createRoutine(payload);
   }
 }

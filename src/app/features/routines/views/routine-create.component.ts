@@ -97,19 +97,17 @@ export class RoutineCreateComponent {
     this.routinesFacade.clearError();
 
     try {
-      const { nome, categoria, meta, prazo } = this.createForm.getRawValue();
-      const novaRotina = new Rotina(nome, categoria, meta, prazo);
-      this.pendingCreatedRoutine.set(novaRotina);
-      this.routinesFacade.createRoutine(novaRotina);
+      const formValue = this.createForm.getRawValue();
+      const payload = {
+        title: formValue.nome,
+        category: formValue.categoria,
+        description: formValue.meta,
+        frequency: formValue.prazo.toString()
+      };
 
-      if (!this.isSaving()) {
-        this.routineCreated.emit(novaRotina);
-        this.pendingCreatedRoutine.set(null);
-        this.resetForm();
-      }
+      this.routinesFacade.createRoutine(payload);
     } catch (error) {
-      this.pendingCreatedRoutine.set(null);
-      const message = error instanceof Error ? error.message : 'Nao foi possivel criar a rotina.';
+      const message = error instanceof Error ? error.message : 'Não foi possível criar a rotina.';
       this.submitError.set(message);
     }
   }

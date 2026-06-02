@@ -12,6 +12,7 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TaskImportance } from '../../models/routine-api.models';
 import { TaskViewModel } from '../../models/routine-view.models';
+import { ModalComponent } from '../../../../shared/components/ui/modal/modal.component';
 
 export interface TaskFormValue {
   routineId: string;
@@ -24,10 +25,11 @@ export interface TaskFormValue {
 @Component({
   selector: 'app-task-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ModalComponent],
   templateUrl: './task-form.component.html',
   styleUrl: './task-form.component.scss',
 })
+
 export class TaskFormComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);
 
@@ -42,11 +44,11 @@ export class TaskFormComponent implements OnChanges {
     value: TaskImportance;
     label: string;
   }> = [
-    { value: 'baixa', label: 'Baixa' },
-    { value: 'media', label: 'Média' },
-    { value: 'alta', label: 'Alta' },
-    { value: 'critica', label: 'Crítica' },
-  ];
+      { value: 'baixa', label: 'Baixa' },
+      { value: 'media', label: 'Média' },
+      { value: 'alta', label: 'Alta' },
+      { value: 'critica', label: 'Crítica' },
+    ];
 
   readonly taskForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -67,7 +69,7 @@ export class TaskFormComponent implements OnChanges {
 
   onSubmit(): void {
     this.taskForm.markAllAsTouched();
-    
+
     // Blindagem de segurança contra rotas nulas
     if (this.taskForm.invalid || this.submitting || !this.routineId || !this.routineId.trim()) {
       return;

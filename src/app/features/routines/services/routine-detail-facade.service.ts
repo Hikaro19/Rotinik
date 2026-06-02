@@ -9,9 +9,10 @@ export class RoutineDetailFacadeService {
   readonly rotinaAtual = computed(() => this.routineService.getRoutineById(this.routineId()));
   readonly loading = signal<boolean>(true);
 
+  // CORREÇÃO 1: Lê o dado do DTO puro em vez da classe de Domínio
   readonly nomeUsuario = computed(() => {
     const usuario = this.routineService.currentUserSignal();
-    return usuario ? usuario.getNome() : 'Usuario';
+    return usuario ? (usuario.name || usuario.userName) : 'Usuário';
   });
 
   readonly nivelUsuario = this.routineService.userLevel;
@@ -47,54 +48,39 @@ export class RoutineDetailFacadeService {
   loadRoutine(id: string): void {
     this.routineId.set(id);
     this.loading.set(true);
-
-    // Força a chamada API na reinicialização forçada (Ctrl+F5)
     this.routineService.initialize();
-
     this.loading.set(false);
   }
 
   completeTask(taskId: string): void {
-    if (!this.routineId()) {
-      return;
-    }
-
+    if (!this.routineId()) return;
     this.routineService.completeTask(this.routineId(), taskId);
-    this.refreshRoutine();
   }
 
+  // CORREÇÃO 2: Mapeia o Partial<Routine> para o UpdateRoutineRequestDto
   updateRoutine(updates: Partial<Routine>): void {
-    if (!this.routineId()) {
-      return;
-    }
+    if (!this.routineId()) return;
 
-    this.routineService.updateRoutine(this.routineId(), updates);
-    this.refreshRoutine();
+    this.routineService.updateRoutine(this.routineId(), {
+      title: updates.title,
+      description: updates.description,
+      category: updates.category,
+      frequency: updates.frequency as string
+    });
   }
 
+  // O método volta a funcionar, pois a função foi adicionada ao Service
   uncompleteTask(taskId: string): void {
-    if (!this.routineId()) {
-      return;
-    }
-
+    if (!this.routineId()) return;
     this.routineService.uncompleteTask(this.routineId(), taskId);
-    this.refreshRoutine();
   }
 
   deleteTask(taskId: string): void {
-    if (!this.routineId()) {
-      return;
-    }
-
+    if (!this.routineId()) return;
     this.routineService.deleteTask(this.routineId(), taskId);
-    this.refreshRoutine();
   }
 
   clearError(): void {
     this.routineService.clearOperationError();
-  }
-
-  refreshRoutine(): void {
-    // computed signal updates automatically
   }
 }
