@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Rotina } from '../models/rotina';
 import { RoutinesFacadeService } from '../services/routines-facade.service';
 import { AppRoutineCardComponent } from '@shared/components/feature/routine-card/routine-card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
@@ -132,7 +131,7 @@ import { RoutineCreateComponent } from './routine-create.component';
       <div class="routines-toast-layer" *ngIf="successToastMessage() as message">
         <app-toast
           type="success"
-          title="Rotina salva"
+          title="Sucesso"
           [message]="message"
           [duration]="3200"
           (close)="closeSuccessToast()"
@@ -167,9 +166,9 @@ export class RoutinesComponent {
     this.showCreateModal.set(true);
   }
 
-  onRoutineCreated(rotina: Rotina): void {
+  onRoutineCreated(nomeDaRotina: string): void {
     this.showCreateModal.set(false);
-    this.successToastMessage.set(`"${rotina.getTitulo()}" entrou na sua colecao de rotinas.`);
+    this.successToastMessage.set(`Rotina criada com sucesso!`);
   }
 
   onCancelCreate(): void {

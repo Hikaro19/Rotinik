@@ -1,5 +1,5 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
-import { Routine, RoutineService } from './routine.service';
+import { RoutineService, Routine } from '@core/services/routine.service';
 import { CreateRoutineRequestDto } from '../models/routine-api.models';
 
 @Injectable({ providedIn: 'root' })
@@ -24,10 +24,13 @@ export class RoutinesFacadeService {
     const filter = this.activeFilter();
     const routines = this.routines();
 
-    const visibleRoutines = filter === 'all' ? routines : routines.filter(r => {
-      if (!r.frequency) return false;
-      return String(r.frequency).toLowerCase() === String(filter).toLowerCase();
-    });
+    const visibleRoutines =
+      filter === 'all'
+        ? routines
+        : routines.filter((r) => {
+            if (!r.frequency) return false;
+            return String(r.frequency).toLowerCase() === String(filter).toLowerCase();
+          });
 
     return visibleRoutines
       .filter((routine) => !routine.isCompleted || (routine.tasks && routine.tasks.length === 0))
@@ -37,7 +40,10 @@ export class RoutinesFacadeService {
         if (totalA === 0 && totalB === 0) return 0;
         if (totalA === 0) return 1;
         if (totalB === 0) return -1;
-        return (b.tasks.filter(t => t.completed).length / totalB) - (a.tasks.filter(t => t.completed).length / totalA);
+        return (
+          b.tasks.filter((t) => t.completed).length / totalB -
+          a.tasks.filter((t) => t.completed).length / totalA
+        );
       });
   });
 
@@ -49,7 +55,6 @@ export class RoutinesFacadeService {
     this.routineService.clearOperationError();
   }
 
-  // Refatorado para enviar DTO diretamente
   createRoutine(payload: CreateRoutineRequestDto): void {
     this.routineService.createRoutine(payload);
   }

@@ -1,9 +1,15 @@
 import { computed, Injectable, inject } from '@angular/core';
-import { RoutineService } from './routine.service';
+import { RoutineService } from '@core/services/routine.service';
 
 @Injectable({ providedIn: 'root' })
 export class HomeFacadeService {
   private readonly routineService = inject(RoutineService);
+
+  constructor() {
+    // O facade garante que os dados sejam carregados ao ser instanciado
+    // (chamado pela primeira vez em HomeComponent ou RoutinesFacade)
+    this.routineService.initialize();
+  }
 
   readonly rotinas = this.routineService.routinesSignal;
   readonly totalRotinas = this.routineService.totalRoutines;
@@ -12,9 +18,15 @@ export class HomeFacadeService {
   readonly tarefasPendentes = this.routineService.totalPendingTasks;
   readonly maiorStreak = this.routineService.longestStreak;
   readonly usuarioAtual = this.routineService.currentUserSignal;
-  readonly totalTarefas = computed(() => this.rotinas().reduce((sum, rotina) => sum + rotina.tasks.length, 0));
+
+  readonly totalTarefas = computed(
+    () => this.rotinas().reduce((sum, rotina) => sum + rotina.tasks.length, 0),
+  );
   readonly tarefasCompletas = computed(() =>
-    this.rotinas().reduce((sum, rotina) => sum + rotina.tasks.filter((task) => task.completed).length, 0),
+    this.rotinas().reduce(
+      (sum, rotina) => sum + rotina.tasks.filter((task) => task.completed).length,
+      0,
+    ),
   );
 
   readonly nomeUsuario = computed(() => {
@@ -48,8 +60,8 @@ export class HomeFacadeService {
     this.rotinas()
       .filter((rotina) => !rotina.isCompleted && rotina.tasks.length > 0)
       .sort((a, b) => {
-        const progressA = a.tasks.length > 0 ? a.tasks.filter((task) => task.completed).length / a.tasks.length : 0;
-        const progressB = b.tasks.length > 0 ? b.tasks.filter((task) => task.completed).length / b.tasks.length : 0;
+        const progressA = a.tasks.length > 0 ? a.tasks.filter((t) => t.completed).length / a.tasks.length : 0;
+        const progressB = b.tasks.length > 0 ? b.tasks.filter((t) => t.completed).length / b.tasks.length : 0;
         return progressB - progressA;
       }),
   );

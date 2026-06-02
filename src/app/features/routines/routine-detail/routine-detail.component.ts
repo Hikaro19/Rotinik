@@ -5,7 +5,7 @@ import { take } from 'rxjs/operators';
 import { TaskItemComponent } from './task-item/task-item.component';
 import { CreateTaskRequestDto } from '../models/routine-api.models';
 import { RoutineApiService } from '../services/routine-api.service';
-import { RoutineService, Task } from '../services/routine.service';
+import { RoutineService, Task } from '@core/services/routine.service';
 import { RoutineDetailFacadeService } from '../services/routine-detail-facade.service';
 import { TaskFormComponent, TaskFormValue } from './task-form/task-form.component';
 import { RoutineFormComponent } from './routine-form/routine-form.component';

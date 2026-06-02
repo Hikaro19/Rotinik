@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RoutineService, Routine } from '../routines/services/routine.service';
+import { RoutineService, Routine } from '@core/services/routine.service';
 import { AppTaskExecutionComponent } from '@shared/components/feature/task-execution/task-execution.component';
 import { AppSpinnerComponent } from '@shared/components/ui/spinner/spinner.component';
 

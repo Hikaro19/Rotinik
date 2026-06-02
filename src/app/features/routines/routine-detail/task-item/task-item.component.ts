@@ -7,7 +7,7 @@ import { TaskViewModel } from '../../models/routine-view.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="task-card" [ngClass]="{ 'primary': isPrimary, 'secondary': !isPrimary, 'task-completed': task.completed }">
+    <div class="task-card" [ngClass]="{ 'task-completed': task.completed }">
       <div class="task-left">
         <div class="task-title-row">
           <h3 class="task-title">{{ task.title }}</h3>
@@ -36,13 +36,12 @@ import { TaskViewModel } from '../../models/routine-view.models';
         </div>
       </div>
       <div class="task-right">
+        <!-- O botão agora usa sempre a classe btn-small com o SVG -->
         <button *ngIf="!task.completed" 
-                class="btn-action" 
-                [ngClass]="isPrimary ? 'btn-iniciar' : 'btn-small'" 
+                class="btn-action btn-small" 
                 [disabled]="busy" 
                 (click)="complete.emit(task.id)">
-          <ng-container *ngIf="isPrimary">Concluir</ng-container>
-          <svg *ngIf="!isPrimary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="m5 12 4 4L19 6" />
           </svg>
         </button>
@@ -50,9 +49,17 @@ import { TaskViewModel } from '../../models/routine-view.models';
     </div>
   `,
   styles: [`
-    .task-card { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-4); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; background: rgba(255, 255, 255, 0.035); padding: var(--spacing-4); transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base); margin-bottom: var(--spacing-3); }
+    /* Fundo degradê e borda aplicados diretamente a todos os cards */
+    .task-card { 
+      display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-4); 
+      border: 1px solid rgba(168, 85, 247, 0.28); 
+      border-radius: 16px; 
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.14), rgba(255, 255, 255, 0.035)); 
+      padding: var(--spacing-4); 
+      transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base); 
+      margin-bottom: var(--spacing-3); 
+    }
     .task-card:hover { border-color: rgba(217, 70, 239, 0.4); background: rgba(255, 255, 255, 0.06); box-shadow: 0 12px 28px rgba(168, 85, 247, 0.16); transform: translateY(-2px); }
-    .task-card.primary { border-color: rgba(168, 85, 247, 0.28); background: linear-gradient(135deg, rgba(168, 85, 247, 0.14), rgba(255, 255, 255, 0.035)); }
     .task-left { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: var(--spacing-2); }
     .task-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-3); }
     .task-title { margin: 0; color: var(--text-primary); font-size: var(--font-size-base); font-weight: var(--font-bold); line-height: var(--line-height-tight); }
@@ -74,9 +81,8 @@ import { TaskViewModel } from '../../models/routine-view.models';
     .task-icon-btn--danger:hover { background: rgba(248, 113, 113, 0.12); color: #f87171; }
     .btn-action { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; border: 0; border-radius: 9999px; color: #ffffff; cursor: pointer; font-family: inherit; font-size: var(--font-size-sm); font-weight: var(--font-semibold); padding: 0 var(--spacing-5); transition: box-shadow var(--transition-base), opacity var(--transition-base), transform var(--transition-base); }
     .btn-action:disabled { cursor: not-allowed; opacity: 0.5; }
-    .btn-iniciar, .btn-small { background: var(--brand-gradient); box-shadow: 0 6px 18px rgba(168, 85, 247, 0.32); }
+    .btn-small { background: var(--brand-gradient); box-shadow: 0 6px 18px rgba(168, 85, 247, 0.32); width: 42px; padding: 0; }
     .btn-action:not(:disabled):hover { box-shadow: 0 10px 26px rgba(168, 85, 247, 0.44); transform: translateY(-1px); }
-    .btn-small { width: 42px; padding: 0; }
     .btn-small svg { width: 18px; height: 18px; }
     .task-completed { opacity: 0.72; }
     .task-completed .task-title { color: var(--text-muted); text-decoration: line-through; }
@@ -92,9 +98,9 @@ import { TaskViewModel } from '../../models/routine-view.models';
     }
   `]
 })
+
 export class TaskItemComponent {
   @Input({ required: true }) task!: TaskViewModel;
-  @Input() isPrimary = false;
   @Input() busy = false;
 
   @Output() complete = new EventEmitter<string>();

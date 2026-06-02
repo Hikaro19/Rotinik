@@ -1,4 +1,3 @@
-import { Rotina } from './rotina';
 import { TaskImportance } from './routine-api.models';
 
 export interface TaskViewModel {
@@ -31,5 +30,4 @@ export interface RoutineViewModel {
   completionStreak: number;
   lastCompletedDate?: Date;
   isCompleted: boolean;
-  domainModel?: Rotina;
 }

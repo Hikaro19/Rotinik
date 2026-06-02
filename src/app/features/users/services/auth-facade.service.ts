@@ -2,10 +2,10 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { getHttpErrorMessage } from '@core/http/http-error.utils';
-import { UserLoginDto, UserRegistrationDto } from '../models/user-api.models';
-import { AuthService } from './auth.service';
-import { RoutineService } from '../../routines/services/routine.service';
-import { ProfileService } from '../../statistics/services/profile.service';
+import { AuthService } from '@core/services/auth.service';
+import { RoutineService } from '@core/services/routine.service';
+import { ProfileService } from '@features/statistics/services/profile.service';
+import { UserLoginDto, UserRegistrationDto } from '@features/users/models/user-api.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacadeService {
@@ -24,9 +24,7 @@ export class AuthFacadeService {
   readonly isAuthenticated = computed(() => Boolean(this.sessionSignal()?.token));
 
   login(payload: UserLoginDto): void {
-    if (this.loadingSignal()) {
-      return;
-    }
+    if (this.loadingSignal()) return;
 
     this.startRequest();
 
@@ -38,16 +36,15 @@ export class AuthFacadeService {
           this.sessionSignal.set(session);
           this.router.navigate(['/home']);
         },
-        error: (error) => this.errorMessageSignal.set(
-          getHttpErrorMessage(error, 'Usuario ou senha invalidos. Confira os dados e tente novamente.'),
-        ),
+        error: (error) =>
+          this.errorMessageSignal.set(
+            getHttpErrorMessage(error, 'Usuario ou senha invalidos. Confira os dados e tente novamente.'),
+          ),
       });
   }
 
   register(payload: UserRegistrationDto): void {
-    if (this.loadingSignal()) {
-      return;
-    }
+    if (this.loadingSignal()) return;
 
     this.startRequest();
 
@@ -56,9 +53,10 @@ export class AuthFacadeService {
       .pipe(finalize(() => this.loadingSignal.set(false)))
       .subscribe({
         next: () => this.router.navigate(['/auth/success']),
-        error: (error) => this.errorMessageSignal.set(
-          getHttpErrorMessage(error, 'Nao foi possivel criar a conta. Revise os dados e tente novamente.'),
-        ),
+        error: (error) =>
+          this.errorMessageSignal.set(
+            getHttpErrorMessage(error, 'Nao foi possivel criar a conta. Revise os dados e tente novamente.'),
+          ),
       });
   }
 

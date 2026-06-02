@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { RoutineService } from '../../routines/services/routine.service';
+import { RoutineService } from '@core/services/routine.service';
 
 /**
  * Interface de usuario com stats gamificados.
@@ -33,20 +33,22 @@ export class GamificationService {
   private readonly routineService = inject(RoutineService);
   private readonly achievementIdsSignal = signal<string[]>([]);
 
+  // CORREÇÃO: acessa propriedades do DTO diretamente (era: user.getNivel(), user.getNome()
+  // que são métodos da classe de domínio Usuario — não mais usada aqui)
   readonly playerSignal = computed<GamePlayer>(() => {
     const user = this.routineService.currentUserSignal();
 
     return {
-      id: user?.getId() ?? 'user-001',
-      name: user?.getNome() ?? 'Jogador',
-      userName: user?.getUserName() ?? 'jogador',
-      email: user?.getEmail() ?? 'player@rotinik.com',
-      level: user?.getNivel() ?? 1,
-      currentXP: user?.getExperiencia() ?? 0,
-      totalXP: user?.getExperienciaTotal() ?? 0,
-      coins: user?.getMoedas() ?? 0,
+      id: user?.id ?? 'user-001',
+      name: user?.name ?? 'Jogador',
+      userName: user?.userName ?? 'jogador',
+      email: user?.email ?? 'player@rotinik.com',
+      level: user?.level ?? 1,
+      currentXP: user?.currentXp ?? 0,
+      totalXP: user?.totalXp ?? 0,
+      coins: user?.coins ?? 0,
       achievements: this.achievementIdsSignal(),
-      lastActivityDate: user?.getUltimaAtividade() ?? new Date(),
+      lastActivityDate: user?.lastActivityAt ? new Date(user.lastActivityAt) : new Date(),
     };
   });
 
@@ -75,26 +77,26 @@ export class GamificationService {
   });
 
   addXP(_amount: number, _reason: string = 'Tarefa completada'): void {
-    // XP agora e aplicado pela fonte unica de rotinas ao concluir tarefas.
+    // XP e aplicado pela fonte unica de rotinas ao concluir tarefas.
   }
 
   resetLevelXP(): void {
-    // Mantido por compatibilidade; a regra real passa a vir da fonte unica.
+    // Mantido por compatibilidade; a regra real vem da fonte unica.
   }
 
   addCoins(amount: number, reason: string = 'Ganho'): void {
-    this.routineService.addCoins(amount);
+    this.currentUserSignal_update((user) => user ? { ...user, coins: (user.coins || 0) + amount } : user);
     this.logTransaction('earn_coin', amount, reason);
   }
 
   spendCoins(amount: number, reason: string = 'Gasto'): boolean {
-    const success = this.routineService.spendCoins(amount);
-
-    if (!success) {
+    const player = this.playerSignal();
+    if (player.coins < amount) {
       console.warn('Moedas insuficientes');
       return false;
     }
 
+    this.currentUserSignal_update((user) => user ? { ...user, coins: (user.coins || 0) - amount } : user);
     this.logTransaction('spend_coin', amount, reason);
     return true;
   }
@@ -104,30 +106,12 @@ export class GamificationService {
   }
 
   unlockAchievement(achievementId: string): void {
-    if (this.hasAchievement(achievementId)) {
-      return;
-    }
-
+    if (this.hasAchievement(achievementId)) return;
     this.achievementIdsSignal.update((ids) => [...ids, achievementId]);
   }
 
   hasAchievement(achievementId: string): boolean {
     return this.achievementIdsSignal().includes(achievementId);
-  }
-
-  private logTransaction(type: GameTransaction['type'], amount: number, reason: string): void {
-    const transaction: GameTransaction = {
-      id: `tx-${Date.now()}`,
-      type,
-      amount,
-      reason,
-      timestamp: new Date(),
-    };
-
-    this.transactionsSignal.update((transactions) => {
-      const updated = [transaction, ...transactions];
-      return updated.length > 100 ? updated.slice(0, 100) : updated;
-    });
   }
 
   getTransactionHistory(limit: number = 10): GameTransaction[] {
@@ -152,5 +136,27 @@ export class GamificationService {
     this.achievementIdsSignal.set([]);
     this.transactionsSignal.set([]);
     this.routineService.resetState();
+  }
+
+  private logTransaction(type: GameTransaction['type'], amount: number, reason: string): void {
+    const transaction: GameTransaction = {
+      id: `tx-${Date.now()}`,
+      type,
+      amount,
+      reason,
+      timestamp: new Date(),
+    };
+
+    this.transactionsSignal.update((transactions) => {
+      const updated = [transaction, ...transactions];
+      return updated.length > 100 ? updated.slice(0, 100) : updated;
+    });
+  }
+
+  // Delega a mutação de moedas ao RoutineService (fonte única de verdade do user)
+  private currentUserSignal_update(
+    updater: (user: ReturnType<typeof this.routineService.currentUserSignal>) => ReturnType<typeof this.routineService.currentUserSignal>
+  ): void {
+    this.routineService.currentUserSignal.update(updater);
   }
 }

@@ -1,10 +1,8 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { GamificationService } from './gamification.service';
-import { RoutineService } from '../../routines/services/routine.service';
+import { RoutineService } from '@core/services/routine.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class GamificationRepository {
   private readonly gamificationService = inject(GamificationService);
   private readonly routineService = inject(RoutineService);
@@ -31,9 +29,7 @@ export class GamificationRepository {
 
   calcularRewardRotina(rotinaId: string): { xp: number; moedas: number } {
     const rotina = this.routineService.getRoutineById(rotinaId);
-    if (!rotina) {
-      return { xp: 0, moedas: 0 };
-    }
+    if (!rotina) return { xp: 0, moedas: 0 };
 
     const multiplicador = 1 + Math.floor(rotina.completionStreak / 5) * 0.1;
     return {
@@ -43,11 +39,7 @@ export class GamificationRepository {
   }
 
   calcularReputacao(tipoAcao: 'tarefa_completa' | 'rotina_completa' | 'consecutivos'): number {
-    const mapa = {
-      tarefa_completa: 5,
-      rotina_completa: 50,
-      consecutivos: 100,
-    };
+    const mapa = { tarefa_completa: 5, rotina_completa: 50, consecutivos: 100 };
     return mapa[tipoAcao];
   }
 

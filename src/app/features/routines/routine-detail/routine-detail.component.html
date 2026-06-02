@@ -46,24 +46,9 @@
       </div>
     </section>
 
-    <div class="tasks-section" *ngIf="tarefasIniciais().length > 0">
-      <app-task-item *ngFor="let tarefa of tarefasIniciais()" [task]="tarefa" [isPrimary]="true"
-        [busy]="taskActionBusy()" (complete)="completeTask($event)" (edit)="openEditTask($event)"
-        (delete)="deleteTask($event)"></app-task-item>
-    </div>
-
-    <h2 class="section-title" *ngIf="tarefasRestante().length > 0">Restante</h2>
-    <div class="tasks-section" *ngIf="tarefasRestante().length > 0">
-      <app-task-item *ngFor="let tarefa of tarefasRestante()" [task]="tarefa" [isPrimary]="false"
-        [busy]="taskActionBusy()" (complete)="completeTask($event)" (edit)="openEditTask($event)"
-        (delete)="deleteTask($event)"></app-task-item>
-    </div>
-
-    <h2 class="section-title" *ngIf="completedTasks().length > 0">Completas</h2>
-    <div class="tasks-section" *ngIf="completedTasks().length > 0">
-      <app-task-item *ngFor="let tarefa of completedTasks()" [task]="tarefa" [isPrimary]="false"
-        [busy]="taskActionBusy()" (complete)="completeTask($event)" (edit)="openEditTask($event)"
-        (delete)="deleteTask($event)"></app-task-item>
+    <div class="tasks-section" *ngIf="allTasks().length > 0">
+      <app-task-item *ngFor="let tarefa of allTasks()" [task]="tarefa" [busy]="taskActionBusy()"
+        (complete)="completeTask($event)" (edit)="openEditTask($event)" (delete)="deleteTask($event)"></app-task-item>
     </div>
 
     <div class="rewards-summary" *ngIf="rotinaCompleta()">

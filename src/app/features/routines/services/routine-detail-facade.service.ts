@@ -1,5 +1,5 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
-import { RoutineService, type Routine } from './routine.service';
+import { RoutineService, type Routine } from '@core/services/routine.service';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineDetailFacadeService {
@@ -9,10 +9,9 @@ export class RoutineDetailFacadeService {
   readonly rotinaAtual = computed(() => this.routineService.getRoutineById(this.routineId()));
   readonly loading = signal<boolean>(true);
 
-  // CORREÇÃO 1: Lê o dado do DTO puro em vez da classe de Domínio
   readonly nomeUsuario = computed(() => {
     const usuario = this.routineService.currentUserSignal();
-    return usuario ? (usuario.name || usuario.userName) : 'Usuário';
+    return usuario ? usuario.name || usuario.userName : 'Usuário';
   });
 
   readonly nivelUsuario = this.routineService.userLevel;
@@ -36,7 +35,9 @@ export class RoutineDetailFacadeService {
   readonly seqenciaCompletamento = computed(() => this.rotinaAtual()?.completionStreak ?? 0);
   readonly xpTotal = computed(() => this.rotinaAtual()?.totalXP ?? 0);
   readonly moedasTotal = computed(() => this.rotinaAtual()?.totalCoins ?? 0);
-  readonly rotinaCompleta = computed(() => this.tarefasCompletas() === this.totalTarefas() && this.totalTarefas() > 0);
+  readonly rotinaCompleta = computed(
+    () => this.tarefasCompletas() === this.totalTarefas() && this.totalTarefas() > 0,
+  );
 
   readonly progresso = computed(() => {
     const tasks = this.allTasks();
@@ -57,19 +58,16 @@ export class RoutineDetailFacadeService {
     this.routineService.completeTask(this.routineId(), taskId);
   }
 
-  // CORREÇÃO 2: Mapeia o Partial<Routine> para o UpdateRoutineRequestDto
   updateRoutine(updates: Partial<Routine>): void {
     if (!this.routineId()) return;
-
     this.routineService.updateRoutine(this.routineId(), {
       title: updates.title,
       description: updates.description,
       category: updates.category,
-      frequency: updates.frequency as string
+      frequency: updates.frequency as string,
     });
   }
 
-  // O método volta a funcionar, pois a função foi adicionada ao Service
   uncompleteTask(taskId: string): void {
     if (!this.routineId()) return;
     this.routineService.uncompleteTask(this.routineId(), taskId);

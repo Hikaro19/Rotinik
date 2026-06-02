@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { RoutineService, Task, Routine } from '../../../../features/routines/services/routine.service';
+import { RoutineService, Task, Routine } from '@core/services/routine.service';
 import { AppCardComponent } from '../../ui/card/card.component';
 import { AppButtonComponent } from '../../ui/button/button.component';
 import { AppSpinnerComponent } from '../../ui/spinner/spinner.component';

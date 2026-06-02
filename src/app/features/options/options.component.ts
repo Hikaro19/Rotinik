@@ -1,9 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../users/services/auth.service';
-import { RoutineService } from '../routines/services/routine.service';
-import { ProfileService } from '../statistics/services/profile.service';
+import { AuthFacadeService } from '../users/services/auth-facade.service';
 
 @Component({
   selector: 'app-options',
@@ -122,9 +120,7 @@ import { ProfileService } from '../statistics/services/profile.service';
 })
 export class OptionsComponent {
   private readonly router = inject(Router);
-  private readonly authService = inject(AuthService);
-  private readonly routineService = inject(RoutineService);
-  private readonly profileService = inject(ProfileService);
+  private readonly authFacade = inject(AuthFacadeService);
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
@@ -146,9 +142,6 @@ export class OptionsComponent {
   }
 
   logout() {
-    this.routineService.resetState();
-    this.profileService.resetProfile();
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    this.authFacade.logout();
   }
 }

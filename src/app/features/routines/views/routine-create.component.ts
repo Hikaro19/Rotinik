@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, effect, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Rotina } from '../models/rotina';
 import { EFrequencia } from '../models/rotina.enum';
 import { RoutinesFacadeService } from '../services/routines-facade.service';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
@@ -17,12 +16,14 @@ export class RoutineCreateComponent {
   private fb = inject(FormBuilder);
   private routinesFacade = inject(RoutinesFacadeService);
 
-  readonly routineCreated = output<Rotina>();
+  readonly routineCreated = output<string>();
   readonly cancelled = output<void>();
 
-  private readonly pendingCreatedRoutine = signal<Rotina | null>(null);
+  private readonly isSubmittingLocal = signal(false);
+
   readonly isSaving = this.routinesFacade.createPending;
   readonly submitError = signal<string | null>(null);
+
   readonly frequencias = [
     { label: 'Diaria', value: EFrequencia.DIARIA },
     { label: 'Semanal', value: EFrequencia.SEMANAL },
@@ -39,40 +40,31 @@ export class RoutineCreateComponent {
 
   constructor() {
     effect(() => {
-      const pendingRoutine = this.pendingCreatedRoutine();
       const isSaving = this.isSaving();
       const error = this.routinesFacade.errorMessage();
+      const isSubmitting = this.isSubmittingLocal();
 
-      if (!pendingRoutine || isSaving) {
-        return;
-      }
+      if (!isSubmitting) return;
+
+      if (isSaving) return;
 
       if (error) {
         this.submitError.set(error);
+        this.isSubmittingLocal.set(false);
         return;
       }
 
-      this.routineCreated.emit(pendingRoutine);
-      this.pendingCreatedRoutine.set(null);
+      const nomeRotina = this.createForm.getRawValue().nome;
+      this.routineCreated.emit(nomeRotina);
+      this.isSubmittingLocal.set(false);
       this.resetForm();
-    }, { allowSignalWrites: true }); // <-- CORREÇÃO: Permite explicitamente a escrita em sinais neste ciclo reativo
+    }, { allowSignalWrites: true });
   }
 
-  get nomeControl() {
-    return this.createForm.controls.nome;
-  }
-
-  get categoriaControl() {
-    return this.createForm.controls.categoria;
-  }
-
-  get metaControl() {
-    return this.createForm.controls.meta;
-  }
-
-  get prazoControl() {
-    return this.createForm.controls.prazo;
-  }
+  get nomeControl() { return this.createForm.controls.nome; }
+  get categoriaControl() { return this.createForm.controls.categoria; }
+  get metaControl() { return this.createForm.controls.meta; }
+  get prazoControl() { return this.createForm.controls.prazo; }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
@@ -95,6 +87,7 @@ export class RoutineCreateComponent {
 
     this.submitError.set(null);
     this.routinesFacade.clearError();
+    this.isSubmittingLocal.set(true);
 
     try {
       const formValue = this.createForm.getRawValue();
@@ -109,6 +102,7 @@ export class RoutineCreateComponent {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Não foi possível criar a rotina.';
       this.submitError.set(message);
+      this.isSubmittingLocal.set(false);
     }
   }
 
@@ -117,7 +111,7 @@ export class RoutineCreateComponent {
       return;
     }
 
-    this.pendingCreatedRoutine.set(null);
+    this.isSubmittingLocal.set(false);
     this.resetForm();
     this.submitError.set(null);
     this.routinesFacade.clearError();
