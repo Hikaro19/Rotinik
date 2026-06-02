@@ -1,6 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Routine } from '@core/services/routine.service';
+import { Routine } from '../../../../features/routines/services/routine.service';
 import { AppButtonComponent } from '../../ui/button/button.component';
 import { AppCardComponent } from '../../ui/card/card.component';
 

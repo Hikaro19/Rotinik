@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HomeFacadeService } from '@core/services/home-facade.service';
-import { RoutineService } from '@core/services/routine.service';
-import { ProfileService } from '@core/services/profile.service';
+import { HomeFacadeService } from '../routines/services/home-facade.service';
+import { RoutineService } from '../routines/services/routine.service';
+import { ProfileService } from '../statistics/services/profile.service';
 import { AppRoutineCardComponent } from '@shared/components/feature/routine-card/routine-card.component';
 
 @Component({

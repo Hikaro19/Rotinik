@@ -10,8 +10,8 @@ import {
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TaskImportance } from '@core/models/api';
-import { TaskViewModel } from '@core/models/view/routine-view.models';
+import { TaskImportance } from '../../models/routine-api.models';
+import { TaskViewModel } from '../../models/routine-view.models';
 
 export interface TaskFormValue {
   routineId: string;

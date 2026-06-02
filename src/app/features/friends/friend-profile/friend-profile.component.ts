@@ -1,8 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { User } from '@core/services/user.service';
-import { SocialFacadeService } from '@core/services/social-facade.service';
+import { User } from '../../users/services/user.service';
+import { SocialFacadeService } from '../services/social-facade.service';
 import { AppCardComponent } from '@shared/components/ui/card/card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppSpinnerComponent } from '@shared/components/ui/spinner/spinner.component';

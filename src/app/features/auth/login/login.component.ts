@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
-import { AuthService } from '@core/services/auth.service';
+import { AuthService } from '../../users/services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({

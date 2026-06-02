@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Task } from '@core/services/routine.service';
+import { Task } from '../../../../features/routines/services/routine.service';
 
 @Component({
   selector: 'app-task-item',

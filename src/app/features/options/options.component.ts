@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '@core/services/auth.service';
-import { RoutineService } from '@core/services/routine.service';
-import { ProfileService } from '@core/services/profile.service';
+import { AuthService } from '../users/services/auth.service';
+import { RoutineService } from '../routines/services/routine.service';
+import { ProfileService } from '../statistics/services/profile.service';
 
 @Component({
   selector: 'app-options',

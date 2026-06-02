@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';
-import { AuthService } from '@core/services/auth.service';
+import { AuthService } from '../../users/services/auth.service';
 
 @Component({
   selector: 'app-register',

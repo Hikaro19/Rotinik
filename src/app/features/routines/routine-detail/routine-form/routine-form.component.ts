@@ -10,8 +10,8 @@ import {
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RoutineViewModel } from '@core/models/view/routine-view.models';
-import { EFrequencia } from '@core/models/domain';
+import { RoutineViewModel } from '../../models/routine-view.models';
+import { EFrequencia } from '../../models/rotina.enum';
 
 export interface RoutineFormValue {
   title: string;

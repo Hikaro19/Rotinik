@@ -1,9 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { RoutineService } from './core/services/routine.service';
-import { ProfileService } from './core/services/profile.service';
-import { AuthService } from './core/services/auth.service';
+import { RoutineService } from './features/routines/services/routine.service';
+import { ProfileService } from './features/statistics/services/profile.service';
+import { AuthService } from './features/users/services/auth.service';
 
 @Component({
   selector: 'app-root',

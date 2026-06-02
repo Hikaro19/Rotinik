@@ -1,8 +1,8 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FeedFacadeService } from '@core/services/feed-facade.service';
-import { SharedRoutine } from '@core/services/feed.service';
+import { FeedFacadeService } from '../services/feed-facade.service';
+import { SharedRoutine } from '../services/feed.service';
 import { AppCardComponent } from '@shared/components/ui/card/card.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AppInputComponent } from '@shared/components/ui/input/input.component';

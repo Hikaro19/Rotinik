@@ -35,7 +35,7 @@ export const appRoutes: Routes = [
             {
                 path: 'success',
                 loadComponent: () =>
-                    import('./features/auth/register-success/register-success.component').then((m) => m.RegisterSuccessComponent),
+                    import('@features/auth/register-success/register-success.component').then((m) => m.RegisterSuccessComponent),
             },
             {
                 path: '',
@@ -61,7 +61,7 @@ export const appRoutes: Routes = [
                     {
                         path: '',
                         loadComponent: () =>
-                            import('@features/routines/routines.component').then((m) => m.RoutinesComponent),
+                            import('@features/routines/views/routines.component').then((m) => m.RoutinesComponent),
                     },
                     {
                         path: ':id',
@@ -92,12 +92,12 @@ export const appRoutes: Routes = [
             {
                 path: 'shop',
                 loadComponent: () =>
-                    import('@features/shop/shop.component').then((m) => m.ShopComponent),
+                    import('@features/payments/views/shop.component').then((m) => m.ShopComponent),
             },
             {
                 path: 'profile',
                 loadComponent: () =>
-                    import('@features/profile/profile.component').then((m) => m.ProfileComponent),
+                    import('@features/statistics/views/profile.component').then((m) => m.ProfileComponent),
             },
             {
                 path: 'friends',
