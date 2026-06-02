@@ -47,6 +47,10 @@ export class RoutineDetailFacadeService {
   loadRoutine(id: string): void {
     this.routineId.set(id);
     this.loading.set(true);
+
+    // Força a chamada API na reinicialização forçada (Ctrl+F5)
+    this.routineService.initialize();
+
     this.loading.set(false);
   }
 

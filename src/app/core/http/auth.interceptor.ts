@@ -1,9 +1,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { AuthService } from '../../features/users/services/auth.service';
+import { AUTH } from '../../shared/utils/constants';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const token = inject(AuthService).getToken();
+  // Leitura SÍNCRONA direta do storage. Isso sobrevive ao Ctrl+F5 imediatamente 
+  // e elimina o atraso de inicialização dos Services (condição de corrida).
+  const token = localStorage.getItem(AUTH.TOKEN_KEY);
 
   if (!token) {
     return next(request);

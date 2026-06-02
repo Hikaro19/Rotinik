@@ -41,8 +41,8 @@ export class RoutineApiService {
     return this.http.post<RoutineDto>(this.baseUrl, payload);
   }
 
-  update(routineId: string | number, payload: UpdateRoutineRequestDto): Observable<RoutineDto> {
-    return this.http.put<RoutineDto>(`${this.baseUrl}/${routineId}`, payload);
+  update(routineId: string | number, payload: UpdateRoutineRequestDto): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${routineId}`, payload);
   }
 
   delete(routineId: string | number): Observable<void> {

@@ -95,11 +95,9 @@ export class RoutineService {
   readonly isDeletingTaskSignal = computed(() => this.pendingOperationsState().deleteTask);
 
   initialize(): void {
-    if (this.isInitializedSignal()) {
+    if (this.isInitializedSignal() || this.isLoadingSignal()) {
       return;
     }
-
-    this.isInitializedSignal.set(true);
     this.loadSnapshotFromApi();
   }
 
@@ -161,10 +159,10 @@ export class RoutineService {
       routines.map((item) =>
         item.id === id
           ? {
-              ...item,
-              ...updates,
-              tasks: updates.tasks ?? item.tasks,
-            }
+            ...item,
+            ...updates,
+            tasks: updates.tasks ?? item.tasks,
+          }
           : item
       )
     );
@@ -277,12 +275,12 @@ export class RoutineService {
       routines.map((item) =>
         item.id === routineId
           ? {
-              ...item,
-              isCompleted: false,
-              tasks: item.tasks.map((task) =>
-                task.id === taskId ? { ...task, completed: false, completedDate: undefined } : task
-              ),
-            }
+            ...item,
+            isCompleted: false,
+            tasks: item.tasks.map((task) =>
+              task.id === taskId ? { ...task, completed: false, completedDate: undefined } : task
+            ),
+          }
           : item
       )
     );
@@ -391,12 +389,12 @@ export class RoutineService {
         const tasks = item.tasks.map((task) =>
           task.id === taskId
             ? {
-                ...task,
-                title: taskData.title,
-                description: taskData.description,
-                importance: taskData.importance,
-                estimatedMinutes: taskData.estimatedMinutes,
-              }
+              ...task,
+              title: taskData.title,
+              description: taskData.description,
+              importance: taskData.importance,
+              estimatedMinutes: taskData.estimatedMinutes,
+            }
             : task
         );
 
@@ -448,13 +446,12 @@ export class RoutineService {
   loadSnapshotFromApi(): void {
     this.startOperation('loadSnapshot');
     this.isLoadingSignal.set(true);
+
     this.routineApi
       .getSnapshot()
       .pipe(take(1))
       .subscribe({
         next: (snapshot) => {
-          console.log('[RoutineService] Snapshot carregado do banco:', snapshot);
-          
           if (snapshot.user) {
             const domainUser = Usuario.reconstituir(
               snapshot.user.id,
@@ -467,13 +464,14 @@ export class RoutineService {
             );
             this.setCurrentUser(domainUser);
           }
-          
+
           this.hydrateFromApi(snapshot.routines);
+          this.isInitializedSignal.set(true); // Marca inicialização no sucesso
           this.finishOperation('loadSnapshot');
           this.isLoadingSignal.set(false);
         },
         error: (error) => {
-          console.error('[RoutineService] Falha crítica ao carregar snapshot:', error);
+          this.isInitializedSignal.set(false); // Reseta para permitir retentativa no futuro
           this.failOperation(
             'loadSnapshot',
             getHttpErrorMessage(error, 'Nao foi possivel carregar as rotinas do servidor.')
@@ -521,8 +519,7 @@ export class RoutineService {
       .update(routineId, payload)
       .pipe(take(1))
       .subscribe({
-        next: (updatedRoutine) => {
-          this.replaceRoutineFromApi(routineId, updatedRoutine);
+        next: () => {
           this.finishOperation('updateRoutine');
         },
         error: (error) =>
@@ -687,8 +684,6 @@ export class RoutineService {
   private syncRoutinesFromCurrentUser(): void {
     const user = this.currentUserState();
 
-    // CORREÇÃO: Evita limpar a tela caso a API já tenha preenchido as rotinas
-    // mas o profile do usuário ainda esteja pendente ou tenha falhado o carregamento.
     if (!user) {
       if (this.routinesSignal().length === 0) {
         this.setRoutines([]);

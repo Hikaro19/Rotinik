@@ -6,6 +6,11 @@ import { Rotina } from '../models/rotina';
 export class RoutinesFacadeService {
   private readonly routineService = inject(RoutineService);
 
+  // Inicializa o serviço caso a rota for acessada via URL / F5
+  constructor() {
+    this.routineService.initialize();
+  }
+
   readonly routines = this.routineService.routinesSignal;
   readonly totalRoutines = this.routineService.totalRoutines;
   readonly completedRoutines = this.routineService.completedRoutines;
@@ -20,30 +25,27 @@ export class RoutinesFacadeService {
     const filter = this.activeFilter();
     const routines = this.routines();
 
-    // 1. Filtro de frequência resiliente
     const visibleRoutines = filter === 'all'
       ? routines
       : routines.filter((routine) => {
-          if (!routine.frequency) return false;
+        if (!routine.frequency) return false;
 
-          const freqLower = routine.frequency.toString().toLowerCase();
-          // Forçamos o filtro para string para o TS não reclamar
-          const filterStr = String(filter).toLowerCase();
+        const freqLower = routine.frequency.toString().toLowerCase();
+        const filterStr = String(filter).toLowerCase();
 
-          if (filterStr === 'daily') {
-            return freqLower === 'daily' || freqLower === 'diaria' || freqLower === '0';
-          }
-          if (filterStr === 'weekly') {
-            return freqLower === 'weekly' || freqLower === 'semanal' || freqLower === '1';
-          }
-          if (filterStr === 'monthly') {
-            return freqLower === 'monthly' || freqLower === 'mensal' || freqLower === '2';
-          }
+        if (filterStr === 'daily') {
+          return freqLower === 'daily' || freqLower === 'diaria' || freqLower === '0';
+        }
+        if (filterStr === 'weekly') {
+          return freqLower === 'weekly' || freqLower === 'semanal' || freqLower === '1';
+        }
+        if (filterStr === 'monthly') {
+          return freqLower === 'monthly' || freqLower === 'mensal' || freqLower === '2';
+        }
 
-          return freqLower === filterStr;
-        });
+        return freqLower === filterStr;
+      });
 
-    // 2. CORREÇÃO: Permitir rotinas que tenham 0 tarefas
     return visibleRoutines
       .filter((routine) => !routine.isCompleted || (routine.tasks && routine.tasks.length === 0))
       .sort((a, b) => {
