@@ -61,7 +61,7 @@
     <app-toast type="success" title="Sucesso" [message]="message" [duration]="2600" (close)="closeToast()"></app-toast>
   </div>
 
-  <app-task-form *ngIf="isTaskFormOpen()" [routineId]="routineId()" [task]="selectedTask()"
+  <app-task-form *ngIf="isTaskFormOpen()" [routineId]="routineId()" [task]="selectedTask()" [routineFrequency]="rotinaAtual()?.frequency ?? 'daily'"
     [submitting]="isSubmittingTaskForm()" (cancel)="closeTaskForm()" (save)="submitTaskForm($event)"></app-task-form>
   <app-routine-form *ngIf="isRoutineFormOpen()" [routine]="rotinaAtual()" [submitting]="isBusy()"
     (cancel)="closeRoutineForm()" (save)="submitRoutineForm($event)"></app-routine-form>

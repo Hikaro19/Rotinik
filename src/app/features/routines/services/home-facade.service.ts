@@ -67,16 +67,7 @@ export class HomeFacadeService {
   );
 
   readonly rotinasCompletasDetalhadas = computed(() =>
-    this.rotinas()
-      .filter((rotina) => rotina.isCompleted)
-      .map((rotina) => ({
-        id: rotina.id,
-        titulo: rotina.title,
-        descricao: rotina.description,
-        icon: rotina.icon,
-        xpTotal: rotina.totalXP,
-        streak: rotina.completionStreak,
-      })),
+    this.rotinas().filter((rotina) => rotina.isCompleted)
   );
 
   readonly statsCard = computed(() => ({
@@ -86,4 +77,12 @@ export class HomeFacadeService {
     tarefasPendentes: this.tarefasPendentes(),
     maiorStreak: this.maiorStreak(),
   }));
+
+  completeTask(routineId: string, taskId: string): void {
+    this.routineService.completeTask(routineId, taskId);
+  }
+
+  uncompleteTask(routineId: string, taskId: string): void {
+    this.routineService.uncompleteTask(routineId, taskId);
+  }
 }

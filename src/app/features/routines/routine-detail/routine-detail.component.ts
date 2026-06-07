@@ -248,7 +248,7 @@ export class RoutineDetailComponent implements OnInit {
     return {
       title: payload.title,
       description: payload.description,
-      estimatedMinutes: payload.estimatedMinutes,
+      deadlineValue: payload.deadlineValue,
       importance: payload.importance,
     };
   }

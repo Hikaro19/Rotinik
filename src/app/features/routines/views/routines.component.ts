@@ -97,6 +97,14 @@ import { RoutineCreateComponent } from './routine-create.component';
         >
           Mensais
         </button>
+        <button
+          type="button"
+          class="time-filter-btn"
+          [class.active]="activeFilter() === 'completed'"
+          (click)="setFilter('completed')"
+        >
+          Concluídas
+        </button>
       </div>
 
       @if (filteredRoutines().length > 0) {
@@ -109,6 +117,7 @@ import { RoutineCreateComponent } from './routine-create.component';
                 class="routine-card-link"
                 [routine]="rotina"
                 (click)="abrirDetalhesRotina(rotina.id)"
+                (toggleTask)="onToggleTask($event)"
               ></app-routine-card>
             }
           </div>
@@ -158,7 +167,7 @@ export class RoutinesComponent {
   readonly isBusy = this.routinesFacade.isBusy;
   readonly errorMessage = this.routinesFacade.errorMessage;
 
-  setFilter(filter: 'all' | 'daily' | 'weekly' | 'monthly'): void {
+  setFilter(filter: 'all' | 'daily' | 'weekly' | 'monthly' | 'completed'): void {
     this.routinesFacade.setFilter(filter);
   }
 
@@ -185,5 +194,13 @@ export class RoutinesComponent {
 
   abrirDetalhesRotina(id: string | number): void {
     this.router.navigate(['/routine', id]);
+  }
+
+  onToggleTask(event: { routineId: string, taskId: string, completed: boolean }): void {
+    if (event.completed) {
+      this.routinesFacade.completeTask(event.routineId, event.taskId);
+    } else {
+      this.routinesFacade.uncompleteTask(event.routineId, event.taskId);
+    }
   }
 }

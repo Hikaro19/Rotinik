@@ -15,7 +15,7 @@ export class HomeComponent {
   private readonly router = inject(Router);
   private readonly homeFacade = inject(HomeFacadeService);
 
-  readonly activeTab = signal<'tarefas' | 'rotinas'>('rotinas');
+  readonly activeTab = signal<'tarefas' | 'rotinas' | 'concluidas'>('rotinas');
   readonly tarefaFiltro = signal<'todas' | 'pendente' | 'andamento' | 'concluida'>('todas');
 
   readonly rotinas = this.homeFacade.rotinas;
@@ -35,7 +35,7 @@ export class HomeComponent {
   readonly rotinasCompletas$ = this.homeFacade.rotinasCompletasDetalhadas;
   readonly statsCard = this.homeFacade.statsCard;
 
-  switchTab(tab: 'tarefas' | 'rotinas'): void {
+  switchTab(tab: 'tarefas' | 'rotinas' | 'concluidas'): void {
     this.activeTab.set(tab);
   }
 
@@ -45,5 +45,13 @@ export class HomeComponent {
 
   goToRoutinesList(): void {
     this.router.navigate(['/routines']);
+  }
+
+  onToggleTask(event: { routineId: string, taskId: string, completed: boolean }): void {
+    if (event.completed) {
+      this.homeFacade.completeTask(event.routineId, event.taskId);
+    } else {
+      this.homeFacade.uncompleteTask(event.routineId, event.taskId);
+    }
   }
 }

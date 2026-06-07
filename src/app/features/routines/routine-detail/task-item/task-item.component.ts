@@ -32,7 +32,7 @@ import { TaskViewModel } from '../../models/routine-view.models';
           <span class="task-importance" [ngClass]="'importance-' + task.importance">
             {{ task.importance | titlecase }}
           </span>
-          <span class="task-time">{{ task.estimatedMinutes }} min</span>
+          <span class="task-time">{{ formatDeadline(task.deadlineValue) }}</span>
         </div>
       </div>
       <div class="task-right">
@@ -106,4 +106,9 @@ export class TaskItemComponent {
   @Output() complete = new EventEmitter<string>();
   @Output() edit = new EventEmitter<TaskViewModel>();
   @Output() delete = new EventEmitter<string>();
+
+  formatDeadline(val: string | undefined): string {
+    if (!val) return 'Sem prazo';
+    return val;
+  }
 }

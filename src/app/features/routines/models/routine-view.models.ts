@@ -7,7 +7,7 @@ export interface TaskViewModel {
   description?: string;
   completed: boolean;
   importance: TaskImportance;
-  estimatedMinutes: number;
+  deadlineValue?: string;
   xpReward: number;
   coinReward: number;
   dueDate?: Date;

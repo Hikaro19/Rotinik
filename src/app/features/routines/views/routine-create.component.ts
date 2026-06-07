@@ -38,6 +38,9 @@ export class RoutineCreateComponent {
     prazo: [EFrequencia.DIARIA, Validators.required],
   });
 
+  readonly templates = this.routinesFacade.templates;
+  readonly selectedTemplateId = signal<string | null>(null);
+
   constructor() {
     effect(() => {
       const isSaving = this.isSaving();
@@ -54,10 +57,10 @@ export class RoutineCreateComponent {
         return;
       }
 
-      const nomeRotina = this.createForm.getRawValue().nome;
-      this.routineCreated.emit(nomeRotina);
-      this.isSubmittingLocal.set(false);
-      this.resetForm();
+      // We only emit routineCreated when not using a template, 
+      // because template cloning is handled manually in onSaveRoutine.
+      // Actually, if we just use createRoutine, this effect triggers.
+      // We will handle the emit manually below.
     }, { allowSignalWrites: true });
   }
 
@@ -68,18 +71,44 @@ export class RoutineCreateComponent {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (!this.isSaving()) {
+    if (!this.isSaving() && !this.isSubmittingLocal()) {
       this.onCancel();
     }
   }
 
   onBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget && !this.isSaving()) {
+    if (event.target === event.currentTarget && !this.isSaving() && !this.isSubmittingLocal()) {
       this.onCancel();
     }
   }
 
+  onTemplateSelect(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const templateId = select.value;
+    
+    if (!templateId) {
+      this.selectedTemplateId.set(null);
+      this.resetForm();
+      return;
+    }
+
+    this.selectedTemplateId.set(templateId);
+    const template = this.templates().find(t => t.id === templateId);
+    
+    if (template) {
+      this.createForm.patchValue({
+        nome: template.title,
+        categoria: template.category,
+        meta: template.description,
+        prazo: template.frequency as EFrequencia
+      });
+      this.createForm.markAsDirty();
+    }
+  }
+
   onSaveRoutine(): void {
+    if (this.isSubmittingLocal() || this.isSaving()) return;
+
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
       return;
@@ -89,25 +118,56 @@ export class RoutineCreateComponent {
     this.routinesFacade.clearError();
     this.isSubmittingLocal.set(true);
 
-    try {
-      const formValue = this.createForm.getRawValue();
-      const payload = {
-        title: formValue.nome,
-        category: formValue.categoria,
-        description: formValue.meta,
-        frequency: formValue.prazo.toString()
-      };
+    const formValue = this.createForm.getRawValue();
+    const payload = {
+      title: formValue.nome,
+      category: formValue.categoria,
+      description: formValue.meta,
+      frequency: formValue.prazo.toString()
+    };
 
+    const templateId = this.selectedTemplateId();
+
+    if (templateId) {
+      // 1. Clone the template
+      this.routinesFacade.cloneTemplate(templateId).subscribe({
+        next: (cloned) => {
+          // 2. Update with the customized details
+          this.routinesFacade.updateRoutineDirect(cloned.id.toString(), payload).subscribe({
+            next: () => {
+              this.routinesFacade.loadSnapshot();
+              this.routineCreated.emit(formValue.nome);
+              this.isSubmittingLocal.set(false);
+              this.resetForm();
+            },
+            error: (err) => {
+              this.submitError.set('Erro ao aplicar personalizações na rotina.');
+              this.isSubmittingLocal.set(false);
+            }
+          });
+        },
+        error: (err) => {
+          this.submitError.set('Erro ao clonar o modelo pré-fabricado.');
+          this.isSubmittingLocal.set(false);
+        }
+      });
+    } else {
+      // Create from scratch
       this.routinesFacade.createRoutine(payload);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Não foi possível criar a rotina.';
-      this.submitError.set(message);
-      this.isSubmittingLocal.set(false);
+      
+      // Wait for facade state to settle then emit
+      setTimeout(() => {
+        if (!this.routinesFacade.errorMessage()) {
+          this.routineCreated.emit(formValue.nome);
+          this.isSubmittingLocal.set(false);
+          this.resetForm();
+        }
+      }, 500);
     }
   }
 
   onCancel(): void {
-    if (this.isSaving()) {
+    if (this.isSaving() || this.isSubmittingLocal()) {
       return;
     }
 
@@ -119,6 +179,7 @@ export class RoutineCreateComponent {
   }
 
   private resetForm(): void {
+    this.selectedTemplateId.set(null);
     this.createForm.reset({
       nome: '',
       categoria: 'Saude',

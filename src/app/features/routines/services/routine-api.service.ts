@@ -19,7 +19,6 @@ export class RoutineApiService {
   private readonly http = inject(HttpClient);
   // BaseUrl aponta para api/Routine seguindo o padrão de nomenclatura do C# Controller
   private readonly baseUrl = `${environment.apiBaseUrl}/routine`;
-
   /**
    * Obtém o snapshot completo (usuário + rotinas).
    */
@@ -49,8 +48,8 @@ export class RoutineApiService {
     return this.http.delete<void>(`${this.baseUrl}/${routineId}`);
   }
 
-  getTemplates(): Observable<RoutineSummaryResponse[]> {
-    return this.http.get<RoutineSummaryResponse[]>(`${this.baseUrl}/templates`);
+  getTemplates(): Observable<RoutineDto[]> {
+    return this.http.get<RoutineDto[]>(`${this.baseUrl}/templates`);
   }
 
   cloneTemplate(templateId: string | number): Observable<RoutineDto> {

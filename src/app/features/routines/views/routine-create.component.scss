@@ -76,6 +76,12 @@
     }
   }
 
+  .template-selector {
+    margin-bottom: var(--spacing-6);
+    padding-bottom: var(--spacing-6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
   .routine-create-form {
     display: flex;
     flex-direction: column;

@@ -45,6 +45,23 @@ import { AppCardComponent } from '../../ui/card/card.component';
           {{ routine.description }}
         </p>
 
+        <div class="routine-card__tasks-list" *ngIf="routine.tasks?.length">
+          <div class="routine-card__task-item" *ngFor="let task of routine.tasks" (click)="$event.stopPropagation()">
+            <label class="task-checkbox-wrapper">
+              <input type="checkbox" [checked]="task.completed" (change)="onToggleTask(task, $event)">
+              <span class="checkmark">
+                <svg *ngIf="task.completed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <path d="m5 12 4 4L19 6" />
+                </svg>
+              </span>
+            </label>
+            <div class="task-info">
+              <span class="task-title" [class.completed]="task.completed">{{ task.title }}</span>
+            </div>
+            <span class="task-reward" *ngIf="task.xpReward">+{{ task.xpReward }} XP</span>
+          </div>
+        </div>
+
         <div class="routine-card__stats" *ngIf="showActions && (routine.totalCoins || routine.completionStreak > 0)">
           <div class="routine-card__stat" *ngIf="routine.totalCoins">
             <span class="routine-card__stat-icon">💰</span>
@@ -84,6 +101,7 @@ export class AppRoutineCardComponent {
   @Input() showActions = true;
   @Output() edit = new EventEmitter<string>();
   @Output() start = new EventEmitter<string>();
+  @Output() toggleTask = new EventEmitter<{ routineId: string, taskId: string, completed: boolean }>();
 
   frequencyLabel = () => {
     if (!this.routine?.frequency) return 'Geral';
@@ -121,5 +139,15 @@ export class AppRoutineCardComponent {
 
   onStart(): void {
     this.start.emit(this.routine.id);
+  }
+
+  onToggleTask(task: any, event: Event): void {
+    event.stopPropagation();
+    const checkbox = event.target as HTMLInputElement;
+    this.toggleTask.emit({
+      routineId: this.routine.id,
+      taskId: task.id,
+      completed: checkbox.checked
+    });
   }
 }

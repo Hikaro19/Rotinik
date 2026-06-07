@@ -14,6 +14,7 @@ export type Task = TaskViewModel;
 export type Routine = RoutineViewModel;
 type RoutineOperation =
   | 'loadSnapshot'
+  | 'loadTemplates'
   | 'createRoutine'
   | 'updateRoutine'
   | 'deleteRoutine'
@@ -29,9 +30,11 @@ export class RoutineService {
 
   readonly currentUserSignal = signal<RoutineUserDto | null>(null);
   readonly routinesSignal = signal<Routine[]>([]);
+  readonly templatesSignal = signal<Routine[]>([]);
   readonly isLoadingSignal = signal(false);
   private readonly pendingOperationsState = signal<Record<RoutineOperation, boolean>>({
     loadSnapshot: false,
+    loadTemplates: false,
     createRoutine: false,
     updateRoutine: false,
     deleteRoutine: false,
@@ -59,7 +62,7 @@ export class RoutineService {
 
   readonly isMutatingSignal = computed(() =>
     Object.entries(this.pendingOperationsState())
-      .filter(([key]) => key !== 'loadSnapshot')
+      .filter(([key]) => key !== 'loadSnapshot' && key !== 'loadTemplates')
       .some(([, isPending]) => isPending),
   );
   readonly isCreatingRoutineSignal = computed(() => this.pendingOperationsState().createRoutine);
@@ -78,6 +81,7 @@ export class RoutineService {
   initialize(): void {
     if (this.isInitializedSignal() || this.isLoadingSignal()) return;
     this.loadSnapshotFromApi();
+    this.loadTemplatesFromApi();
   }
 
   getRoutineById(id: string): Routine | undefined {
@@ -102,6 +106,22 @@ export class RoutineService {
         error: (error) => {
           this.failOperation('loadSnapshot', getHttpErrorMessage(error, 'Não foi possível carregar os dados.'));
           this.isLoadingSignal.set(false);
+        },
+      });
+  }
+
+  loadTemplatesFromApi(): void {
+    this.startOperation('loadTemplates');
+    this.routineApi
+      .getTemplates()
+      .pipe(take(1))
+      .subscribe({
+        next: (templates) => {
+          this.templatesSignal.set(this.routineMapper.mapApiRoutinesToViewModels(templates));
+          this.finishOperation('loadTemplates');
+        },
+        error: (error) => {
+          this.failOperation('loadTemplates', getHttpErrorMessage(error, 'Não foi possível carregar os modelos.'));
         },
       });
   }

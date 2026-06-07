@@ -11,6 +11,7 @@ export class RoutinesFacadeService {
   }
 
   readonly routines = this.routineService.routinesSignal;
+  readonly templates = this.routineService.templatesSignal;
   readonly totalRoutines = this.routineService.totalRoutines;
   readonly completedRoutines = this.routineService.completedRoutines;
   readonly totalPossibleXP = this.routineService.totalPossibleXP;
@@ -18,11 +19,27 @@ export class RoutinesFacadeService {
   readonly isBusy = this.routineService.isMutatingSignal;
   readonly createPending = this.routineService.isCreatingRoutineSignal;
   readonly errorMessage = this.routineService.operationErrorSignal;
-  readonly activeFilter = signal<'all' | Routine['frequency']>('all');
+  readonly activeFilter = signal<'all' | Routine['frequency'] | 'completed'>('all');
+
+  cloneTemplate(templateId: number | string) {
+    return this.routineService['routineApi'].cloneTemplate(templateId);
+  }
+
+  updateRoutineDirect(routineId: string, payload: any) {
+    return this.routineService['routineApi'].update(routineId, payload);
+  }
+
+  loadSnapshot() {
+    this.routineService.loadSnapshotFromApi();
+  }
 
   readonly filteredRoutines = computed(() => {
     const filter = this.activeFilter();
     const routines = this.routines();
+
+    if (filter === 'completed') {
+      return routines.filter((routine) => routine.isCompleted && routine.tasks && routine.tasks.length > 0);
+    }
 
     const visibleRoutines =
       filter === 'all'
@@ -47,7 +64,7 @@ export class RoutinesFacadeService {
       });
   });
 
-  setFilter(filter: 'all' | Routine['frequency']): void {
+  setFilter(filter: 'all' | Routine['frequency'] | 'completed'): void {
     this.activeFilter.set(filter);
   }
 
@@ -57,5 +74,13 @@ export class RoutinesFacadeService {
 
   createRoutine(payload: CreateRoutineRequestDto): void {
     this.routineService.createRoutine(payload);
+  }
+
+  completeTask(routineId: string, taskId: string): void {
+    this.routineService.completeTask(routineId, taskId);
+  }
+
+  uncompleteTask(routineId: string, taskId: string): void {
+    this.routineService.uncompleteTask(routineId, taskId);
   }
 }

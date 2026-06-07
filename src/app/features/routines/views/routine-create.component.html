@@ -19,6 +19,19 @@
     </div>
 
     <form class="routine-create-form" [formGroup]="createForm" (ngSubmit)="onSaveRoutine()">
+      
+      <div class="template-selector" *ngIf="templates().length > 0">
+        <label class="field-shell">
+          <span class="field-label">Usar um Modelo Pré-fabricado (Opcional)</span>
+          <select class="field-control field-control--select" [value]="selectedTemplateId() || ''" (change)="onTemplateSelect($event)">
+            <option value="">-- Criar rotina do zero --</option>
+            <option *ngFor="let template of templates()" [value]="template.id">
+              {{ template.category }} - {{ template.title }}
+            </option>
+          </select>
+        </label>
+      </div>
+
       <div class="routine-create-grid">
         <label class="field-shell">
           <span class="field-label">Nome da Rotina</span>

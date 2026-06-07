@@ -25,6 +25,9 @@ export function normalizeHttpError(error: unknown, fallbackMessage = 'Erro inesp
       (typeof payload === 'object' && payload !== null && 'message' in payload && typeof payload.message === 'string'
         ? payload.message
         : undefined) ??
+      (typeof payload === 'object' && payload !== null && 'detail' in payload && typeof payload.detail === 'string'
+        ? payload.detail
+        : undefined) ??
       (typeof payload === 'object' && payload !== null && 'title' in payload && typeof payload.title === 'string'
         ? payload.title
         : undefined) ??

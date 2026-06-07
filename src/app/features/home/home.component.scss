@@ -145,9 +145,18 @@
     border-radius: var(--radius-card);
     padding: var(--spacing-1);
     height: 44px;
+    overflow-x: auto;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 
     .tab-btn {
       flex: 1;
+      flex-shrink: 0;
+      min-width: max-content;
       background: transparent;
       border: 2px solid var(--purple-neon);
       color: var(--text-secondary);
@@ -159,6 +168,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      white-space: nowrap;
+      padding: 0 16px;
 
       &:hover:not(.active) {
         color: var(--purple-neon);

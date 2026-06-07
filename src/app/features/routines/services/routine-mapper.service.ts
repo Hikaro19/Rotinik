@@ -47,7 +47,7 @@ export class RoutineMapperService {
       description: task.description,
       completed: task.isCompleted,
       importance: this.normalizeTaskImportance(task.importance),
-      estimatedMinutes: task.estimatedMinutes ?? 30,
+      deadlineValue: task.deadlineValue,
       xpReward: task.xpReward ?? 0,
       coinReward: task.coinReward ?? 0,
       order: task.order,

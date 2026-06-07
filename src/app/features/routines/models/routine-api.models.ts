@@ -22,7 +22,7 @@ export interface RoutineTaskDto {
   description?: string;
   isCompleted: boolean;
   importance?: TaskImportance;
-  estimatedMinutes?: number;
+  deadlineValue?: string;
   xpReward?: number;
   coinReward?: number;
   order: number;
@@ -74,14 +74,14 @@ export interface UpdateRoutineRequestDto {
 export interface CreateTaskRequestDto {
   title: string;
   description?: string;
-  estimatedMinutes: number;
+  deadlineValue?: string;
   importance: TaskImportance;
 }
 
 export interface UpdateTaskRequestDto {
   title: string;
   description?: string;
-  estimatedMinutes: number;
+  deadlineValue?: string;
   importance: TaskImportance;
 }
 

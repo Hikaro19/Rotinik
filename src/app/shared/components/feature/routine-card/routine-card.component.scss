@@ -135,6 +135,29 @@
     font-size: 0.82rem;
   }
 
+  &__tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: var(--spacing-3);
+  }
+
+  &__task-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-base);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
   &__footer {
     display: flex;
     gap: var(--spacing-3);
@@ -144,6 +167,73 @@
       flex: 1;
     }
   }
+}
+
+.task-checkbox-wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+
+    svg {
+      width: 14px;
+      height: 14px;
+      color: white;
+    }
+  }
+
+  input:checked ~ .checkmark {
+    background-color: var(--purple-neon);
+    border-color: var(--purple-neon);
+    box-shadow: 0 0 8px var(--purple-neon);
+  }
+}
+
+.task-info {
+  flex: 1;
+  min-width: 0;
+
+  .task-title {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    transition: color var(--transition-base);
+
+    &.completed {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+  }
+}
+
+.task-reward {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-bold);
+  color: #ff5bd8;
+  background: rgba(255, 91, 216, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
 }
 
 .progress-segments {
