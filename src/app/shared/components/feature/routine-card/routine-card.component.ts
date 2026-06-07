@@ -58,7 +58,13 @@ import { AppCardComponent } from '../../ui/card/card.component';
             <div class="task-info">
               <span class="task-title" [class.completed]="task.completed">{{ task.title }}</span>
             </div>
-            <span class="task-reward" *ngIf="task.xpReward">+{{ task.xpReward }} XP</span>
+            <div class="task-rewards" style="display: flex; gap: 8px; align-items: center; font-size: 0.8rem;">
+              <span class="task-reward-xp" *ngIf="task.xpReward" style="color: var(--color-primary-400);">+{{ task.xpReward }} XP</span>
+              <span class="task-reward-coin" *ngIf="task.coinReward" style="color: #f1c40f;">
+                +{{ task.coinReward }} 🪙
+                <span class="task-bonus" *ngIf="task.deadlineValue && !task.completed" title="Bônus de Prazo" style="color: #2ecc71; font-weight: bold;">(+{{ getBonus(task.coinReward) }})</span>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -132,6 +138,10 @@ export class AppRoutineCardComponent {
     const completedTasks = this.completedTaskCount();
     return Array.from({ length: totalTasks }, (_, index) => index < completedTasks);
   };
+
+  getBonus(coins: number): number {
+    return Math.floor(coins * 0.5);
+  }
 
   onEdit(): void {
     this.edit.emit(this.routine.id);

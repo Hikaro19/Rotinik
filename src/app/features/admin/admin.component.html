@@ -10,7 +10,7 @@
 
   <!-- Grid de Cards -->
   <div class="admin-grid">
-    <a *ngFor="let card of adminCards" [href]="card.url" class="admin-card" [attr.id]="card.id">
+    <a *ngFor="let card of adminCards" [routerLink]="card.url !== '#' ? card.url : null" class="admin-card" [attr.id]="card.id">
       <div class="card-icon-wrapper">
         <span class="card-icon">{{ card.icon }}</span>
       </div>

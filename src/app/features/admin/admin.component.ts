@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 
 export interface AdminCard {
@@ -13,7 +14,7 @@ export interface AdminCard {
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss',
 })
