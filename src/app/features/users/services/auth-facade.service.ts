@@ -34,7 +34,11 @@ export class AuthFacadeService {
       .subscribe({
         next: (session) => {
           this.sessionSignal.set(session);
-          this.router.navigate(['/home']);
+          if (this.authService.isAdmin()) {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/home']);
+          }
         },
         error: (error) =>
           this.errorMessageSignal.set(

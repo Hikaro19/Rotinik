@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './shared/components/feature/layout/layout.component';
 import { authGuard } from './core/http/auth.guard';
+import { adminGuard } from './core/http/admin.guard';
 
 export const appRoutes: Routes = [
     {
@@ -50,6 +51,12 @@ export const appRoutes: Routes = [
         canActivate: [authGuard],
         canActivateChild: [authGuard],
         children: [
+            {
+                path: 'admin',
+                canActivate: [adminGuard],
+                loadComponent: () =>
+                    import('@features/admin/admin.component').then((m) => m.AdminComponent),
+            },
             {
                 path: 'home',
                 loadComponent: () =>

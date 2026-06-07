@@ -1,0 +1,24 @@
+<div class="admin-container">
+  <!-- Banner superior -->
+  <div class="admin-banner">
+    <div class="banner-content">
+      <h2 class="banner-title">Olá, {{ adminName }}!</h2>
+      <p class="banner-subtitle">Bem-vindo ao Painel de Controle do Rotinik. Gerencie as engrenagens da gamificação.</p>
+    </div>
+    <div class="banner-glow"></div>
+  </div>
+
+  <!-- Grid de Cards -->
+  <div class="admin-grid">
+    <a *ngFor="let card of adminCards" [href]="card.url" class="admin-card" [attr.id]="card.id">
+      <div class="card-icon-wrapper">
+        <span class="card-icon">{{ card.icon }}</span>
+      </div>
+      <div class="card-info">
+        <h3 class="card-title">{{ card.title }}</h3>
+        <p class="card-description">{{ card.description }}</p>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+</div>

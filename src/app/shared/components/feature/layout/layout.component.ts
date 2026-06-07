@@ -28,12 +28,12 @@ import { filter, map } from 'rxjs/operators';
     </header>
 
     <!-- Main Content Area -->
-    <main class="app-main-content">
+    <main class="app-main-content" [class.no-footer]="isAdminRoute">
       <router-outlet></router-outlet>
     </main>
 
     <!-- Bottom Navigation Bar Fixed -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" *ngIf="!isAdminRoute">
       <a 
         class="nav-item" 
         routerLink="/home"
@@ -154,6 +154,10 @@ import { filter, map } from 'rxjs/operators';
       overflow-x: hidden;
     }
 
+    .app-main-content.no-footer {
+      margin-bottom: 0 !important;
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -234,6 +238,7 @@ export class LayoutComponent implements OnInit {
 
   currentPageTitle = 'Home';
   canGoBack = false;
+  isAdminRoute = false;
 
   ngOnInit() {
     this.updatePageTitle();
@@ -246,6 +251,8 @@ export class LayoutComponent implements OnInit {
 
   private updatePageTitle() {
     const urlSegments = this.router.url.split('/').filter((s) => s);
+    this.isAdminRoute = urlSegments.length > 0 && urlSegments[0] === 'admin';
+
     if (urlSegments.length === 0 || urlSegments[0] === 'home') {
       this.currentPageTitle = 'Bem-vindo';
     } else if (urlSegments[0] === 'routines' && urlSegments.length > 1) {
@@ -272,6 +279,7 @@ export class LayoutComponent implements OnInit {
 
   private getTitleForRoute(route: string): string {
     const titles: { [key: string]: string } = {
+      'admin': 'Administração',
       'friends': 'Amigos',
       'leaderboard': 'Classificação',
       'feed': 'Feed',

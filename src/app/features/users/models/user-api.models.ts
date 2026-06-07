@@ -16,6 +16,8 @@ export interface UserMeDto {
   userName: string;
   email: string;
   phone?: string;
+  role?: string;
+  isAdmin?: boolean;
 }
 
 export interface UserLoginResponseDto {

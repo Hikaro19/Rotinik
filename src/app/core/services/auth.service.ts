@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@environments/environment';
-import { Observable, map, tap, timer, switchMap } from 'rxjs';
+import { Observable, map, tap, timer, switchMap, of } from 'rxjs';
 import { TokenService } from './token.service';
 import {
   UserLoginDto,
@@ -49,6 +49,18 @@ export class AuthService {
   isAuthenticated(): boolean {
     const session = this.tokenService.getSession();
     return Boolean(this.tokenService.getToken() && session?.user?.email);
+  }
+
+  isAdmin(): boolean {
+    const session = this.getCurrentSession();
+    if (!session || !session.user) {
+      return false;
+    }
+    const user = session.user;
+    if (user.isAdmin !== undefined) {
+      return Boolean(user.isAdmin);
+    }
+    return user.role === 'admin';
   }
 
   getCurrentSession(): UserLoginResponseDto | null {
