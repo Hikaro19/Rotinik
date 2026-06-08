@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,9 +14,13 @@ import { AppInputComponent } from '@shared/components/ui/input/input.component';
   templateUrl: './leaderboard.component.html',
   styleUrl: './leaderboard.component.scss',
 })
-export class LeaderboardComponent {
+export class LeaderboardComponent implements OnInit {
   private router = inject(Router);
   leaderboardFacade = inject(LeaderboardFacadeService);
+
+  ngOnInit(): void {
+    this.leaderboardFacade.loadLeaderboard();
+  }
 
   searchQuerySignal = signal<string>('');
   searchQueryText = '';

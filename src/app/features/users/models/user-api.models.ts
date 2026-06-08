@@ -37,4 +37,12 @@ export interface UserApiDto {
   name?: string;
   email?: string;
   phone?: string;
+  userName?: string;
+  points?: number;
+  level?: number;
+  coins?: number;
+  achievements?: number;
+  joinDate?: string | Date;
+  lastActivityDate?: string | Date;
+  isFollowed?: boolean;
 }
