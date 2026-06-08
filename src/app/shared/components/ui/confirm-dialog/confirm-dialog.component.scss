@@ -19,23 +19,13 @@
   position: relative;
   width: 100%;
   max-width: 440px;
-  background: var(--surface-primary);
-  border: 1px solid var(--surface-tertiary);
+  background-color: #12111a;
+  border: 1px solid rgba(168, 85, 247, 0.25);
   border-radius: 16px;
-  padding: 32px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  padding: 24px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-}
-
-.dialog-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--brand-neon) 0%, #b388ff 100%);
 }
 
 .dialog-close {
@@ -44,15 +34,18 @@
   right: 16px;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  font-size: 28px;
+  color: #ffffff;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.8rem;
+  font-weight: 900;
   cursor: pointer;
   line-height: 1;
-  padding: 4px;
-  transition: color 0.2s ease;
+  padding: 0;
+  text-shadow: -2px 0 0 #0ea5e9, 2px 0 0 #ef4444;
+  transition: transform 0.2s ease;
 
   &:hover {
-    color: var(--text-primary);
+    transform: scale(1.15) translateX(-2px);
   }
 
   &:disabled {
@@ -67,25 +60,27 @@
 }
 
 .dialog-kicker {
-  font-size: 12px;
+  color: #ef4444;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--brand-neon);
+  letter-spacing: 0.06em;
   margin: 0 0 8px 0;
+  display: block;
 }
 
 .dialog-title {
-  font-size: 24px;
+  color: #ffffff;
+  font-size: 1.45rem;
   font-weight: 700;
-  color: var(--text-primary);
   margin: 0 0 12px 0;
+  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 .dialog-message {
-  font-size: 15px;
-  color: var(--text-secondary);
+  color: #9ca3af;
+  font-size: 0.92rem;
   line-height: 1.6;
   margin: 0;
 }
@@ -97,23 +92,53 @@
   gap: 16px;
 }
 
-.dialog-cancel {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 8px 16px;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: var(--text-primary);
+.dialog-actions {
+  ::ng-deep {
+    button {
+      padding: 10px 22px;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
   }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  .dialog-cancel {
+    background-color: #24222f;
+    color: #d1d5db;
+    padding: 10px 22px;
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: #302e3f;
+      color: #ffffff;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  ::ng-deep {
+    .btn-primary, .btn-danger, app-button button {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3) !important;
+      border: none !important;
+
+      &:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45) !important;
+      }
+    }
   }
 }
 

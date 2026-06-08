@@ -22,7 +22,24 @@ import { AppButtonComponent } from '../../ui/button/button.component';
     >
       <!-- Item Header -->
       <div class="shop-item__header">
-        <div class="shop-item__icon">{{ item.icon }}</div>
+        <div class="shop-item__icon">
+          <ng-container *ngIf="isGraphicItem(item); else textIcon">
+            <div class="shop-item__graphic-container">
+              <div class="shop-item__graphic-circle"
+                   [style.background]="(item.category === 'background' || item.category === 'navbar') ? item.icon : 'rgba(255,255,255,0.1)'"
+                   [style.border]="item.category === 'border' ? item.icon : 'none'">
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #textIcon>
+            <ng-container *ngIf="isImageUrl(item.icon); else emojiIcon">
+              <img [src]="item.icon" [alt]="item.name" class="shop-item__image" />
+            </ng-container>
+            <ng-template #emojiIcon>
+              {{ item.icon }}
+            </ng-template>
+          </ng-template>
+        </div>
         <div class="shop-item__badge" [class]="'shop-item__badge--' + item.rarity">
           {{ rarityLabel() }}
         </div>
@@ -91,10 +108,36 @@ import { AppButtonComponent } from '../../ui/button/button.component';
       }
 
       .shop-item__icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         font-size: 56px;
         text-align: center;
         margin-bottom: 8px;
         line-height: 1;
+        min-height: 64px;
+      }
+
+      .shop-item__graphic-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 64px;
+        height: 64px;
+      }
+
+      .shop-item__graphic-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        box-sizing: content-box;
+      }
+
+      .shop-item__image {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       .shop-item__badge {
@@ -283,5 +326,14 @@ export class AppShopItemComponent {
 
   onEquip(): void {
     this.equip.emit(this.item);
+  }
+
+  isGraphicItem(item: ShopItem): boolean {
+    return ['border', 'background', 'navbar'].includes(item.category);
+  }
+
+  isImageUrl(icon: string): boolean {
+    if (!icon) return false;
+    return icon.startsWith('http') || icon.startsWith('assets/') || icon.startsWith('/');
   }
 }
