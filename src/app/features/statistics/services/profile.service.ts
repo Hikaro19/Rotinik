@@ -56,6 +56,9 @@ export interface ProfileHistoryItem {
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
+  loadProfile() {
+    throw new Error('Method not implemented.');
+  }
   private readonly profileApi = inject(ProfileApiService);
 
   readonly achievementsSignal = signal<Achievement[]>([]);

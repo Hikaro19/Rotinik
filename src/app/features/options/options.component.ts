@@ -1,154 +1,22 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthFacadeService } from '../users/services/auth-facade.service';
 
 @Component({
   selector: 'app-options',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="options-container">
-      <div class="options-list">
-        <button class="option-btn premium-btn" (click)="navigateToPremium()">
-          <span class="option-icon">💎</span>
-          <span class="option-text">Seja Premium</span>
-          <span class="premium-badge">VIP</span>
-        </button>
-
-        <button class="option-btn" (click)="navigateToProfile()">
-          <span class="option-icon">👤</span>
-          <span class="option-text">Editar Perfil</span>
-        </button>
-
-        <button class="option-btn" (click)="navigateToSecurity()">
-          <span class="option-icon">🔒</span>
-          <span class="option-text">Segurança</span>
-        </button>
-
-        <button class="option-btn" (click)="navigateToSettings()">
-          <span class="option-icon">⚙️</span>
-          <span class="option-text">Configurações</span>
-        </button>
-
-        <button class="option-btn" (click)="navigateToHelp()">
-          <span class="option-icon">❓</span>
-          <span class="option-text">Ajuda</span>
-        </button>
-
-        <button class="option-btn logout-btn" (click)="logout()">
-          <span class="option-icon">🚪</span>
-          <span class="option-text">Sair</span>
-        </button>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .options-container {
-      padding: 16px;
-      min-height: 100%;
-    }
-
-    .options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .option-btn {
-      width: 100%;
-      padding: 16px;
-      border: 2px dashed rgba(100, 200, 255, 0.3);
-      border-radius: 12px;
-      background: var(--purple-primary, #9B51E0);
-      color: var(--text-primary, #FFFFFF);
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: all 0.2s ease;
-    }
-
-    .option-btn:hover {
-      background: rgba(155, 81, 224, 0.9);
-      border-color: rgba(100, 200, 255, 0.5);
-      transform: translateY(-2px);
-    }
-
-    .option-btn:active {
-      transform: translateY(0);
-      background: rgba(155, 81, 224, 0.8);
-    }
-
-    .option-icon {
-      font-size: 24px;
-      flex-shrink: 0;
-    }
-
-    .option-text {
-      flex: 1;
-      text-align: left;
-    }
-
-    .logout-btn {
-      background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
-      margin-top: 12px;
-      border-color: rgba(255, 71, 182, 0.3);
-    }
-
-    .logout-btn:hover {
-      background: linear-gradient(135deg, #9945E6 0%, #6D2FD7 100%);
-      border-color: rgba(255, 71, 182, 0.5);
-    }
-
-    .premium-btn {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      border-color: rgba(253, 230, 138, 0.4);
-      color: #fff;
-    }
-
-    .premium-btn:hover {
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      border-color: rgba(253, 230, 138, 0.8);
-      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-    }
-
-    .premium-badge {
-      background: #fff;
-      color: #d97706;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: auto;
-    }
-
-    @media (max-width: 480px) {
-      .options-container {
-        padding: 12px;
-      }
-
-      .options-list {
-        gap: 10px;
-      }
-
-      .option-btn {
-        padding: 14px 12px;
-        font-size: 15px;
-      }
-
-      .option-icon {
-        font-size: 20px;
-      }
-    }
-  `],
+  imports: [CommonModule, FormsModule],
+  templateUrl: './options.component.html',
+  styleUrl: './options.component.scss',
 })
 export class OptionsComponent {
   private readonly router = inject(Router);
   private readonly authFacade = inject(AuthFacadeService);
+
+  isDeleteModalOpen = false;
+  deleteConfirmText = '';
 
   navigateToPremium() {
     this.router.navigate(['/premium']);
@@ -175,5 +43,30 @@ export class OptionsComponent {
 
   logout() {
     this.authFacade.logout();
+  }
+
+  openDeleteModal() {
+    this.isDeleteModalOpen = true;
+    this.deleteConfirmText = '';
+  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen = false;
+    this.deleteConfirmText = '';
+  }
+
+  async confirmAccountDeletion() {
+    if (this.deleteConfirmText !== 'EXCLUIR') {
+      return;
+    }
+
+    try {
+      const response = await this.authFacade.deleteAccount();
+      alert(response.message || 'Sua conta foi agendada para exclusão. Você tem 30 dias para cancelar fazendo login novamente.');
+      this.closeDeleteModal();
+    } catch (error) {
+      alert('Erro ao excluir conta. Tente novamente.');
+      console.error('Delete account error:', error);
+    }
   }
 }

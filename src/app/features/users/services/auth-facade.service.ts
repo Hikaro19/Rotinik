@@ -33,7 +33,15 @@ export class AuthFacadeService {
       .pipe(finalize(() => this.loadingSignal.set(false)))
       .subscribe({
         next: (session) => {
+          // 1. Salva a sessão no Facade
           this.sessionSignal.set(session);
+
+          // 2. SINCRONIZAÇÃO FORÇADA DE ESTADO (A mágica acontece aqui)
+          // Carrega os dados do usuário recém-logado nos serviços paralelos
+          this.profileService.initialize();
+          this.routineService.initialize();
+
+          // 3. Redirecionamento nativo do Angular (Sem recarregar a página)
           if (this.authService.isAdmin()) {
             this.router.navigate(['/admin']);
           } else {
@@ -88,5 +96,38 @@ export class AuthFacadeService {
   private startRequest(): void {
     this.errorMessageSignal.set('');
     this.loadingSignal.set(true);
+  }
+
+  deleteAccount(): Promise<{ success: boolean; message: string }> {
+    if (this.loadingSignal()) return Promise.resolve({ success: false, message: 'Processando...' });
+
+    const currentSession = this.sessionSignal();
+
+    // Type Guard seguro usando optional chaining
+    if (!currentSession?.user?.id) {
+      return Promise.resolve({ success: false, message: 'Usuário não autenticado.' });
+    }
+
+    // EXTRAÇÃO SEGURA: Garantimos ao compilador que temos um número imutável aqui.
+    const userId = Number(currentSession.user.id);
+
+    this.startRequest();
+
+    return new Promise((resolve) => {
+      // Passamos a constante primitiva blindada, eliminando o erro TS18048
+      this.authService.deleteAccount(userId)
+        .pipe(finalize(() => this.loadingSignal.set(false)))
+        .subscribe({
+          next: (response) => {
+            this.logout();
+            resolve({ success: true, message: response.message });
+          },
+          error: (error) => {
+            const errorMsg = getHttpErrorMessage(error, 'Não foi possível excluir a conta.');
+            this.errorMessageSignal.set(errorMsg);
+            resolve({ success: false, message: errorMsg });
+          }
+        });
+    });
   }
 }
