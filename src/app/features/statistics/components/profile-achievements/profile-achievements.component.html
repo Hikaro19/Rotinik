@@ -1,40 +1,38 @@
-<div class="achievements-grid">
-  <div class="achievement-card" *ngFor="let achievement of achievements()">
-    <div
-      class="card-inner"
-      [ngClass]="{ unlocked: isUnlocked(achievement), locked: !isUnlocked(achievement) }"
-      [attr.data-rarity]="achievement.rarity"
-    >
-      <div class="achievement-badge" [attr.data-rarity]="achievement.rarity">
-        <span class="badge-icon">{{ achievement.icon }}</span>
-        <span class="rarity-indicator">
-          {{ translateRarity(achievement.rarity).charAt(0) }}
-        </span>
-      </div>
+<div class="achievements-showcase">
+  <div class="showcase-header">
+    <h3>Vitrine de Conquistas</h3>
+    <button class="edit-showcase-btn" (click)="openModal()">Editar Vitrine</button>
+  </div>
 
-      <div class="achievement-content">
-        <h3 class="achievement-name">{{ achievement.name }}</h3>
-        <p class="achievement-description">{{ achievement.description }}</p>
-
-        <div class="achievement-progress" *ngIf="!isUnlocked(achievement) && achievement.progress">
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="getProgressPercentage(achievement)"></div>
-          </div>
-          <span class="progress-text">
-            {{ achievement.progress }}/{{ achievement.target }}
-          </span>
+  <div class="achievements-grid">
+    <!-- Equipped Medals -->
+    <div class="achievement-card equipped" *ngFor="let um of equippedMedals">
+      <div class="card-inner unlocked" data-rarity="common">
+        <div class="achievement-badge">
+          <span class="badge-icon">{{ um.medal.iconUrl }}</span>
         </div>
-
-        <div class="unlock-date" *ngIf="isUnlocked(achievement)">
-          Desbloqueado em {{ formatUnlockedDate(achievement.unlockedDate!) }}
+        <div class="achievement-content">
+          <h3 class="achievement-name">{{ um.medal.name }}</h3>
+          <p class="achievement-description">{{ um.medal.description }}</p>
         </div>
       </div>
+    </div>
 
-      <div class="lock-overlay" *ngIf="!isUnlocked(achievement)">🔒</div>
+    <!-- Empty Slots -->
+    <div class="achievement-card empty-slot" *ngFor="let slot of emptySlots" (click)="openModal()">
+      <div class="card-inner empty">
+        <div class="add-icon">+</div>
+        <p>Equipar</p>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="empty-state" *ngIf="achievements().length === 0">
-  <p>Nenhum achievement ainda. Comece a jogar para desbloquear.</p>
-</div>
+<app-achievements-modal
+  *ngIf="showModal()"
+  [allMedals]="allMedals()"
+  [myMedals]="myMedals()"
+  [isPremium]="isPremium()"
+  (close)="closeModal()"
+  (save)="saveEquippedMedals($event)"
+></app-achievements-modal>

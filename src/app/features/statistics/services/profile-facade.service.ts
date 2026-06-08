@@ -9,6 +9,10 @@ export class ProfileFacadeService {
   private readonly profileService = inject(ProfileService);
   private readonly authFacade = inject(AuthFacadeService);
 
+  readonly isPremium = computed(() => {
+    return this.authFacade.session()?.user?.isPremium ?? false;
+  });
+
   readonly avatarUrl = computed(() => {
     const cosmetics = this.authFacade.session()?.user?.equippedCosmetics;
     return cosmetics?.['avatar'] || null;

@@ -18,6 +18,7 @@ export interface UserMeDto {
   phone?: string;
   role?: string;
   isAdmin?: boolean;
+  isPremium?: boolean;
   equippedCosmetics?: Record<string, string>;
 }
 

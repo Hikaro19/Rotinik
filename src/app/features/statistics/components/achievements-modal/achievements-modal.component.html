@@ -1,0 +1,50 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-content">
+        <h2>Todas as Conquistas</h2>
+        <p>
+          Equipadas: {{ localEquippedIds.length }} / {{ isPremium ? 6 : 3 }}
+          <span class="premium-badge" *ngIf="isPremium">Premium</span>
+        </p>
+      </div>
+      <button class="close-btn" (click)="close.emit()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="achievements-grid">
+        <div class="achievement-card" *ngFor="let medal of allMedals" (click)="toggleEquip(medal.id)">
+          <div
+            class="card-inner"
+            [ngClass]="{ 
+              unlocked: isUnlocked(medal.id), 
+              locked: !isUnlocked(medal.id),
+              equipped: isEquipped(medal.id)
+            }"
+          >
+            <div class="achievement-badge">
+              <span class="badge-icon">{{ medal.iconUrl }}</span>
+              <div class="equip-indicator" *ngIf="isEquipped(medal.id)">⭐</div>
+            </div>
+
+            <div class="achievement-content">
+              <h3 class="achievement-name">{{ medal.name }}</h3>
+              <p class="achievement-description">{{ medal.description }}</p>
+
+              <div class="unlock-date" *ngIf="isUnlocked(medal.id)">
+                Desbloqueado em {{ formatUnlockedDate(medal.id) }}
+              </div>
+            </div>
+
+            <div class="lock-overlay" *ngIf="!isUnlocked(medal.id)">🔒</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="close.emit()">Cancelar</button>
+      <button class="btn btn-primary" (click)="onSave()">Salvar Vitrine</button>
+    </div>
+  </div>
+</div>

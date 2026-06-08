@@ -27,7 +27,7 @@
   </div>
 
   <!-- Achievements desbloqueados -->
-  <div class="stat-card">
+  <div class="stat-card clickable" (click)="openAchievementsModal.emit()">
     <div class="stat-icon">{{ getIcon('achievements') }}</div>
     <div class="stat-content">
       <span class="stat-value">{{ unlockedAchievements() }}</span>
