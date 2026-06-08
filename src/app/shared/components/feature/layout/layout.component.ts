@@ -2,6 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
+import { AuthService } from '@core/services/auth.service';
+import { AuthFacadeService } from '@features/users/services/auth-facade.service';
 
 @Component({
   selector: 'app-layout',
@@ -11,7 +13,7 @@ import { filter, map } from 'rxjs/operators';
     <!-- Header Fixed -->
     <header class="app-header">
       <div class="header-left">
-        <button class="back-btn" (click)="goBack()" *ngIf="canGoBack">
+        <button class="back-btn" (click)="goBack()" *ngIf="canGoBack && !isAdmin">
           <span>‹</span>
         </button>
       </div>
@@ -21,7 +23,7 @@ import { filter, map } from 'rxjs/operators';
       </div>
 
       <div class="header-right">
-        <button class="menu-btn" (click)="toggleMenu()">
+        <button class="menu-btn" (click)="toggleMenu()" *ngIf="!isAdmin">
           <span>≡</span>
         </button>
       </div>
@@ -235,12 +237,16 @@ import { filter, map } from 'rxjs/operators';
 export class LayoutComponent implements OnInit {
   private location = inject(Location);
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private authFacade = inject(AuthFacadeService);
 
   currentPageTitle = 'Home';
   canGoBack = false;
   isAdminRoute = false;
+  isAdmin = false;
 
   ngOnInit() {
+    this.isAdmin = this.authService.isAdmin();
     this.updatePageTitle();
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -298,6 +304,10 @@ export class LayoutComponent implements OnInit {
   }
 
   toggleMenu() {
-    this.router.navigate(['/options']);
+    if (this.isAdmin) {
+      this.authFacade.logout();
+    } else {
+      this.router.navigate(['/options']);
+    }
   }
 }
