@@ -1,11 +1,28 @@
 import { computed, Injectable, inject } from '@angular/core';
 import { GamificationService } from '../../medals/services/gamification.service';
 import { ProfileService } from './profile.service';
+import { AuthFacadeService } from '@features/users/services/auth-facade.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileFacadeService {
   private readonly gamificationService = inject(GamificationService);
   private readonly profileService = inject(ProfileService);
+  private readonly authFacade = inject(AuthFacadeService);
+
+  readonly avatarUrl = computed(() => {
+    const cosmetics = this.authFacade.session()?.user?.equippedCosmetics;
+    return cosmetics?.['avatar'] || null;
+  });
+
+  readonly avatarBorderUrl = computed(() => {
+    const cosmetics = this.authFacade.session()?.user?.equippedCosmetics;
+    return cosmetics?.['border'] || null;
+  });
+
+  readonly levelIconUrl = computed(() => {
+    const cosmetics = this.authFacade.session()?.user?.equippedCosmetics;
+    return cosmetics?.['level_icon'] || null;
+  });
 
   readonly player = this.gamificationService.playerSignal;
   readonly xpToNextLevel = this.gamificationService.xpToNextLevel;

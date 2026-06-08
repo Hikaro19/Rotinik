@@ -1,10 +1,22 @@
 <div class="home-container">
   <div class="welcome-card">
     <div class="welcome-content">
-      <h2 class="welcome-title">Ola, {{ nomeUsuario() }}!</h2>
-      <p class="welcome-subtitle">
-        <span *ngIf="usernameUsuario()">&#64;{{ usernameUsuario() }} • </span>Nivel {{ nivelUsuario() }} • {{ moedas() }} moedas
-      </p>
+      <div class="user-profile-header">
+        <div class="avatar-container" [style.background-image]="avatarBorderUrl() ? 'url(' + avatarBorderUrl() + ')' : null">
+          <img *ngIf="avatarUrl()" [src]="avatarUrl()" alt="Avatar" class="user-avatar" />
+          <div *ngIf="!avatarUrl()" class="user-avatar-placeholder">{{ nomeUsuario().charAt(0) }}</div>
+        </div>
+        <div class="user-info">
+          <h2 class="welcome-title">Ola, {{ nomeUsuario() }}!</h2>
+          <p class="welcome-subtitle">
+            <span *ngIf="usernameUsuario()">&#64;{{ usernameUsuario() }} • </span>
+            <span class="level-indicator">
+              <img *ngIf="levelIconUrl()" [src]="levelIconUrl()" alt="Level Icon" class="level-icon-small" />
+              Nivel {{ nivelUsuario() }}
+            </span> • {{ moedas() }} moedas
+          </p>
+        </div>
+      </div>
     </div>
 
     <div class="progress-circle">

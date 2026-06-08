@@ -8,8 +8,9 @@ import { AppButtonComponent } from '@shared/components/ui/button/button.componen
 import { AppSpinnerComponent } from '@shared/components/ui/spinner/spinner.component';
 import { AppToastComponent } from '@shared/components/ui/toast/toast.component';
 import { AppShopItemComponent } from '@shared/components/feature/shop-item/shop-item.component';
+import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/confirm-dialog.component';
 
-type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
+type ShopCategory = 'all' | 'avatar' | 'border' | 'level_icon' | 'background' | 'navbar';
 
 @Component({
   selector: 'app-shop',
@@ -21,6 +22,7 @@ type ShopCategory = 'all' | 'cosmetic' | 'boost' | 'theme' | 'badge';
     AppSpinnerComponent,
     AppToastComponent,
     AppShopItemComponent,
+    ConfirmDialogComponent
   ],
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss'
@@ -31,6 +33,8 @@ export class ShopComponent implements OnInit {
 
   currentCategorySignal = signal<ShopCategory>('all');
   currentCategory = () => this.currentCategorySignal();
+
+  dialogConfig = signal<{ isOpen: boolean; title: string; message: string; isDestructive: boolean } | null>(null);
 
   // Expondo o jogador para o HTML ler as moedas
   player = this.gamificationService.playerSignal;
@@ -44,10 +48,11 @@ export class ShopComponent implements OnInit {
   getCategoryTitle(): string {
     const titles: Record<ShopCategory, string> = {
       all: 'Todos os Itens',
-      cosmetic: 'Cosméticos',
-      boost: 'Impulsos',
-      theme: 'Temas',
-      badge: 'Placas',
+      avatar: 'Fotos de Perfil',
+      border: 'Bordas',
+      level_icon: 'Ícones de Nível',
+      background: 'Fundos de Modais',
+      navbar: 'Estilos da NavBar',
     };
     return titles[this.currentCategorySignal()];
   }
@@ -59,11 +64,30 @@ export class ShopComponent implements OnInit {
   async onPurchaseItem(item: ShopItem): Promise<void> {
     const result = await this.shopFacade.purchaseItem(item);
 
-    // Temporário até plugar o Toast real na tela
     if (result.success) {
-      alert(`Sucesso: ${result.message}`);
+      this.openDialog('Compra Realizada', result.message, false);
     } else {
-      alert(`Aviso: ${result.message}`);
+      this.openDialog('Aviso', result.message, true);
     }
+  }
+
+  async onEquipItem(item: ShopItem): Promise<void> {
+    const result = await this.shopFacade.equipItem(item);
+    if (!result.success) {
+      this.openDialog('Aviso', result.message, true);
+    }
+  }
+
+  openDialog(title: string, message: string, isDestructive: boolean): void {
+    this.dialogConfig.set({
+      isOpen: true,
+      title,
+      message,
+      isDestructive
+    });
+  }
+
+  closeDialog(): void {
+    this.dialogConfig.set(null);
   }
 }

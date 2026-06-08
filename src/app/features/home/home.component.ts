@@ -35,6 +35,10 @@ export class HomeComponent {
   readonly rotinasCompletas$ = this.homeFacade.rotinasCompletasDetalhadas;
   readonly statsCard = this.homeFacade.statsCard;
 
+  readonly avatarUrl = this.homeFacade.avatarUrl;
+  readonly avatarBorderUrl = this.homeFacade.avatarBorderUrl;
+  readonly levelIconUrl = this.homeFacade.levelIconUrl;
+
   switchTab(tab: 'tarefas' | 'rotinas' | 'concluidas'): void {
     this.activeTab.set(tab);
   }

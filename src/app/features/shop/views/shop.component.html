@@ -9,7 +9,7 @@
             <div class="player-info-content">
                 <div class="player-stat">
                     <span class="stat-label">Suas Moedas</span>
-                    <span class="stat-value">{{ player()?.coins || 0 }}</span>
+                    <span class="stat-value">{{ player().coins || 0 }}</span>
                 </div>
                 <div class="player-stat">
                     <span class="stat-label">Status da API</span>
@@ -29,14 +29,16 @@
     <div class="shop-filter">
         <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'all'"
             (click)="setCategory('all')">Todos</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'cosmetic'"
-            (click)="setCategory('cosmetic')">Cosméticos</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'boost'"
-            (click)="setCategory('boost')">Impulsos</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'theme'"
-            (click)="setCategory('theme')">Temas</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'badge'"
-            (click)="setCategory('badge')">Placas</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'avatar'"
+            (click)="setCategory('avatar')">Fotos de Perfil</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'border'"
+            (click)="setCategory('border')">Bordas</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'level_icon'"
+            (click)="setCategory('level_icon')">Ícones de Nível</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'background'"
+            (click)="setCategory('background')">Fundos de Modais</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'navbar'"
+            (click)="setCategory('navbar')">NavBar</button>
     </div>
 
     <div *ngIf="shopFacade.isLoading()" style="display: flex; justify-content: center; padding: 40px 0;">
@@ -47,8 +49,8 @@
         <div *ngIf="currentCategory() === 'all'" class="shop-featured">
             <h2 class="shop-section-title">⭐ Em Destaque</h2>
             <div class="shop-grid">
-                <app-shop-item *ngFor="let item of shopFacade.featuredItems()" [item]="item" [purchased]="false"
-                    (purchase)="onPurchaseItem($event)"></app-shop-item>
+                <app-shop-item *ngFor="let item of shopFacade.featuredItems()" [item]="item" [purchased]="item.isOwned || false"
+                    (purchase)="onPurchaseItem($event)" (equip)="onEquipItem($event)"></app-shop-item>
             </div>
         </div>
 
@@ -56,8 +58,8 @@
             {{ getCategoryTitle() }}
         </h2>
         <div *ngIf="getFilteredItems().length > 0" class="shop-grid">
-            <app-shop-item *ngFor="let item of getFilteredItems()" [item]="item" [purchased]="false"
-                (purchase)="onPurchaseItem($event)"></app-shop-item>
+            <app-shop-item *ngFor="let item of getFilteredItems()" [item]="item" [purchased]="item.isOwned || false"
+                (purchase)="onPurchaseItem($event)" (equip)="onEquipItem($event)"></app-shop-item>
         </div>
 
         <div *ngIf="getFilteredItems().length === 0 && currentCategory() !== 'all'" class="shop-empty">
@@ -71,3 +73,14 @@
         </div>
     </ng-container>
 </div>
+
+<app-confirm-dialog
+  *ngIf="dialogConfig()?.isOpen"
+  [kicker]="''"
+  [title]="dialogConfig()!.title"
+  [message]="dialogConfig()!.message"
+  [isDestructive]="dialogConfig()!.isDestructive"
+  [showCancelButton]="false"
+  [confirmLabel]="'OK'"
+  (decision)="closeDialog()">
+</app-confirm-dialog>

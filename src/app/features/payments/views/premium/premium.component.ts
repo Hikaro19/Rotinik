@@ -6,6 +6,7 @@ import { environment } from '@environments/environment';
 import { finalize, take } from 'rxjs/operators';
 import { AppToastComponent } from '@shared/components/ui/toast/toast.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
+import { AuthFacadeService } from '@features/users/services/auth-facade.service';
 
 @Component({
   selector: 'app-premium',
@@ -17,6 +18,7 @@ import { AppButtonComponent } from '@shared/components/ui/button/button.componen
 export class PremiumComponent {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly authFacade = inject(AuthFacadeService);
 
   readonly isSubscribing = signal(false);
   readonly toastMessage = signal<string | null>(null);
@@ -50,6 +52,7 @@ export class PremiumComponent {
       .subscribe({
         next: (response) => {
           this.toastMessage.set(response.message || 'Seja bem-vindo ao Premium!');
+          this.authFacade.refreshSession();
           
           // Redirecionar após o toast
           setTimeout(() => {

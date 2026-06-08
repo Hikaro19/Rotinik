@@ -67,6 +67,18 @@ export class AuthService {
     return this.tokenService.getSession();
   }
 
+  fetchCurrentUser(): Observable<UserMeDto> {
+    return this.http.get<UserMeDto>(`${this.apiUrl}/me`);
+  }
+
+  updateSessionUser(user: UserMeDto): void {
+    const session = this.tokenService.getSession();
+    if (session) {
+      session.user = user;
+      this.tokenService.saveSession(session);
+    }
+  }
+
   recuperarSenha(_email: string): Observable<void> {
     return timer(1200).pipe(map(() => void 0));
   }

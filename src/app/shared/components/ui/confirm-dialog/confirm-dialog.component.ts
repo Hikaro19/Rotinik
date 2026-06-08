@@ -16,6 +16,7 @@ export class ConfirmDialogComponent {
   @Input() message = 'Deseja continuar?';
   @Input() confirmLabel = 'Confirmar';
   @Input() cancelLabel = 'Cancelar';
+  @Input() showCancelButton = true;
   @Input() loading = false;
   @Output() decision = new EventEmitter<boolean>();
 

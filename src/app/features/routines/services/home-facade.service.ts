@@ -1,5 +1,6 @@
 import { computed, Injectable, inject } from '@angular/core';
 import { RoutineService } from '@core/services/routine.service';
+import { AuthFacadeService } from '@features/users/services/auth-facade.service';
 
 @Injectable({ providedIn: 'root' })
 export class HomeFacadeService {
@@ -37,6 +38,23 @@ export class HomeFacadeService {
   readonly usernameUsuario = computed(() => {
     const usuario = this.usuarioAtual();
     return usuario?.userName ?? '';
+  });
+
+  private readonly authFacade = inject(AuthFacadeService);
+  
+  readonly avatarUrl = computed(() => {
+    const cosmetics = this.authFacade.session()?.user?.equippedCosmetics;
+    return cosmetics?.['avatar'] || null;
+  });
+
+  readonly avatarBorderUrl = computed(() => {
+    const cosmetics = this.authFacade.session()?.user?.equippedCosmetics;
+    return cosmetics?.['border'] || null;
+  });
+
+  readonly levelIconUrl = computed(() => {
+    const cosmetics = this.authFacade.session()?.user?.equippedCosmetics;
+    return cosmetics?.['level_icon'] || null;
   });
 
   readonly nivelUsuario = this.routineService.userLevel;

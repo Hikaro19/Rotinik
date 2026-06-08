@@ -36,6 +36,10 @@ export class ProfileComponent {
   readonly activitySummary = this.profileFacade.activitySummary;
   readonly achievementSummary = this.profileFacade.achievementSummary;
 
+  readonly avatarUrl = this.profileFacade.avatarUrl;
+  readonly avatarBorderUrl = this.profileFacade.avatarBorderUrl;
+  readonly levelIconUrl = this.profileFacade.levelIconUrl;
+
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('pt-BR', {
       day: 'numeric',

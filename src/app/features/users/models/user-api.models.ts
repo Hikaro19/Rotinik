@@ -18,6 +18,7 @@ export interface UserMeDto {
   phone?: string;
   role?: string;
   isAdmin?: boolean;
+  equippedCosmetics?: Record<string, string>;
 }
 
 export interface UserLoginResponseDto {

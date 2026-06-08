@@ -19,6 +19,7 @@
 
     <div class="dialog-actions">
       <button
+        *ngIf="showCancelButton"
         type="button"
         class="dialog-cancel"
         [disabled]="loading"

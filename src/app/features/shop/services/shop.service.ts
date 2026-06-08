@@ -13,12 +13,14 @@ export interface ShopItem {
   rarity: string;
   discount?: number | null;
   isNew: boolean;
+  isOwned?: boolean;
+  isEquipped?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ShopService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/shop`; 
+  private readonly apiUrl = `${environment.apiUrl}/shop`; 
 
   // Mapeia a rota: GET /api/shop/items
   getCatalog(): Observable<ShopItem[]> {
@@ -28,5 +30,10 @@ export class ShopService {
   // Mapeia a rota: POST /api/shop/items/{id}/purchase
   purchaseItem(itemId: number): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.apiUrl}/items/${itemId}/purchase`, {});
+  }
+
+  // Mapeia a rota: POST /api/shop/items/{id}/equip
+  equipItem(itemId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/items/${itemId}/equip`, {});
   }
 }

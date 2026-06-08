@@ -164,7 +164,7 @@ import { filter, map } from 'rxjs/operators';
       left: 0;
       right: 0;
       height: 80px;
-      background: var(--purple-primary, #9B51E0);
+      background: var(--cosmetic-navbar, var(--purple-primary, #9B51E0));
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-around;

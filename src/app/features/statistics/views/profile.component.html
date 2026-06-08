@@ -2,8 +2,9 @@
   <section class="profile-header">
     <div class="header-content">
       <div class="avatar-section">
-        <div class="avatar">
-          <span class="avatar-icon">👤</span>
+        <div class="avatar" [style.background-image]="avatarBorderUrl() ? 'url(' + avatarBorderUrl() + ')' : null">
+          <img *ngIf="avatarUrl()" [src]="avatarUrl()" alt="Avatar" class="avatar-img" />
+          <span *ngIf="!avatarUrl()" class="avatar-icon">👤</span>
         </div>
         <div class="info">
           <h1 class="username">{{ playerSignal().name }}</h1>
@@ -14,7 +15,8 @@
       </div>
 
       <div class="level-progress">
-        <div class="level-badge">
+        <div class="level-badge" [class.has-custom-icon]="levelIconUrl()">
+          <img *ngIf="levelIconUrl()" [src]="levelIconUrl()" alt="Level" class="custom-level-icon" />
           <span class="level-number">{{ playerSignal().level }}</span>
         </div>
         <div class="xp-section">

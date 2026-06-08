@@ -54,13 +54,23 @@ import { AppButtonComponent } from '../../ui/button/button.component';
       <!-- Action -->
       <div class="shop-item__footer">
         <app-button
-          [variant]="purchased ? 'ghost' : 'primary'"
+          *ngIf="!purchased"
+          variant="primary"
           size="sm"
-          [disabled]="purchased"
           (buttonClick)="onPurchase()"
           [attr.aria-label]="'Comprar ' + item.name"
         >
-          {{ purchased ? '✓ Possuído' : '🛒 Comprar' }}
+          🛒 Comprar
+        </app-button>
+
+        <app-button
+          *ngIf="purchased"
+          [variant]="item.isEquipped ? 'ghost' : 'primary'"
+          size="sm"
+          (buttonClick)="onEquip()"
+          [attr.aria-label]="item.isEquipped ? 'Desequipar ' + item.name : 'Equipar ' + item.name"
+        >
+          {{ item.isEquipped ? '✓ Equipado' : '👕 Equipar' }}
         </app-button>
       </div>
     </app-card>
@@ -208,6 +218,9 @@ import { AppButtonComponent } from '../../ui/button/button.component';
         margin-top: auto;
         padding-top: 12px;
         border-top: 1px solid var(--surface-tertiary);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
       @keyframes pulse {
@@ -236,6 +249,7 @@ export class AppShopItemComponent {
   @Input() item!: ShopItem;
   @Input() purchased = false;
   @Output() purchase = new EventEmitter<ShopItem>();
+  @Output() equip = new EventEmitter<ShopItem>();
 
   rarityLabel(): string {
     const labels: Record<ShopItem['rarity'], string> = {
@@ -248,13 +262,14 @@ export class AppShopItemComponent {
   }
 
   categoryLabel(): string {
-    const labels: Record<ShopItem['category'], string> = {
-      cosmetic: 'Cosmético',
-      boost: 'Impulso',
-      theme: 'Tema',
-      badge: 'Placa',
+    const labels: Record<string, string> = {
+      avatar: 'Avatar',
+      border: 'Borda',
+      level_icon: 'Ícone',
+      background: 'Fundo',
+      navbar: 'NavBar',
     };
-    return labels[this.item.category];
+    return labels[this.item.category] || this.item.category;
   }
 
   finalPrice(): number {
@@ -264,5 +279,9 @@ export class AppShopItemComponent {
 
   onPurchase(): void {
     this.purchase.emit(this.item);
+  }
+
+  onEquip(): void {
+    this.equip.emit(this.item);
   }
 }

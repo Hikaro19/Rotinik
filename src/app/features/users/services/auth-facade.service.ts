@@ -76,6 +76,15 @@ export class AuthFacadeService {
     this.errorMessageSignal.set('');
   }
 
+  refreshSession(): void {
+    this.authService.fetchCurrentUser().subscribe({
+      next: (user) => {
+        this.authService.updateSessionUser(user);
+        this.sessionSignal.set(this.authService.getCurrentSession());
+      }
+    });
+  }
+
   private startRequest(): void {
     this.errorMessageSignal.set('');
     this.loadingSignal.set(true);
