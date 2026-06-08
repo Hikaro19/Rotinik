@@ -17,9 +17,16 @@ export class ShopFacadeService {
   readonly isLoading = signal<boolean>(false);
   readonly errorSignal = signal<string | null>(null);
 
-  // Computeds para a View
   readonly featuredItems = computed(() => 
     this.catalogSignal().filter(item => item.isNew || item.discount)
+  );
+
+  readonly ownedItemsCount = computed(() => 
+    this.catalogSignal().filter(item => item.isOwned).length
+  );
+
+  readonly totalItemsCount = computed(() => 
+    this.catalogSignal().length
   );
 
   constructor() {
@@ -42,7 +49,9 @@ export class ShopFacadeService {
   }
 
   getFilteredItems(category: string): ShopItem[] {
-    if (category === 'all') return this.catalogSignal();
+    if (category === 'all') {
+      return this.catalogSignal().filter(item => !(item.isNew || item.discount));
+    }
     return this.catalogSignal().filter(item => item.category === category);
   }
 

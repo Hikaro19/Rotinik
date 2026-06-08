@@ -12,10 +12,9 @@
                     <span class="stat-value">{{ player().coins || 0 }}</span>
                 </div>
                 <div class="player-stat">
-                    <span class="stat-label">Status da API</span>
-                    <span class="stat-value" [style.color]="shopFacade.errorSignal() ? '#fb7185' : 'var(--brand-neon)'">
-                        {{ shopFacade.isLoading() ? 'Sincronizando...' : (shopFacade.errorSignal() ? 'Offline' :
-                        'Online') }}
+                    <span class="stat-label">Itens Comprados</span>
+                    <span class="stat-value" [style.color]="'var(--brand-neon)'">
+                        {{ shopFacade.isLoading() ? 'Carregando...' : shopFacade.ownedItemsCount() + '/' + shopFacade.totalItemsCount() }}
                     </span>
                 </div>
             </div>
@@ -26,18 +25,18 @@
         <p style="color: #fb7185;">{{ shopFacade.errorSignal() }}</p>
     </div>
 
-    <div class="shop-filter">
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'all'"
+    <div class="time-filter-container">
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'all'"
             (click)="setCategory('all')">Todos</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'avatar'"
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'avatar'"
             (click)="setCategory('avatar')">Fotos de Perfil</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'border'"
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'border'"
             (click)="setCategory('border')">Bordas</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'level_icon'"
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'level_icon'"
             (click)="setCategory('level_icon')">Ícones de Nível</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'background'"
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'background'"
             (click)="setCategory('background')">Fundos de Modais</button>
-        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'navbar'"
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'navbar'"
             (click)="setCategory('navbar')">NavBar</button>
     </div>
 
@@ -54,6 +53,9 @@
             </div>
         </div>
 
+        <h2 class="shop-section-title" *ngIf="currentCategory() === 'all'">
+            📦 Outros Itens
+        </h2>
         <h2 class="shop-section-title" *ngIf="currentCategory() !== 'all'">
             {{ getCategoryTitle() }}
         </h2>
