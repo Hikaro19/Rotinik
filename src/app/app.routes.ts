@@ -102,6 +102,11 @@ export const appRoutes: Routes = [
                     import('@features/payments/views/shop.component').then((m) => m.ShopComponent),
             },
             {
+                path: 'premium',
+                loadComponent: () =>
+                    import('@features/payments/views/premium/premium.component').then((m) => m.PremiumComponent),
+            },
+            {
                 path: 'profile',
                 loadComponent: () =>
                     import('@features/statistics/views/profile.component').then((m) => m.ProfileComponent),

@@ -1,20 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, effect, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { EFrequencia } from '../models/rotina.enum';
 import { RoutinesFacadeService } from '../services/routines-facade.service';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
+import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-routine-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AppButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, AppButtonComponent, ConfirmDialogComponent],
   templateUrl: './routine-create.component.html',
   styleUrl: './routine-create.component.scss',
 })
 export class RoutineCreateComponent {
   private fb = inject(FormBuilder);
   private routinesFacade = inject(RoutinesFacadeService);
+  private router = inject(Router);
 
   readonly routineCreated = output<string>();
   readonly cancelled = output<void>();
@@ -106,6 +109,8 @@ export class RoutineCreateComponent {
     }
   }
 
+  readonly showPremiumPrompt = signal<boolean>(false);
+
   onSaveRoutine(): void {
     if (this.isSubmittingLocal() || this.isSaving()) return;
 
@@ -115,6 +120,7 @@ export class RoutineCreateComponent {
     }
 
     this.submitError.set(null);
+    this.showPremiumPrompt.set(false);
     this.routinesFacade.clearError();
     this.isSubmittingLocal.set(true);
 
@@ -141,14 +147,12 @@ export class RoutineCreateComponent {
               this.resetForm();
             },
             error: (err) => {
-              this.submitError.set('Erro ao aplicar personalizações na rotina.');
-              this.isSubmittingLocal.set(false);
+              this.handleError(err, 'Erro ao aplicar personalizações na rotina.');
             }
           });
         },
         error: (err) => {
-          this.submitError.set('Erro ao clonar o modelo pré-fabricado.');
-          this.isSubmittingLocal.set(false);
+          this.handleError(err, 'Erro ao clonar o modelo pré-fabricado.');
         }
       });
     } else {
@@ -157,13 +161,41 @@ export class RoutineCreateComponent {
       
       // Wait for facade state to settle then emit
       setTimeout(() => {
-        if (!this.routinesFacade.errorMessage()) {
+        const facadeError = this.routinesFacade.errorMessage();
+        if (!facadeError) {
           this.routineCreated.emit(formValue.nome);
           this.isSubmittingLocal.set(false);
           this.resetForm();
+        } else {
+          this.handleError({ message: facadeError }, facadeError);
         }
       }, 500);
     }
+  }
+
+  private handleError(err: any, fallbackMessage: string): void {
+    let errorMessage = err?.error?.detail || err?.error?.title || err?.message || fallbackMessage;
+    if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('limit reached')) {
+      if (errorMessage.toLowerCase().includes('upgrade to premium')) {
+        this.showPremiumPrompt.set(true);
+        this.submitError.set('Você atingiu o limite de rotinas da sua conta atual!');
+      } else {
+        this.submitError.set('Você já atingiu o limite máximo de rotinas permitido pelo plano Premium (15 rotinas)!');
+      }
+    } else {
+      this.submitError.set(errorMessage);
+    }
+    this.isSubmittingLocal.set(false);
+  }
+
+  onBuyPremium(): void {
+    this.showPremiumPrompt.set(false);
+    this.onCancel();
+    this.router.navigate(['/premium']);
+  }
+
+  onCancelPrompt(): void {
+    this.showPremiumPrompt.set(false);
   }
 
   onCancel(): void {
@@ -172,6 +204,7 @@ export class RoutineCreateComponent {
     }
 
     this.isSubmittingLocal.set(false);
+    this.showPremiumPrompt.set(false);
     this.resetForm();
     this.submitError.set(null);
     this.routinesFacade.clearError();

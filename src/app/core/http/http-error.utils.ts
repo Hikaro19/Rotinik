@@ -12,7 +12,7 @@ export interface AppHttpError {
 }
 
 export function normalizeHttpError(error: unknown, fallbackMessage = 'Erro inesperado de comunicacao.'): AppHttpError {
-  if (isAppHttpError(error)) {
+  if (isAppHttpError(error) && !(error instanceof HttpErrorResponse)) {
     return error;
   }
 

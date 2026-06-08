@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { AppButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppButtonComponent],
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.scss',
 })
 export class ConfirmDialogComponent {
+  @Input() kicker = 'Ação Importante';
+  @Input() isDestructive = false;
   @Input() title = 'Confirmar acao';
   @Input() message = 'Deseja continuar?';
   @Input() confirmLabel = 'Confirmar';

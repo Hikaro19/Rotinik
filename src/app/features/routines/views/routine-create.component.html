@@ -108,3 +108,12 @@
     </form>
   </div>
 </div>
+
+<app-confirm-dialog
+  *ngIf="showPremiumPrompt()"
+  title="Limite de Rotinas Atingido"
+  message="Sua conta gratuita permite o máximo de 5 rotinas criadas simultaneamente. Deseja adquirir o Premium para desbloquear até 15 rotinas, mais tarefas por rotina e ganhar descontos exclusivos na Loja?"
+  confirmLabel="Comprar Premium"
+  cancelLabel="Agora não"
+  (decision)="$event ? onBuyPremium() : onCancelPrompt()"
+></app-confirm-dialog>

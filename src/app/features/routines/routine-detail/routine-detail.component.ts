@@ -143,11 +143,33 @@ export class RoutineDetailComponent implements OnInit {
         this.closeTaskForm();
         this.toastMessage.set(editingTask ? 'Tarefa atualizada.' : 'Tarefa criada.');
       },
-      error: () => {
+      error: (err: any) => {
         this.isSubmittingTaskForm.set(false);
-        this.localErrorMessage.set('Não foi possível salvar a tarefa.');
+        const errMessage = err?.error?.detail || err?.error?.title || err?.message || 'Não foi possível salvar a tarefa.';
+        if (typeof errMessage === 'string' && errMessage.toLowerCase().includes('limit reached')) {
+          if (errMessage.toLowerCase().includes('upgrade to premium')) {
+            this.showPremiumPrompt.set(true);
+            this.localErrorMessage.set('Você atingiu o limite de tarefas permitidas para sua conta!');
+          } else {
+            this.localErrorMessage.set('Você atingiu o limite máximo absoluto permitido pelo plano Premium!');
+          }
+        } else {
+          this.localErrorMessage.set(errMessage);
+        }
       },
     });
+  }
+
+  readonly showPremiumPrompt = signal(false);
+
+  onBuyPremium(): void {
+    this.showPremiumPrompt.set(false);
+    this.closeTaskForm();
+    this.router.navigate(['/premium']);
+  }
+
+  onCancelPrompt(): void {
+    this.showPremiumPrompt.set(false);
   }
 
   confirmDeleteTask(confirmed: boolean): void {

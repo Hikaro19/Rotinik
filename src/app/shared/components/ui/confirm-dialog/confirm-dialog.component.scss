@@ -1,31 +1,149 @@
 :host {
+  display: block;
+}
+
+.dialog-overlay {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease-out;
+}
 
-  & > div {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-4);
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
+.dialog-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface-primary);
+  border: 1px solid var(--surface-tertiary);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
 
-    & > div {
-      position: relative;
-      width: 100%;
-      max-width: 28rem;
-      max-height: calc(100vh - var(--spacing-8));
-      overflow-y: auto;
-      background: var(--bg-card);
-      border: 1px solid rgba(168, 85, 247, 0.3);
-      border-radius: var(--radius-card);
-      padding: var(--spacing-6);
-      box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+.dialog-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-neon) 0%, #b388ff 100%);
+}
+
+.dialog-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.dialog-content {
+  margin-bottom: 32px;
+  padding-right: 24px;
+}
+
+.dialog-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand-neon);
+  margin: 0 0 8px 0;
+}
+
+.dialog-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+}
+
+.dialog-message {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+.dialog-cancel {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .dialog-card {
+    padding: 24px;
+  }
+
+  .dialog-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    
+    .dialog-cancel {
+      padding: 12px;
     }
   }
 }

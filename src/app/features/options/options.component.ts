@@ -10,6 +10,12 @@ import { AuthFacadeService } from '../users/services/auth-facade.service';
   template: `
     <div class="options-container">
       <div class="options-list">
+        <button class="option-btn premium-btn" (click)="navigateToPremium()">
+          <span class="option-icon">💎</span>
+          <span class="option-text">Seja Premium</span>
+          <span class="premium-badge">VIP</span>
+        </button>
+
         <button class="option-btn" (click)="navigateToProfile()">
           <span class="option-icon">👤</span>
           <span class="option-text">Editar Perfil</span>
@@ -98,6 +104,28 @@ import { AuthFacadeService } from '../users/services/auth-facade.service';
       border-color: rgba(255, 71, 182, 0.5);
     }
 
+    .premium-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border-color: rgba(253, 230, 138, 0.4);
+      color: #fff;
+    }
+
+    .premium-btn:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border-color: rgba(253, 230, 138, 0.8);
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .premium-badge {
+      background: #fff;
+      color: #d97706;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+
     @media (max-width: 480px) {
       .options-container {
         padding: 12px;
@@ -121,6 +149,10 @@ import { AuthFacadeService } from '../users/services/auth-facade.service';
 export class OptionsComponent {
   private readonly router = inject(Router);
   private readonly authFacade = inject(AuthFacadeService);
+
+  navigateToPremium() {
+    this.router.navigate(['/premium']);
+  }
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
