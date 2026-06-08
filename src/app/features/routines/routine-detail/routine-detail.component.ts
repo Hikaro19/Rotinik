@@ -148,28 +148,65 @@ export class RoutineDetailComponent implements OnInit {
         const errMessage = err?.error?.detail || err?.error?.title || err?.message || 'Não foi possível salvar a tarefa.';
         if (typeof errMessage === 'string' && errMessage.toLowerCase().includes('limit reached')) {
           if (errMessage.toLowerCase().includes('upgrade to premium')) {
-            this.showPremiumPrompt.set(true);
-            this.localErrorMessage.set('Você atingiu o limite de tarefas permitidas para sua conta!');
+            this.dialogConfig.set({
+              isOpen: true,
+              title: 'Limite de Tarefas Atingido',
+              message: 'Sua conta gratuita permite o máximo de 10 tarefas por rotina. Deseja adquirir o Premium para desbloquear até 30 tarefas por rotina, e mais tarefas de alta prioridade?',
+              isDestructive: false,
+              showCancelButton: true,
+              confirmLabel: 'Comprar Premium',
+              cancelLabel: 'Agora não',
+              isPremiumPrompt: true
+            });
           } else {
-            this.localErrorMessage.set('Você atingiu o limite máximo absoluto permitido pelo plano Premium!');
+            this.dialogConfig.set({
+              isOpen: true,
+              title: 'Limite Máximo Atingido',
+              message: 'Você já atingiu o limite máximo absoluto permitido pelo plano Premium (30 tarefas)!',
+              isDestructive: false,
+              showCancelButton: false,
+              confirmLabel: 'OK',
+              isPremiumPrompt: false
+            });
           }
         } else {
-          this.localErrorMessage.set(errMessage);
+          this.dialogConfig.set({
+            isOpen: true,
+            title: 'Erro',
+            message: errMessage,
+            isDestructive: false,
+            showCancelButton: false,
+            confirmLabel: 'OK',
+            isPremiumPrompt: false
+          });
         }
       },
     });
   }
 
-  readonly showPremiumPrompt = signal(false);
+  readonly dialogConfig = signal<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    isDestructive: boolean;
+    showCancelButton?: boolean;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    isPremiumPrompt?: boolean;
+  } | null>(null);
 
-  onBuyPremium(): void {
-    this.showPremiumPrompt.set(false);
-    this.closeTaskForm();
-    this.router.navigate(['/premium']);
+  handleDialogDecision(decision: boolean): void {
+    const isPremiumPrompt = this.dialogConfig()?.isPremiumPrompt;
+    this.dialogConfig.set(null);
+    
+    if (isPremiumPrompt && decision) {
+      this.onBuyPremium();
+    }
   }
 
-  onCancelPrompt(): void {
-    this.showPremiumPrompt.set(false);
+  onBuyPremium(): void {
+    this.closeTaskForm();
+    this.router.navigate(['/premium']);
   }
 
   confirmDeleteTask(confirmed: boolean): void {

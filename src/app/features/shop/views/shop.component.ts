@@ -39,7 +39,9 @@ export class ShopComponent implements OnInit {
   // Expondo o jogador para o HTML ler as moedas
   player = this.gamificationService.playerSignal;
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.shopFacade.loadCatalog();
+  }
 
   getFilteredItems(): ShopItem[] {
     return this.shopFacade.getFilteredItems(this.currentCategorySignal());

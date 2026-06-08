@@ -23,36 +23,35 @@ export class AuthFacadeService {
   readonly session = this.sessionSignal.asReadonly();
   readonly isAuthenticated = computed(() => Boolean(this.sessionSignal()?.token));
 
-  login(payload: UserLoginDto): void {
-    if (this.loadingSignal()) return;
+  login(payload: UserLoginDto): Promise<any> {
+    if (this.loadingSignal()) return Promise.resolve(null);
 
     this.startRequest();
 
-    this.authService
-      .login(payload)
-      .pipe(finalize(() => this.loadingSignal.set(false)))
-      .subscribe({
-        next: (session) => {
-          // 1. Salva a sessão no Facade
-          this.sessionSignal.set(session);
+    return new Promise((resolve, reject) => {
+      this.authService
+        .login(payload)
+        .pipe(finalize(() => this.loadingSignal.set(false)))
+        .subscribe({
+          next: (session) => {
+            // 1. Salva a sessão no Facade
+            this.sessionSignal.set(session);
 
-          // 2. SINCRONIZAÇÃO FORÇADA DE ESTADO (A mágica acontece aqui)
-          // Carrega os dados do usuário recém-logado nos serviços paralelos
-          this.profileService.initialize();
-          this.routineService.initialize();
+            // 2. SINCRONIZAÇÃO FORÇADA DE ESTADO (A mágica acontece aqui)
+            // Carrega os dados do usuário recém-logado nos serviços paralelos
+            this.profileService.initialize();
+            this.routineService.initialize();
 
-          // 3. Redirecionamento nativo do Angular (Sem recarregar a página)
-          if (this.authService.isAdmin()) {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/home']);
+            resolve(session);
+          },
+          error: (error) => {
+            this.errorMessageSignal.set(
+              getHttpErrorMessage(error, 'Usuario ou senha invalidos. Confira os dados e tente novamente.'),
+            );
+            resolve(null);
           }
-        },
-        error: (error) =>
-          this.errorMessageSignal.set(
-            getHttpErrorMessage(error, 'Usuario ou senha invalidos. Confira os dados e tente novamente.'),
-          ),
-      });
+        });
+    });
   }
 
   register(payload: UserRegistrationDto): void {
@@ -119,7 +118,6 @@ export class AuthFacadeService {
         .pipe(finalize(() => this.loadingSignal.set(false)))
         .subscribe({
           next: (response) => {
-            this.logout();
             resolve({ success: true, message: response.message });
           },
           error: (error) => {

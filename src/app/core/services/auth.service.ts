@@ -23,7 +23,7 @@ export class AuthService {
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
     return this.http
-      .post<{ data: { accessToken: string; refreshToken: string }; message: string }>(
+      .post<{ data: { accessToken: string; refreshToken: string; isRestored?: boolean }; message: string }>(
         `${this.apiUrl}/login`,
         payload,
       )
@@ -35,6 +35,7 @@ export class AuthService {
               token: res.data.accessToken,
               user: user,
               message: res.message || 'Login realizado com sucesso',
+              isRestored: res.data.isRestored
             })),
           ),
         ),

@@ -73,8 +73,14 @@
     [message]="'Tem certeza que deseja excluir esta rotina?'" confirmLabel="Excluir rotina"
     [loading]="isDeletingRoutine()" (decision)="confirmDeleteRoutine($event)"></app-confirm-dialog>
 
-  <app-confirm-dialog *ngIf="showPremiumPrompt()" title="Limite de Tarefas Atingido"
-    message="Sua conta gratuita atingiu o limite de tarefas permitidas para esta rotina ou o limite de tarefas com prioridade Alta/Crítica. Deseja adquirir o Premium para desbloquear mais limites, criar rotinas mais completas e aproveitar descontos exclusivos na Loja?"
-    confirmLabel="Comprar Premium" cancelLabel="Agora não"
-    (decision)="$event ? onBuyPremium() : onCancelPrompt()"></app-confirm-dialog>
+  <app-confirm-dialog
+    *ngIf="dialogConfig()?.isOpen"
+    [title]="dialogConfig()!.title"
+    [message]="dialogConfig()!.message"
+    [isDestructive]="dialogConfig()!.isDestructive"
+    [showCancelButton]="dialogConfig()!.showCancelButton ?? true"
+    [confirmLabel]="dialogConfig()!.confirmLabel ?? 'Confirmar'"
+    [cancelLabel]="dialogConfig()!.cancelLabel ?? 'Cancelar'"
+    (decision)="handleDialogDecision($event)">
+  </app-confirm-dialog>
 </div>

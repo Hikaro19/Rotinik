@@ -15,7 +15,7 @@ export class HomeComponent {
   private readonly router = inject(Router);
   private readonly homeFacade = inject(HomeFacadeService);
 
-  readonly activeTab = signal<'tarefas' | 'rotinas' | 'concluidas'>('rotinas');
+  readonly activeTab = signal<'rotinas' | 'concluidas'>('rotinas');
   readonly tarefaFiltro = signal<'todas' | 'pendente' | 'andamento' | 'concluida'>('todas');
 
   readonly rotinas = this.homeFacade.rotinas;
@@ -39,7 +39,7 @@ export class HomeComponent {
   readonly avatarBorderUrl = this.homeFacade.avatarBorderUrl;
   readonly levelIconUrl = this.homeFacade.levelIconUrl;
 
-  switchTab(tab: 'tarefas' | 'rotinas' | 'concluidas'): void {
+  switchTab(tab: 'rotinas' | 'concluidas'): void {
     this.activeTab.set(tab);
   }
 

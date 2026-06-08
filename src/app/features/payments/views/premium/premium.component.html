@@ -22,10 +22,6 @@
       </ul>
     </div>
 
-    <div *ngIf="errorMessage() as error" class="error-message">
-      {{ error }}
-    </div>
-
     <div class="plans-container">
       <div class="plan-card">
         <h3 class="plan-name">Mensal</h3>
@@ -36,7 +32,7 @@
           <span class="period">/mês</span>
         </div>
         <p class="plan-desc">Acesso total e flexibilidade.</p>
-        <app-button variant="secondary" [fullWidth]="true" [loading]="isSubscribing()" (buttonClick)="subscribe('monthly')">
+        <app-button variant="secondary" [fullWidth]="true" [loading]="isSubscribing()" (buttonClick)="openSubscribeDialog('monthly')">
           Assinar Mensal
         </app-button>
       </div>
@@ -51,7 +47,7 @@
           <span class="period">/mês</span>
         </div>
         <p class="plan-desc">O melhor custo benefício para o seu crescimento contínuo.</p>
-        <app-button variant="primary" [fullWidth]="true" [loading]="isSubscribing()" (buttonClick)="subscribe('yearly')">
+        <app-button variant="primary" [fullWidth]="true" [loading]="isSubscribing()" (buttonClick)="openSubscribeDialog('yearly')">
           Assinar Anual
         </app-button>
       </div>
@@ -62,3 +58,15 @@
     <app-toast type="success" title="Parabéns!" [message]="msg" [duration]="3000" (close)="closeToast()"></app-toast>
   </div>
 </div>
+
+<app-confirm-dialog
+  *ngIf="dialogConfig()?.isOpen"
+  [kicker]="''"
+  [title]="dialogConfig()!.title"
+  [message]="dialogConfig()!.message"
+  [isDestructive]="dialogConfig()!.isDestructive"
+  [showCancelButton]="dialogConfig()!.showCancelButton ?? true"
+  [confirmLabel]="dialogConfig()!.confirmLabel ?? 'Confirmar'"
+  [cancelLabel]="dialogConfig()!.cancelLabel ?? 'Cancelar'"
+  (decision)="handleDialogDecision($event)">
+</app-confirm-dialog>

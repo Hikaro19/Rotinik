@@ -71,3 +71,14 @@
     </div>
   </div>
 </div>
+
+<app-confirm-dialog
+  *ngIf="dialogConfig()?.isOpen"
+  [kicker]="''"
+  [title]="dialogConfig()!.title"
+  [message]="dialogConfig()!.message"
+  [isDestructive]="dialogConfig()!.isDestructive"
+  [showCancelButton]="false"
+  [confirmLabel]="'OK'"
+  (decision)="closeDialog()">
+</app-confirm-dialog>

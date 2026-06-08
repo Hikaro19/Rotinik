@@ -25,7 +25,6 @@ export class RoutineCreateComponent {
   private readonly isSubmittingLocal = signal(false);
 
   readonly isSaving = this.routinesFacade.createPending;
-  readonly submitError = signal<string | null>(null);
 
   readonly frequencias = [
     { label: 'Diaria', value: EFrequencia.DIARIA },
@@ -55,15 +54,9 @@ export class RoutineCreateComponent {
       if (isSaving) return;
 
       if (error) {
-        this.submitError.set(error);
-        this.isSubmittingLocal.set(false);
+        this.handleError({ message: error }, error);
         return;
       }
-
-      // We only emit routineCreated when not using a template, 
-      // because template cloning is handled manually in onSaveRoutine.
-      // Actually, if we just use createRoutine, this effect triggers.
-      // We will handle the emit manually below.
     }, { allowSignalWrites: true });
   }
 
@@ -109,8 +102,6 @@ export class RoutineCreateComponent {
     }
   }
 
-  readonly showPremiumPrompt = signal<boolean>(false);
-
   onSaveRoutine(): void {
     if (this.isSubmittingLocal() || this.isSaving()) return;
 
@@ -119,8 +110,6 @@ export class RoutineCreateComponent {
       return;
     }
 
-    this.submitError.set(null);
-    this.showPremiumPrompt.set(false);
     this.routinesFacade.clearError();
     this.isSubmittingLocal.set(true);
 
@@ -173,29 +162,69 @@ export class RoutineCreateComponent {
     }
   }
 
+  readonly dialogConfig = signal<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    isDestructive: boolean;
+    showCancelButton?: boolean;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    isPremiumPrompt?: boolean;
+  } | null>(null);
+
   private handleError(err: any, fallbackMessage: string): void {
     let errorMessage = err?.error?.detail || err?.error?.title || err?.message || fallbackMessage;
+    
     if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('limit reached')) {
       if (errorMessage.toLowerCase().includes('upgrade to premium')) {
-        this.showPremiumPrompt.set(true);
-        this.submitError.set('Você atingiu o limite de rotinas da sua conta atual!');
+        this.dialogConfig.set({
+          isOpen: true,
+          title: 'Limite de Rotinas Atingido',
+          message: 'Sua conta gratuita permite o máximo de 5 rotinas criadas simultaneamente. Deseja adquirir o Premium para desbloquear até 15 rotinas, mais tarefas por rotina e ganhar descontos exclusivos na Loja?',
+          isDestructive: false,
+          showCancelButton: true,
+          confirmLabel: 'Comprar Premium',
+          cancelLabel: 'Agora não',
+          isPremiumPrompt: true
+        });
       } else {
-        this.submitError.set('Você já atingiu o limite máximo de rotinas permitido pelo plano Premium (15 rotinas)!');
+        this.dialogConfig.set({
+          isOpen: true,
+          title: 'Limite Máximo Atingido',
+          message: 'Você já atingiu o limite máximo de rotinas permitido pelo plano Premium (15 rotinas)!',
+          isDestructive: false,
+          showCancelButton: false,
+          confirmLabel: 'OK',
+          isPremiumPrompt: false
+        });
       }
     } else {
-      this.submitError.set(errorMessage);
+      this.dialogConfig.set({
+        isOpen: true,
+        title: 'Erro',
+        message: errorMessage,
+        isDestructive: false,
+        showCancelButton: false,
+        confirmLabel: 'OK',
+        isPremiumPrompt: false
+      });
     }
     this.isSubmittingLocal.set(false);
   }
 
-  onBuyPremium(): void {
-    this.showPremiumPrompt.set(false);
-    this.onCancel();
-    this.router.navigate(['/premium']);
+  handleDialogDecision(decision: boolean): void {
+    const isPremiumPrompt = this.dialogConfig()?.isPremiumPrompt;
+    this.dialogConfig.set(null);
+    
+    if (isPremiumPrompt && decision) {
+      this.onBuyPremium();
+    }
   }
 
-  onCancelPrompt(): void {
-    this.showPremiumPrompt.set(false);
+  onBuyPremium(): void {
+    this.onCancel();
+    this.router.navigate(['/premium']);
   }
 
   onCancel(): void {
@@ -204,9 +233,8 @@ export class RoutineCreateComponent {
     }
 
     this.isSubmittingLocal.set(false);
-    this.showPremiumPrompt.set(false);
     this.resetForm();
-    this.submitError.set(null);
+    this.dialogConfig.set(null);
     this.routinesFacade.clearError();
     this.cancelled.emit();
   }

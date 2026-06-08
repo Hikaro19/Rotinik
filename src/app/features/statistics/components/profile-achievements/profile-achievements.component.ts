@@ -24,7 +24,7 @@ export class ProfileAchievementsComponent implements OnInit {
   
   // Computes how many slots are available
   get maxSlots(): number {
-    return this.isPremium() ? 6 : 3;
+    return this.isPremium() ? 5 : 3;
   }
 
   // Gets equipped medals to show in vitrine

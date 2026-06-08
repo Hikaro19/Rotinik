@@ -1,4 +1,4 @@
-﻿    <div class="auth-container">
+    <div class="auth-container">
       <div class="auth-content">
         <div class="auth-header">
           <h1 class="auth-title">Bem-vindo ao Rotinik</h1>
@@ -79,3 +79,14 @@
 
       <div class="auth-background-decoration"></div>
     </div>
+
+    <app-confirm-dialog
+      *ngIf="dialogConfig()?.isOpen"
+      [kicker]="''"
+      [title]="dialogConfig()!.title"
+      [message]="dialogConfig()!.message"
+      [isDestructive]="dialogConfig()!.isDestructive"
+      [showCancelButton]="false"
+      [confirmLabel]="'OK'"
+      (decision)="closeDialog()">
+    </app-confirm-dialog>

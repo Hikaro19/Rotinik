@@ -1,13 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthFacadeService } from '../users/services/auth-facade.service';
+import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-options',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   templateUrl: './options.component.html',
   styleUrl: './options.component.scss',
 })
@@ -17,6 +18,25 @@ export class OptionsComponent {
 
   isDeleteModalOpen = false;
   deleteConfirmText = '';
+  
+  dialogConfig = signal<{ isOpen: boolean; title: string; message: string; isDestructive: boolean } | null>(null);
+
+  openDialog(title: string, message: string, isDestructive: boolean): void {
+    this.dialogConfig.set({
+      isOpen: true,
+      title,
+      message,
+      isDestructive
+    });
+  }
+
+  closeDialog(): void {
+    const wasDeleted = this.dialogConfig()?.title === 'Aviso';
+    this.dialogConfig.set(null);
+    if (wasDeleted) {
+      this.authFacade.logout();
+    }
+  }
 
   navigateToPremium() {
     this.router.navigate(['/premium']);
@@ -62,10 +82,11 @@ export class OptionsComponent {
 
     try {
       const response = await this.authFacade.deleteAccount();
-      alert(response.message || 'Sua conta foi agendada para exclusão. Você tem 30 dias para cancelar fazendo login novamente.');
       this.closeDeleteModal();
+      this.openDialog('Aviso', response.message || 'Sua conta foi agendada para exclusão e será removida em 30 dias. Para cancelar, basta fazer login novamente.', false);
     } catch (error) {
-      alert('Erro ao excluir conta. Tente novamente.');
+      this.closeDeleteModal();
+      this.openDialog('Erro', 'Erro ao excluir conta. Tente novamente.', true);
       console.error('Delete account error:', error);
     }
   }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -59,7 +59,7 @@ type ToastType = 'success' | 'error' | 'warning' | 'info';
     ]),
   ],
 })
-export class AppToastComponent {
+export class AppToastComponent implements OnInit, OnDestroy {
   @Input() type: ToastType = 'info';
   @Input() title?: string;
   @Input() message = '';
@@ -68,11 +68,27 @@ export class AppToastComponent {
 
   @Output() close = new EventEmitter<void>();
 
+  private timeoutId: any;
+
   toastClasses = computed(() => {
     const base = 'app-toast';
     const typeClass = `app-toast--${this.type}`;
     return [base, typeClass].filter(Boolean).join(' ');
   });
+
+  ngOnInit(): void {
+    if (this.duration && this.duration > 0) {
+      this.timeoutId = setTimeout(() => {
+        this.onClose();
+      }, this.duration);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
+  }
 
   onClose(): void {
     this.close.emit();

@@ -26,6 +26,7 @@ export interface UserLoginResponseDto {
   token: string;
   user?: UserMeDto;
   message?: string;
+  isRestored?: boolean;
 }
 
 export interface UserRegisterResponseDto {

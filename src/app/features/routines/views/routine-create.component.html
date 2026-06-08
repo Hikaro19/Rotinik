@@ -88,10 +88,6 @@
         <span class="summary-text">{{ prazoControl.value }}</span>
       </div>
 
-      <div class="submit-error" *ngIf="submitError() as error">
-        {{ error }}
-      </div>
-
       <div class="routine-create-actions">
         <button
           type="button"
@@ -110,10 +106,12 @@
 </div>
 
 <app-confirm-dialog
-  *ngIf="showPremiumPrompt()"
-  title="Limite de Rotinas Atingido"
-  message="Sua conta gratuita permite o máximo de 5 rotinas criadas simultaneamente. Deseja adquirir o Premium para desbloquear até 15 rotinas, mais tarefas por rotina e ganhar descontos exclusivos na Loja?"
-  confirmLabel="Comprar Premium"
-  cancelLabel="Agora não"
-  (decision)="$event ? onBuyPremium() : onCancelPrompt()"
-></app-confirm-dialog>
+  *ngIf="dialogConfig()?.isOpen"
+  [title]="dialogConfig()!.title"
+  [message]="dialogConfig()!.message"
+  [isDestructive]="dialogConfig()!.isDestructive"
+  [showCancelButton]="dialogConfig()!.showCancelButton ?? true"
+  [confirmLabel]="dialogConfig()!.confirmLabel ?? 'Confirmar'"
+  [cancelLabel]="dialogConfig()!.cancelLabel ?? 'Cancelar'"
+  (decision)="handleDialogDecision($event)">
+</app-confirm-dialog>
