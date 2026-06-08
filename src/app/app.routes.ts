@@ -99,7 +99,7 @@ export const appRoutes: Routes = [
             {
                 path: 'shop',
                 loadComponent: () =>
-                    import('@features/payments/views/shop.component').then((m) => m.ShopComponent),
+                    import('@app/features/shop/views/shop.component').then((m) => m.ShopComponent),
             },
             {
                 path: 'premium',

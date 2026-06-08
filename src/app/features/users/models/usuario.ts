@@ -7,7 +7,7 @@
 import { v4 as uuid } from 'uuid';
 import { Rotina } from '../../routines/models/rotina';
 import { Recompensa } from '../../medals/models/recompensa';
-import { ItemLoja } from '../../payments/models/item-loja';
+import { ItemLoja } from '../../shop/models/item-loja';
 import { Perfil } from '../../statistics/models/perfil';
 
 export class Usuario {

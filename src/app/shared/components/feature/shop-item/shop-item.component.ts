@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ShopItem } from '../../../../features/payments/services/shop.service';
+import { ShopItem } from '../../../../features/shop/services/shop.service';
 import { AppCardComponent } from '../../ui/card/card.component';
 import { AppButtonComponent } from '../../ui/button/button.component';
 
