@@ -79,6 +79,10 @@ export class AuthService {
     }
   }
 
+  deleteAccount(userId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/${userId}`);
+  }
+
   recuperarSenha(_email: string): Observable<void> {
     return timer(1200).pipe(map(() => void 0));
   }
