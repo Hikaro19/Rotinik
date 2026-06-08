@@ -1,0 +1,73 @@
+<div class="shop-container">
+    <div class="shop-header">
+        <div class="shop-header-content">
+            <h1 class="shop-title">Loja de Itens 🛍️</h1>
+            <p class="shop-subtitle">Gaste suas moedas em itens especiais e melhorias oficiais</p>
+        </div>
+
+        <app-card variant="outlined" padding="md" rounded="md" class="player-info">
+            <div class="player-info-content">
+                <div class="player-stat">
+                    <span class="stat-label">Suas Moedas</span>
+                    <span class="stat-value">{{ player()?.coins || 0 }}</span>
+                </div>
+                <div class="player-stat">
+                    <span class="stat-label">Status da API</span>
+                    <span class="stat-value" [style.color]="shopFacade.errorSignal() ? '#fb7185' : 'var(--brand-neon)'">
+                        {{ shopFacade.isLoading() ? 'Sincronizando...' : (shopFacade.errorSignal() ? 'Offline' :
+                        'Online') }}
+                    </span>
+                </div>
+            </div>
+        </app-card>
+    </div>
+
+    <div *ngIf="shopFacade.errorSignal()" class="shop-empty">
+        <p style="color: #fb7185;">{{ shopFacade.errorSignal() }}</p>
+    </div>
+
+    <div class="shop-filter">
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'all'"
+            (click)="setCategory('all')">Todos</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'cosmetic'"
+            (click)="setCategory('cosmetic')">Cosméticos</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'boost'"
+            (click)="setCategory('boost')">Impulsos</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'theme'"
+            (click)="setCategory('theme')">Temas</button>
+        <button type="button" class="filter-btn" [class.filter-btn--active]="currentCategory() === 'badge'"
+            (click)="setCategory('badge')">Placas</button>
+    </div>
+
+    <div *ngIf="shopFacade.isLoading()" style="display: flex; justify-content: center; padding: 40px 0;">
+        <app-spinner size="lg"></app-spinner>
+    </div>
+
+    <ng-container *ngIf="!shopFacade.isLoading() && !shopFacade.errorSignal()">
+        <div *ngIf="currentCategory() === 'all'" class="shop-featured">
+            <h2 class="shop-section-title">⭐ Em Destaque</h2>
+            <div class="shop-grid">
+                <app-shop-item *ngFor="let item of shopFacade.featuredItems()" [item]="item" [purchased]="false"
+                    (purchase)="onPurchaseItem($event)"></app-shop-item>
+            </div>
+        </div>
+
+        <h2 class="shop-section-title" *ngIf="currentCategory() !== 'all'">
+            {{ getCategoryTitle() }}
+        </h2>
+        <div *ngIf="getFilteredItems().length > 0" class="shop-grid">
+            <app-shop-item *ngFor="let item of getFilteredItems()" [item]="item" [purchased]="false"
+                (purchase)="onPurchaseItem($event)"></app-shop-item>
+        </div>
+
+        <div *ngIf="getFilteredItems().length === 0 && currentCategory() !== 'all'" class="shop-empty">
+            <app-card variant="outlined" padding="lg" rounded="md">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h2>Nenhum item encontrado</h2>
+                    <p>Tente mudar a categoria para encontrar mais itens</p>
+                </div>
+            </app-card>
+        </div>
+    </ng-container>
+</div>
