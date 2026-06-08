@@ -8,6 +8,8 @@ import { AppToastComponent } from '@shared/components/ui/toast/toast.component';
 import { AppButtonComponent } from '@shared/components/ui/button/button.component';
 import { AuthFacadeService } from '@features/users/services/auth-facade.service';
 import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/confirm-dialog.component';
+import { MedalNotificationService } from '@core/services/medal-notification.service';
+import { RoutineService } from '@core/services/routine.service';
 
 @Component({
   selector: 'app-premium',
@@ -20,6 +22,8 @@ export class PremiumComponent {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly authFacade = inject(AuthFacadeService);
+  private readonly routineService = inject(RoutineService);
+  private readonly medalNotificationService = inject(MedalNotificationService);
 
   readonly isSubscribing = signal(false);
   readonly toastMessage = signal<string | null>(null);
@@ -78,7 +82,7 @@ export class PremiumComponent {
     this.errorMessage.set(null);
     this.toastMessage.set(null);
 
-    this.http.post<{ message: string }>(`${environment.apiBaseUrl}/user/upgrade-premium`, {})
+    this.http.post<{ message: string; newlyUnlockedMedals?: any[] }>(`${environment.apiBaseUrl}/user/upgrade-premium`, {})
       .pipe(
         take(1),
         finalize(() => this.isSubscribing.set(false))
@@ -87,6 +91,12 @@ export class PremiumComponent {
         next: (response) => {
           this.toastMessage.set(response.message || 'Seja bem-vindo ao Premium!');
           this.authFacade.refreshSession();
+          
+          this.routineService.forceReload();
+          
+          if (response.newlyUnlockedMedals && response.newlyUnlockedMedals.length > 0) {
+            this.medalNotificationService.addMedals(response.newlyUnlockedMedals);
+          }
           
           setTimeout(() => {
             this.router.navigate(['/home']);

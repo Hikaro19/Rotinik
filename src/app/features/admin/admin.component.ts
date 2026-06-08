@@ -95,9 +95,13 @@ export class AdminComponent implements OnInit {
   }
 
   getTriggerTypeLabel(type: number): string {
-    if (type === 0) return 'Tarefas Concluídas';
-    if (type === 1) return 'Streak';
-    return 'XP Total';
+    if (type === 1) return 'XP Total';
+    if (type === 2) return 'Tarefas Concluídas';
+    if (type === 3) return 'Streak';
+    if (type === 4) return 'Rotinas Concluídas';
+    if (type === 5) return 'Premium Adquirido';
+    if (type === 6) return 'Item da Loja Comprado';
+    return 'Desconhecido';
   }
 
   getSectionTitle(section: string): string {
@@ -181,6 +185,10 @@ export class AdminComponent implements OnInit {
     this.selectedItem = {};
     if (type === 'template') {
       this.selectedItem.tasks = [{ title: '', description: '', importance: 'media', xpReward: 10, coinReward: 5 }];
+    } else if (type === 'medal') {
+      this.selectedItem.triggerType = 2; // Default to TasksCompleted
+      this.selectedItem.rewardPoints = 50;
+      this.selectedItem.rewardCoins = 20;
     }
     this.showModal = true;
   }

@@ -138,7 +138,7 @@ export class RoutineDetailComponent implements OnInit {
 
     request$.pipe(take(1)).subscribe({
       next: () => {
-        this.routineService.loadSnapshotFromApi();
+        this.routineService.forceReload();
         this.isSubmittingTaskForm.set(false);
         this.closeTaskForm();
         this.toastMessage.set(editingTask ? 'Tarefa atualizada.' : 'Tarefa criada.');
@@ -229,7 +229,7 @@ export class RoutineDetailComponent implements OnInit {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.routineService.loadSnapshotFromApi();
+          this.routineService.forceReload();
           this.toastMessage.set('Tarefa excluída.');
           this.isDeletingTaskRequest.set(false);
           this.isDeleteTaskDialogOpen.set(false);

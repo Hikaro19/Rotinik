@@ -30,7 +30,7 @@ export class RoutinesFacadeService {
   }
 
   loadSnapshot() {
-    this.routineService.loadSnapshotFromApi();
+    this.routineService.forceReload();
   }
 
   readonly filteredRoutines = computed(() => {

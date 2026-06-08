@@ -33,14 +33,20 @@
     </div>
   </section>
 
-  <app-profile-stats (openAchievementsModal)="achievementsComponent.openModal()"></app-profile-stats>
+  <app-profile-stats 
+    [unlockedAchievements]="unlockedAchievementsCount()"
+    (openAchievementsModal)="achievementsComponent.openModal()">
+  </app-profile-stats>
 
   <app-section-panel title="Atividade do Ultimo Mes" [badge]="activitySummary()">
     <app-profile-activity-heatmap></app-profile-activity-heatmap>
   </app-section-panel>
 
   <app-section-panel title="Achievements" [badge]="achievementSummary()">
-    <app-profile-achievements #achievementsComponent></app-profile-achievements>
+    <app-profile-achievements 
+      #achievementsComponent
+      (medalsLoaded)="onMedalsLoaded($event)">
+    </app-profile-achievements>
   </app-section-panel>
 
   <app-profile-history></app-profile-history>

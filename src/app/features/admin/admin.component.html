@@ -351,15 +351,28 @@
           <div class="form-row">
             <div class="form-group">
               <label>Gatilho (Trigger)</label>
-              <select [(ngModel)]="selectedItem.triggerType">
-                <option [ngValue]="0">Tarefas Concluídas</option>
-                <option [ngValue]="1">Streak de Rotinas</option>
-                <option [ngValue]="2">Pontos Acumulados</option>
-              </select>
+                <select [(ngModel)]="selectedItem.triggerType">
+                  <option [ngValue]="2">Tarefas Concluídas</option>
+                  <option [ngValue]="3">Streak de Rotinas</option>
+                  <option [ngValue]="1">Pontos Acumulados</option>
+                  <option [ngValue]="4">Rotinas Concluídas</option>
+                  <option [ngValue]="5">Premium Adquirido</option>
+                  <option [ngValue]="6">Item da Loja Comprado</option>
+                </select>
             </div>
             <div class="form-group">
               <label>Meta de Desbloqueio</label>
               <input type="number" [(ngModel)]="selectedItem.targetValue">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Recompensa de XP ⚡</label>
+              <input type="number" [(ngModel)]="selectedItem.rewardPoints" placeholder="ex: 50">
+            </div>
+            <div class="form-group">
+              <label>Recompensa de Moedas 💰</label>
+              <input type="number" [(ngModel)]="selectedItem.rewardCoins" placeholder="ex: 20">
             </div>
           </div>
         </div>

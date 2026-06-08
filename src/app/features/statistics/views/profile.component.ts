@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProfileStatsComponent } from '../components/profile-stats/profile-stats.component';
 import { ProfileActivityHeatmapComponent } from '../components/profile-activity-heatmap/profile-activity-heatmap.component';
@@ -29,16 +29,22 @@ export class ProfileComponent {
   readonly xpProgress = this.profileFacade.xpProgress;
   readonly levelStatus = this.profileFacade.levelStatus;
   readonly memberSince = this.profileFacade.memberSince;
-  readonly unlockedAchievements = this.profileFacade.unlockedAchievements;
-  readonly totalAchievements = this.profileFacade.totalAchievements;
+  readonly unlockedAchievementsCount = signal<number>(0);
+  readonly totalAchievementsCount = signal<number>(0);
+  readonly achievementSummary = computed(() => `${this.unlockedAchievementsCount()}/${this.totalAchievementsCount()}`);
+
   readonly daysSinceStart = this.profileFacade.daysSinceStart;
   readonly activityPercentage = this.profileFacade.activityPercentage;
   readonly activitySummary = this.profileFacade.activitySummary;
-  readonly achievementSummary = this.profileFacade.achievementSummary;
 
   readonly avatarUrl = this.profileFacade.avatarUrl;
   readonly avatarBorderUrl = this.profileFacade.avatarBorderUrl;
   readonly levelIconUrl = this.profileFacade.levelIconUrl;
+
+  onMedalsLoaded(event: { unlocked: number, total: number }) {
+    this.unlockedAchievementsCount.set(event.unlocked);
+    this.totalAchievementsCount.set(event.total);
+  }
 
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('pt-BR', {

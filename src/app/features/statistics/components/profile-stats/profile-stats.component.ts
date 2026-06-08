@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GamificationService } from '../../../medals/services/gamification.service';
 import { ProfileService } from '../../services/profile.service';
@@ -14,14 +14,14 @@ import { ProfileService } from '../../services/profile.service';
   styleUrl: './profile-stats.component.scss',
 })
 export class ProfileStatsComponent {
+  @Input() unlockedAchievements: number = 0;
   @Output() openAchievementsModal = new EventEmitter<void>();
+
   readonly daysSinceStart = this.profileService.daysSinceStart;
   readonly activeDays = this.profileService.activeDays;
   readonly activityPercentage = this.profileService.activityPercentage;
-  readonly unlockedAchievements = this.profileService.unlockedAchievements;
 
   constructor(
-    private gamificationService: GamificationService,
     private profileService: ProfileService,
   ) {}
 

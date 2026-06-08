@@ -3,6 +3,7 @@ import { take } from 'rxjs/operators';
 import { RoutineViewModel, TaskViewModel } from '@features/routines/models/routine-view.models';
 import { RoutineApiService } from '@features/routines/services/routine-api.service';
 import { RoutineMapperService } from '@features/routines/services/routine-mapper.service';
+import { MedalNotificationService } from '@core/services/medal-notification.service';
 import { getHttpErrorMessage } from '@core/http/http-error.utils';
 import {
   CreateRoutineRequestDto,
@@ -27,6 +28,7 @@ type RoutineOperation =
 export class RoutineService {
   private readonly routineApi = inject(RoutineApiService);
   private readonly routineMapper = inject(RoutineMapperService);
+  private readonly medalNotificationService = inject(MedalNotificationService);
 
   readonly currentUserSignal = signal<RoutineUserDto | null>(null);
   readonly routinesSignal = signal<Routine[]>([]);
@@ -80,7 +82,7 @@ export class RoutineService {
 
   initialize(): void {
     if (this.isInitializedSignal() || this.isLoadingSignal()) return;
-    this.loadSnapshotFromApi();
+    this.forceReload();
     this.loadTemplatesFromApi();
   }
 
@@ -88,7 +90,7 @@ export class RoutineService {
     return this.routinesSignal().find((r) => r.id === id);
   }
 
-  loadSnapshotFromApi(): void {
+  forceReload(): void {
     this.startOperation('loadSnapshot');
     this.isLoadingSignal.set(true);
 
@@ -133,7 +135,7 @@ export class RoutineService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.loadSnapshotFromApi();
+          this.forceReload();
           this.finishOperation('createRoutine');
         },
         error: (error) => this.failOperation('createRoutine', getHttpErrorMessage(error, 'Falha ao criar rotina.')),
@@ -147,7 +149,7 @@ export class RoutineService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.loadSnapshotFromApi();
+          this.forceReload();
           this.finishOperation('updateRoutine');
         },
         error: (error) => this.failOperation('updateRoutine', getHttpErrorMessage(error, 'Falha ao atualizar.')),
@@ -211,12 +213,16 @@ export class RoutineService {
       .completeTask(routineId, taskId)
       .pipe(take(1))
       .subscribe({
-        next: () => {
-          this.loadSnapshotFromApi();
+        next: (response: any) => {
+          this.forceReload();
           this.finishOperation('completeTask');
+          const medals = response?.data?.newlyUnlockedMedals;
+          if (medals && medals.length > 0) {
+            this.medalNotificationService.addMedals(medals);
+          }
         },
         error: (error) => {
-          this.loadSnapshotFromApi();
+          this.forceReload();
           this.failOperation('completeTask', getHttpErrorMessage(error, 'Falha ao completar tarefa.'));
         },
       });
@@ -245,11 +251,11 @@ export class RoutineService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.loadSnapshotFromApi();
+          this.forceReload();
           this.finishOperation('completeTask');
         },
         error: (error) => {
-          this.loadSnapshotFromApi();
+          this.forceReload();
           this.failOperation('completeTask', getHttpErrorMessage(error, 'Falha ao desmarcar tarefa.'));
         },
       });
@@ -262,7 +268,7 @@ export class RoutineService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.loadSnapshotFromApi();
+          this.forceReload();
           this.finishOperation('deleteTask');
         },
         error: (error) => this.failOperation('deleteTask', getHttpErrorMessage(error, 'Falha ao remover a tarefa.')),

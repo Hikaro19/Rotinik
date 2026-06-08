@@ -46,6 +46,7 @@
         [routine]="rotina"
         [showActions]="false"
         (click)="goToRoutineDetail(rotina.id)"
+        (toggleTask)="onToggleTask($event)"
       ></app-routine-card>
 
       <div *ngIf="rotinasEmAndamento().length === 0" class="empty-state">
