@@ -1,8 +1,9 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@environments/environment';
 import { Observable, map, tap } from 'rxjs';
 import { UserApiDto } from '../models/user-api.models';
+import { RoutineService } from '@core/services/routine.service';
 
 export interface User {
   id: string;
@@ -25,12 +26,35 @@ export interface LeaderboardEntry extends User {
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
+  private readonly http = inject(HttpClient);
+  private readonly routineService = inject(RoutineService);
   private readonly baseUrl = `${environment.apiUrl}`;
   private usersSignal = signal<User[]>([]);
-  currentUserSignal = signal<User>(this.createEmptyUser());
   sortTypeSignal = signal<'xp' | 'level' | 'achievements'>('xp');
 
-  constructor(private readonly http: HttpClient) {
+  readonly currentUserSignal = computed<User>(() => {
+    const routineUser = this.routineService.currentUserSignal();
+    if (!routineUser) return this.createEmptyUser();
+
+    const foundUserInList = this.usersSignal().find((u) => u.id === routineUser.id);
+    const achievementsCount = foundUserInList ? foundUserInList.achievements : 0;
+
+    return {
+      id: routineUser.id,
+      name: routineUser.name,
+      avatar: this.buildInitialsAvatar(routineUser.name || routineUser.email),
+      level: routineUser.level,
+      totalXP: routineUser.currentXp,
+      coins: routineUser.coins,
+      achievements: achievementsCount,
+      lastActivityDate: new Date(),
+      joinDate: new Date(),
+      bio: routineUser.userName ? `@${routineUser.userName}` : routineUser.email,
+      isFollowed: false,
+    };
+  });
+
+  constructor() {
     this.fetchUsers().subscribe({
       error: () => this.usersSignal.set([]),
     });
@@ -110,14 +134,14 @@ export class UserService {
       id,
       name,
       avatar: this.buildInitialsAvatar(name || email),
-      level: 0,
-      totalXP: 0,
-      coins: 0,
-      achievements: 0,
-      lastActivityDate: new Date(),
-      joinDate: new Date(),
-      bio: email,
-      isFollowed: false,
+      level: user.level ?? 1,
+      totalXP: user.points ?? 0,
+      coins: user.coins ?? 0,
+      achievements: user.achievements ?? 0,
+      lastActivityDate: user.lastActivityDate ? new Date(user.lastActivityDate) : new Date(),
+      joinDate: user.joinDate ? new Date(user.joinDate) : new Date(),
+      bio: user.userName ? `@${user.userName}` : email,
+      isFollowed: user.isFollowed ?? false,
     };
   }
 

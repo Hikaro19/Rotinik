@@ -15,6 +15,10 @@ export class LeaderboardFacadeService {
     this.userService.setSortType(type);
   }
 
+  loadLeaderboard(): void {
+    this.userService.fetchUsers().subscribe();
+  }
+
   toggleFollow(userId: string): void {
     this.userService.toggleFollow(userId);
   }
