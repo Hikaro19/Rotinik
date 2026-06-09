@@ -112,21 +112,28 @@ export class RoutineService {
       });
   }
 
-  loadTemplatesFromApi(): void {
-    this.startOperation('loadTemplates');
-    this.routineApi
-      .getTemplates()
-      .pipe(take(1))
-      .subscribe({
-        next: (templates) => {
-          this.templatesSignal.set(this.routineMapper.mapApiRoutinesToViewModels(templates));
-          this.finishOperation('loadTemplates');
-        },
-        error: (error) => {
-          this.failOperation('loadTemplates', getHttpErrorMessage(error, 'Não foi possível carregar os modelos.'));
-        },
-      });
-  }
+  private createRoutineInApi(routine: Routine): void {
+    this.startOperation('createRoutine');
+
+    // 1. Blindando a Categoria: Se vier vazia, nula ou for 'geral', forçamos para 'Home'
+    let safeCategory = routine.category as string;
+    if (!safeCategory || safeCategory === 'geral' || safeCategory.trim() === '') {
+      safeCategory = 'Home';
+    }
+
+    // 2. Blindando a Frequência: Tratando como string genérica para evitar o erro de overlap do TS
+    let safeFrequency = routine.frequency as string;
+    
+    if (safeFrequency === 'Diário' || safeFrequency === 'diario' || !safeFrequency) safeFrequency = 'Daily';
+    if (safeFrequency === 'Semanal' || safeFrequency === 'semanal') safeFrequency = 'Weekly';
+    if (safeFrequency === 'Mensal' || safeFrequency === 'mensal') safeFrequency = 'Monthly';
+
+    const payload: CreateRoutineRequestDto = {
+      title: routine.title,
+      description: routine.description,
+      category: safeCategory, 
+      frequency: safeFrequency, 
+    };
 
   createRoutine(payload: CreateRoutineRequestDto): void {
     this.startOperation('createRoutine');
