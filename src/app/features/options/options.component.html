@@ -1,0 +1,84 @@
+<div class="options-container">
+  <div class="options-list">
+    <button class="option-btn premium-btn" (click)="navigateToPremium()">
+      <span class="option-icon">💎</span>
+      <span class="option-text">Seja Premium</span>
+      <span class="premium-badge">VIP</span>
+    </button>
+
+    <button class="option-btn" (click)="navigateToProfile()">
+      <span class="option-icon">👤</span>
+      <span class="option-text">Editar Perfil</span>
+    </button>
+
+    <button class="option-btn" (click)="navigateToSecurity()">
+      <span class="option-icon">🔒</span>
+      <span class="option-text">Segurança</span>
+    </button>
+
+    <button class="option-btn" (click)="navigateToSettings()">
+      <span class="option-icon">⚙️</span>
+      <span class="option-text">Configurações</span>
+    </button>
+
+    <button class="option-btn" (click)="navigateToHelp()">
+      <span class="option-icon">❓</span>
+      <span class="option-text">Ajuda</span>
+    </button>
+
+    <button class="option-btn logout-btn" (click)="logout()">
+      <span class="option-icon">🚪</span>
+      <span class="option-text">Sair</span>
+    </button>
+
+    <button class="option-btn delete-account-btn" (click)="openDeleteModal()">
+      <span class="option-icon">🗑️</span>
+      <span class="option-text">Excluir Conta</span>
+    </button>
+  </div>
+</div>
+
+<div *ngIf="isDeleteModalOpen" class="modal-overlay">
+  <div class="modal-content">
+    <h2 class="modal-title">Excluir Conta?</h2>
+    
+    <p class="modal-warning">
+      Sua conta será agendada para exclusão e desativada. Você tem <strong>30 dias</strong> para cancelar essa ação fazendo login novamente. Após esse período, seus dados serão apagados permanentemente.
+    </p>
+
+    <p class="modal-instruction">
+      Para confirmar, digite a palavra <strong>EXCLUIR</strong> abaixo:
+    </p>
+
+    <input
+      type="text"
+      class="modal-input"
+      [(ngModel)]="deleteConfirmText"
+      placeholder="Digite EXCLUIR para confirmar"
+    />
+
+    <div class="modal-actions">
+      <button class="modal-btn cancel-btn" (click)="closeDeleteModal()">
+        Cancelar
+      </button>
+      <button
+        class="modal-btn confirm-btn"
+        [disabled]="deleteConfirmText !== 'EXCLUIR'"
+        (click)="confirmAccountDeletion()"
+      >
+        Confirmar Exclusão
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="dialogConfig()?.isOpen"
+  [kicker]="''"
+  [title]="dialogConfig()!.title"
+  [message]="dialogConfig()!.message"
+  [isDestructive]="dialogConfig()!.isDestructive"
+  [showCancelButton]="false"
+  [confirmLabel]="'OK'"
+  (decision)="closeDialog()">
+</app-confirm-dialog>

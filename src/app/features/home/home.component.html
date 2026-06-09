@@ -1,10 +1,22 @@
 <div class="home-container">
   <div class="welcome-card">
     <div class="welcome-content">
-      <h2 class="welcome-title">Ola, {{ nomeUsuario() }}!</h2>
-      <p class="welcome-subtitle">
-        <span *ngIf="usernameUsuario()">&#64;{{ usernameUsuario() }} • </span>Nivel {{ nivelUsuario() }} • {{ moedas() }} moedas
-      </p>
+      <div class="user-profile-header">
+        <div class="avatar-container" [style.background-image]="avatarBorderUrl() ? 'url(' + avatarBorderUrl() + ')' : null">
+          <img *ngIf="avatarUrl()" [src]="avatarUrl()" alt="Avatar" class="user-avatar" />
+          <div *ngIf="!avatarUrl()" class="user-avatar-placeholder">{{ nomeUsuario().charAt(0) }}</div>
+        </div>
+        <div class="user-info">
+          <h2 class="welcome-title">Ola, {{ nomeUsuario() }}!</h2>
+          <p class="welcome-subtitle">
+            <span *ngIf="usernameUsuario()">&#64;{{ usernameUsuario() }} • </span>
+            <span class="level-indicator">
+              <img *ngIf="levelIconUrl()" [src]="levelIconUrl()" alt="Level Icon" class="level-icon-small" />
+              Nivel {{ nivelUsuario() }}
+            </span> • {{ moedas() }} moedas
+          </p>
+        </div>
+      </div>
     </div>
 
     <div class="progress-circle">
@@ -17,11 +29,11 @@
   </div>
 
   <div class="tab-container">
-    <button class="tab-btn" [ngClass]="{ active: activeTab() === 'tarefas' }" (click)="switchTab('tarefas')">
-      Tarefas
-    </button>
     <button class="tab-btn" [ngClass]="{ active: activeTab() === 'rotinas' }" (click)="switchTab('rotinas')">
       Rotinas
+    </button>
+    <button class="tab-btn" [ngClass]="{ active: activeTab() === 'concluidas' }" (click)="switchTab('concluidas')">
+      Concluídas
     </button>
   </div>
 
@@ -34,6 +46,7 @@
         [routine]="rotina"
         [showActions]="false"
         (click)="goToRoutineDetail(rotina.id)"
+        (toggleTask)="onToggleTask($event)"
       ></app-routine-card>
 
       <div *ngIf="rotinasEmAndamento().length === 0" class="empty-state">
@@ -41,10 +54,18 @@
       </div>
     </div>
 
-    <div class="routine-cards" *ngIf="activeTab() === 'tarefas'">
-      <p class="empty-state" *ngIf="true">
-        Tarefas isoladas podem ser acessadas dentro de cada rotina.
-      </p>
+    <div class="routine-cards" *ngIf="activeTab() === 'concluidas'">
+      <app-routine-card
+        *ngFor="let rotina of rotinasCompletas$()"
+        [routine]="rotina"
+        [showActions]="false"
+        (click)="goToRoutineDetail(rotina.id)"
+        (toggleTask)="onToggleTask($event)"
+      ></app-routine-card>
+
+      <div *ngIf="rotinasCompletas$().length === 0" class="empty-state">
+        <p>Nenhuma rotina ou tarefa concluída hoje.</p>
+      </div>
     </div>
   </div>
 </div>

@@ -1,0 +1,238 @@
+import { Injectable, inject, computed, signal } from '@angular/core';
+import { take } from 'rxjs/operators';
+import { ProfileSnapshotDto } from '../models/profile-api.models';
+import { getHttpErrorMessage } from '@core/http/http-error.utils';
+import { ProfileApiService } from './profile-api.service';
+
+const emptyStats: ProfileStats = {
+  totalXpEarned: 0,
+  totalCoinsEarned: 0,
+  totalCoinsSpent: 0,
+  routinesCreated: 0,
+  routinesCompleted: 0,
+  tasksCompleted: 0,
+  currentStreak: 0,
+  longestStreak: 0,
+  daysSinceStart: 0,
+};
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  unlockedDate?: Date;
+  progress?: number;
+  target?: number;
+}
+
+export interface ProfileStats {
+  totalXpEarned: number;
+  totalCoinsEarned: number;
+  totalCoinsSpent: number;
+  routinesCreated: number;
+  routinesCompleted: number;
+  tasksCompleted: number;
+  currentStreak: number;
+  longestStreak: number;
+  daysSinceStart: number;
+}
+
+export interface ActivityDay {
+  date: Date;
+  completed: boolean;
+}
+
+export interface ProfileHistoryItem {
+  id: string;
+  type: 'purchase' | 'achievement' | 'level-up';
+  title: string;
+  description: string;
+  icon: string;
+  date: Date;
+  details?: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class ProfileService {
+  loadProfile() {
+    throw new Error('Method not implemented.');
+  }
+  private readonly profileApi = inject(ProfileApiService);
+
+  readonly achievementsSignal = signal<Achievement[]>([]);
+  readonly activityHistorySignal = signal<ActivityDay[]>([]);
+  readonly memberSinceSignal = signal<Date>(new Date());
+  readonly historyItemsSignal = signal<ProfileHistoryItem[]>([]);
+  readonly profileStatsSignal = signal<ProfileStats>(emptyStats);
+  readonly isInitializedSignal = signal(false);
+  readonly isLoadingSignal = signal(false);
+  readonly operationErrorSignal = signal<string | null>(null);
+
+  readonly unlockedAchievements = computed(() => this.achievementsSignal().filter((achievement) => achievement.unlockedDate).length);
+  readonly totalAchievements = computed(() => this.achievementsSignal().length);
+  readonly activeDays = computed(() => this.activityHistorySignal().filter((day) => day.completed).length);
+  readonly activityPercentage = computed(() => {
+    const total = this.activityHistorySignal().length;
+    const active = this.activeDays();
+    return total > 0 ? Math.round((active / total) * 100) : 0;
+  });
+  readonly daysSinceStart = computed(() => {
+    const diff = Date.now() - this.memberSinceSignal().getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  });
+  readonly last7DaysActivity = computed(() => this.activityHistorySignal().slice(-7));
+  readonly currentMonthActivity = computed(() => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    return this.activityHistorySignal().filter((day) => {
+      return day.date.getMonth() === currentMonth && day.date.getFullYear() === currentYear;
+    });
+  });
+
+  initialize(): void {
+    if (this.isInitializedSignal()) {
+      return;
+    }
+
+    this.isInitializedSignal.set(true);
+    this.operationErrorSignal.set(null);
+
+    this.loadSnapshotFromApi();
+  }
+
+  hydrateFromApi(snapshot: ProfileSnapshotDto): void {
+    // Mantém a data de criação do membro (com fallback seguro caso venha nula)
+    this.memberSinceSignal.set(snapshot?.memberSince ? new Date(snapshot.memberSince) : new Date());
+
+    /* ===================================================================
+       COMENTADO TEMPORARIAMENTE: Evita erros de 'map' de propriedades
+       undefined enquanto o back-end em C# não implementa a gamificação.
+       ===================================================================
+
+    this.achievementsSignal.set(
+      snapshot.achievements.map((achievement) => ({
+        id: achievement.id,
+        name: achievement.name,
+        description: achievement.description,
+        icon: achievement.icon,
+        rarity: achievement.rarity,
+        unlockedDate: achievement.unlockedAt ? new Date(achievement.unlockedAt) : undefined,
+        progress: achievement.progress,
+        target: achievement.target,
+      })),
+    );
+    this.activityHistorySignal.set(
+      snapshot.activityHistory.map((day) => ({
+        date: new Date(day.date),
+        completed: day.completed,
+      })),
+    );
+    this.historyItemsSignal.set(
+      snapshot.historyItems.map((item) => ({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        icon: item.icon,
+        date: new Date(item.date),
+        details: item.details,
+      })),
+    );
+    */
+
+    // Se o back-end enviar estatísticas básicas, nós atualizamos.
+    // Caso contrário, evita quebrar o sinal.
+    if (snapshot?.stats) {
+      this.profileStatsSignal.set({
+        totalXpEarned: snapshot.stats.totalXpEarned,
+        totalCoinsEarned: snapshot.stats.totalCoinsEarned,
+        totalCoinsSpent: snapshot.stats.totalCoinsSpent,
+        routinesCreated: snapshot.stats.routinesCreated,
+        routinesCompleted: snapshot.stats.routinesCompleted,
+        tasksCompleted: snapshot.stats.tasksCompleted,
+        currentStreak: snapshot.stats.currentStreak,
+        longestStreak: snapshot.stats.longestStreak,
+        daysSinceStart: snapshot.stats.daysSinceStart,
+      });
+    }
+  }
+
+  getAchievements(): Achievement[] {
+    return this.achievementsSignal();
+  }
+
+  getUnlockedAchievements(): Achievement[] {
+    return this.achievementsSignal().filter((achievement) => achievement.unlockedDate);
+  }
+
+  getInProgressAchievements(): Achievement[] {
+    return this.achievementsSignal().filter((achievement) => !achievement.unlockedDate && achievement.progress);
+  }
+
+  unlockAchievement(achievementId: string): void {
+    this.achievementsSignal.update((achievements) =>
+      achievements.map((achievement) =>
+        achievement.id === achievementId && !achievement.unlockedDate
+          ? { ...achievement, unlockedDate: new Date() }
+          : achievement,
+      ),
+    );
+  }
+
+  updateAchievementProgress(achievementId: string, progress: number): void {
+    this.achievementsSignal.update((achievements) =>
+      achievements.map((achievement) => {
+        if (achievement.id !== achievementId) {
+          return achievement;
+        }
+
+        const updatedAchievement: Achievement = { ...achievement, progress };
+        if (achievement.target && progress >= achievement.target && !achievement.unlockedDate) {
+          updatedAchievement.unlockedDate = new Date();
+        }
+
+        return updatedAchievement;
+      }),
+    );
+  }
+
+  getActivityHistory(): ActivityDay[] {
+    return this.activityHistorySignal();
+  }
+
+  completeDay(date: Date): void {
+    this.activityHistorySignal.update((history) =>
+      history.map((day) => (day.date.toDateString() === date.toDateString() ? { ...day, completed: true } : day)),
+    );
+  }
+
+  resetProfile(): void {
+    this.achievementsSignal.set([]);
+    this.activityHistorySignal.set([]);
+    this.historyItemsSignal.set([]);
+    this.profileStatsSignal.set(emptyStats);
+    this.isInitializedSignal.set(false);
+  }
+
+  private loadSnapshotFromApi(): void {
+    this.isLoadingSignal.set(true);
+    this.operationErrorSignal.set(null);
+    this.profileApi
+      .getSnapshot()
+      .pipe(take(1))
+      .subscribe({
+        next: (snapshot) => {
+          this.hydrateFromApi(snapshot);
+          this.isLoadingSignal.set(false);
+        },
+        error: (error) => {
+          this.operationErrorSignal.set(getHttpErrorMessage(error, 'Nao foi possivel carregar o perfil.'));
+          this.isLoadingSignal.set(false);
+        },
+      });
+  }
+}

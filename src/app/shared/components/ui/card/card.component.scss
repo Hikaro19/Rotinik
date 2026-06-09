@@ -13,7 +13,7 @@
   // ─────────────────────────────────────────────────────────────────────
 
   &--default {
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-sm);
 
     &:hover {
@@ -32,7 +32,7 @@
   }
 
   &--outlined {
-    border: 2px solid rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--border-subtle);
     background-color: transparent;
 
     &:hover {
@@ -151,7 +151,6 @@
     color: var(--text-primary);
     line-height: var(--line-height-normal);
 
-    // Typography defaults
     p {
       margin: 0 0 var(--spacing-3) 0;
 
@@ -160,19 +159,13 @@
       }
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
+    h1, h2, h3, h4, h5, h6 {
       margin: 0 0 var(--spacing-2) 0;
       color: var(--text-primary);
       font-weight: var(--font-semibold);
     }
 
-    ul,
-    ol {
+    ul, ol {
       margin: 0 0 var(--spacing-3) var(--spacing-6);
       padding: 0;
 
@@ -187,7 +180,6 @@
       transition: color var(--transition-fast);
 
       &:hover {
-        color: var(--purple-neon);
         text-decoration: underline;
       }
     }
@@ -195,7 +187,7 @@
 
   &__divider {
     border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--border-subtle);
     margin: 0;
     opacity: 0.5;
   }
@@ -241,7 +233,7 @@
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// 🌙 Dark Mode (já está na tema geral, mas enfatizar aqui)
+// 🌙 Dark Mode Preference
 // ─────────────────────────────────────────────────────────────────────
 
 @media (prefers-color-scheme: dark) {

@@ -24,7 +24,7 @@ import { Task } from '@core/services/routine.service';
       </div>
 
       <div class="task-item__meta">
-        <span class="task-item__pill">{{ task.estimatedMinutes }} min</span>
+        <span class="task-item__pill">{{ formatDeadline(task.deadlineValue) }}</span>
         <span class="task-item__pill">{{ importanceLabel }}</span>
       </div>
 
@@ -86,5 +86,10 @@ export class AppTaskItemComponent {
 
   onDelete(): void {
     this.delete.emit(this.task.id);
+  }
+
+  formatDeadline(val: string | undefined): string {
+    if (!val) return 'Sem prazo';
+    return val; // Já está formatado pelo tipo de input (ex: '15:45' ou 'Segunda-feira')
   }
 }

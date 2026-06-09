@@ -12,7 +12,7 @@ export interface AppHttpError {
 }
 
 export function normalizeHttpError(error: unknown, fallbackMessage = 'Erro inesperado de comunicacao.'): AppHttpError {
-  if (isAppHttpError(error)) {
+  if (isAppHttpError(error) && !(error instanceof HttpErrorResponse)) {
     return error;
   }
 
@@ -24,6 +24,9 @@ export function normalizeHttpError(error: unknown, fallbackMessage = 'Erro inesp
         : undefined) ??
       (typeof payload === 'object' && payload !== null && 'message' in payload && typeof payload.message === 'string'
         ? payload.message
+        : undefined) ??
+      (typeof payload === 'object' && payload !== null && 'detail' in payload && typeof payload.detail === 'string'
+        ? payload.detail
         : undefined) ??
       (typeof payload === 'object' && payload !== null && 'title' in payload && typeof payload.title === 'string'
         ? payload.title

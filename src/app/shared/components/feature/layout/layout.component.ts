@@ -2,6 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
+import { AuthService } from '@core/services/auth.service';
+import { AuthFacadeService } from '@features/users/services/auth-facade.service';
 
 @Component({
   selector: 'app-layout',
@@ -11,7 +13,7 @@ import { filter, map } from 'rxjs/operators';
     <!-- Header Fixed -->
     <header class="app-header">
       <div class="header-left">
-        <button class="back-btn" (click)="goBack()" *ngIf="canGoBack">
+        <button class="back-btn" (click)="goBack()" *ngIf="canGoBack && !isAdmin">
           <span>‹</span>
         </button>
       </div>
@@ -21,19 +23,19 @@ import { filter, map } from 'rxjs/operators';
       </div>
 
       <div class="header-right">
-        <button class="menu-btn" (click)="toggleMenu()">
+        <button class="menu-btn" (click)="toggleMenu()" *ngIf="!isAdmin">
           <span>≡</span>
         </button>
       </div>
     </header>
 
     <!-- Main Content Area -->
-    <main class="app-main-content">
+    <main class="app-main-content" [class.no-footer]="isAdminRoute">
       <router-outlet></router-outlet>
     </main>
 
     <!-- Bottom Navigation Bar Fixed -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" *ngIf="!isAdminRoute">
       <a 
         class="nav-item" 
         routerLink="/home"
@@ -154,13 +156,17 @@ import { filter, map } from 'rxjs/operators';
       overflow-x: hidden;
     }
 
+    .app-main-content.no-footer {
+      margin-bottom: 0 !important;
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       height: 80px;
-      background: var(--purple-primary, #9B51E0);
+      background: var(--cosmetic-navbar, var(--purple-primary, #9B51E0));
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-around;
@@ -231,11 +237,16 @@ import { filter, map } from 'rxjs/operators';
 export class LayoutComponent implements OnInit {
   private location = inject(Location);
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private authFacade = inject(AuthFacadeService);
 
   currentPageTitle = 'Home';
   canGoBack = false;
+  isAdminRoute = false;
+  isAdmin = false;
 
   ngOnInit() {
+    this.isAdmin = this.authService.isAdmin();
     this.updatePageTitle();
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -246,6 +257,8 @@ export class LayoutComponent implements OnInit {
 
   private updatePageTitle() {
     const urlSegments = this.router.url.split('/').filter((s) => s);
+    this.isAdminRoute = urlSegments.length > 0 && urlSegments[0] === 'admin';
+
     if (urlSegments.length === 0 || urlSegments[0] === 'home') {
       this.currentPageTitle = 'Bem-vindo';
     } else if (urlSegments[0] === 'routines' && urlSegments.length > 1) {
@@ -272,6 +285,7 @@ export class LayoutComponent implements OnInit {
 
   private getTitleForRoute(route: string): string {
     const titles: { [key: string]: string } = {
+      'admin': 'Administração',
       'friends': 'Amigos',
       'leaderboard': 'Classificação',
       'feed': 'Feed',
@@ -290,6 +304,10 @@ export class LayoutComponent implements OnInit {
   }
 
   toggleMenu() {
-    this.router.navigate(['/options']);
+    if (this.isAdmin) {
+      this.authFacade.logout();
+    } else {
+      this.router.navigate(['/options']);
+    }
   }
 }

@@ -1,0 +1,437 @@
+<div class="admin-container">
+  <!-- BANNER PRINCIPAL (Exibido apenas no Dashboard) -->
+  <div class="admin-banner" *ngIf="activeSection === 'dashboard'">
+    <div class="banner-content">
+      <h2 class="banner-title">Olá, {{ adminName }}!</h2>
+      <p class="banner-subtitle">Bem-vindo ao Painel de Controle do Rotinik. Gerencie as engrenagens da gamificação.</p>
+      <button class="logout-admin-btn" (click)="logout()">🚪 Sair da Conta</button>
+    </div>
+    <div class="banner-glow"></div>
+  </div>
+
+  <!-- BOTÃO DE VOLTAR AO DASHBOARD (Exibido nas Sub-seções) -->
+  <div class="section-header" *ngIf="activeSection !== 'dashboard'">
+    <button class="back-btn" (click)="navigateTo('dashboard')">← Voltar ao Painel</button>
+    <h2 class="section-title">
+      {{ getSectionTitle(activeSection) }}
+    </h2>
+    <button class="create-btn" *ngIf="activeSection !== 'users'" (click)="openCreateModal(activeSection === 'routines' ? 'template' : activeSection === 'medals' ? 'medal' : 'shop')">
+      + Cadastrar Novo
+    </button>
+  </div>
+
+  <!-- LOADING SPINNER -->
+  <div class="loading-wrapper" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Carregando dados do servidor...</p>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 🎛️ DASHBOARD DE CARDS INICIAIS -->
+  <!-- ======================================================== -->
+  <div class="admin-grid" *ngIf="activeSection === 'dashboard'">
+    <a (click)="navigateTo('users')" class="admin-card" id="manage-users">
+      <div class="card-icon-wrapper"><span class="card-icon">👥</span></div>
+      <div class="card-info">
+        <h3 class="card-title">Gerenciar Usuários</h3>
+        <p class="card-description">Visualizar usuários e editar saldos ou banimentos.</p>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a (click)="navigateTo('routines')" class="admin-card" id="manage-routines">
+      <div class="card-icon-wrapper"><span class="card-icon">🔁</span></div>
+      <div class="card-info">
+        <h3 class="card-title">Gerenciar Rotinas</h3>
+        <p class="card-description">Criar e editar rotinas modelo e templates globais.</p>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a (click)="navigateTo('medals')" class="admin-card" id="medals">
+      <div class="card-icon-wrapper"><span class="card-icon">🏅</span></div>
+      <div class="card-info">
+        <h3 class="card-title">Medalhas</h3>
+        <p class="card-description">Cadastrar, editar ou excluir conquistas do perfil.</p>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a (click)="navigateTo('shop')" class="admin-card" id="shop-items">
+      <div class="card-icon-wrapper"><span class="card-icon">🛍️</span></div>
+      <div class="card-info">
+        <h3 class="card-title">Itens da Loja</h3>
+        <p class="card-description">Cadastrar cosméticos, definir preços e descontos.</p>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 👥 GRID DE USUÁRIOS -->
+  <!-- ======================================================== -->
+  <div class="grid-view" *ngIf="activeSection === 'users' && !isLoading">
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por Nome, Username ou E-mail..." (keyup.enter)="fetchUsers()">
+      <button (click)="fetchUsers()">Buscar</button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Username</th>
+            <th>E-mail</th>
+            <th>Moedas 💰</th>
+            <th>Pontos XP ⚡</th>
+            <th>Premium</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of usersList">
+            <td>{{ user.id }}</td>
+            <td class="bold">{{ user.name }}</td>
+            <td>&#64;{{ user.userName }}</td>
+            <td>{{ user.email }}</td>
+            <td class="coin">{{ user.coins }}</td>
+            <td class="xp">{{ user.points }}</td>
+            <td><span class="badge" [class.badge-premium]="user.isPremium">{{ user.isPremium ? 'Sim' : 'Não' }}</span></td>
+            <td>
+              <span class="badge" [class.badge-danger]="user.isBanned" [class.badge-success]="!user.isBanned">
+                {{ user.isBanned ? 'Banido' : 'Ativo' }}
+              </span>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="action-btn edit" (click)="openEditModal('user', user)">✏️ Editar</button>
+                <button class="action-btn ban" [class.unban]="user.isBanned" (click)="toggleUserBan(user)">
+                  🚫 {{ user.isBanned ? 'Desbanir' : 'Banir' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 🔁 GRID DE ROTINAS MODELOS (TEMPLATES) -->
+  <!-- ======================================================== -->
+  <div class="grid-view" *ngIf="activeSection === 'routines' && !isLoading">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Frequência</th>
+            <th>Tipo</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let routine of routinesList">
+            <td>{{ routine.id }}</td>
+            <td class="bold">{{ routine.title }}</td>
+            <td>{{ routine.description || '-' }}</td>
+            <td><span class="category-tag">{{ routine.category }}</span></td>
+            <td>{{ routine.frequency }}</td>
+            <td>
+              <span class="badge" [class.badge-primary]="routine.isDefault" [class.badge-secondary]="!routine.isDefault">
+                {{ routine.isDefault ? 'Modelo Global' : 'Personalizada' }}
+              </span>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="action-btn edit" *ngIf="routine.isDefault" (click)="openEditModal('template', routine)">✏️ Editar</button>
+                <button class="action-btn delete" *ngIf="routine.isDefault" (click)="deleteItem('template', routine.id)">🗑️ Excluir</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 🏅 GRID DE MEDALHAS -->
+  <!-- ======================================================== -->
+  <div class="grid-view" *ngIf="activeSection === 'medals' && !isLoading">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ícone</th>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Tipo de Gatilho</th>
+            <th>Meta Necessária</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let medal of medalsList">
+            <td>{{ medal.id }}</td>
+            <td class="icon-td">{{ medal.iconUrl }}</td>
+            <td class="bold">{{ medal.name }}</td>
+            <td>{{ medal.description }}</td>
+            <td>{{ getTriggerTypeLabel(medal.triggerType) }}</td>
+            <td class="bold">{{ medal.targetValue }}</td>
+            <td>
+              <div class="actions">
+                <button class="action-btn edit" (click)="openEditModal('medal', medal)">✏️ Editar</button>
+                <button class="action-btn delete" (click)="deleteItem('medal', medal.id)">🗑️ Excluir</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 🛍️ GRID DE ITENS DA LOJA -->
+  <!-- ======================================================== -->
+  <div class="grid-view" *ngIf="activeSection === 'shop' && !isLoading">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ícone</th>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Preço 💰</th>
+            <th>Raridade</th>
+            <th>Desconto</th>
+            <th>Novidade</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of shopItemsList">
+            <td>{{ item.id }}</td>
+            <td class="icon-td">{{ item.icon }}</td>
+            <td class="bold">{{ item.name }}</td>
+            <td>{{ item.description }}</td>
+            <td><span class="category-tag">{{ item.category }}</span></td>
+            <td class="coin bold">{{ item.price }}</td>
+            <td><span class="badge badge-rarity" [attr.data-rarity]="item.rarity">{{ item.rarity }}</span></td>
+            <td>{{ item.discount ? item.discount + '%' : 'Nenhum' }}</td>
+            <td><span class="badge" [class.badge-success]="item.isNew">{{ item.isNew ? 'Lançamento' : 'Antigo' }}</span></td>
+            <td>
+              <div class="actions">
+                <button class="action-btn edit" (click)="openEditModal('shop', item)">✏️ Editar</button>
+                <button class="action-btn delete" (click)="deleteItem('shop', item.id)">🗑️ Excluir</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 📝 MODAIS DE CADASTRO E EDIÇÃO (MODAL DINÂMICO) -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" *ngIf="showModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>
+          {{ modalAction === 'create' ? '✨ Criar Novo' : '✏️ Editar Item' }} 
+          ({{ modalType === 'user' ? 'Usuário' : modalType === 'template' ? 'Rotina Modelo' : modalType === 'medal' ? 'Medalha' : 'Item da Loja' }})
+        </h3>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- FORM USUÁRIO -->
+        <div *ngIf="modalType === 'user'">
+          <div class="form-group">
+            <label>Nome Completo</label>
+            <input type="text" [(ngModel)]="selectedItem.name">
+          </div>
+          <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" [(ngModel)]="selectedItem.email">
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" [(ngModel)]="selectedItem.userName">
+          </div>
+          <div class="form-group">
+            <label>Papel (Role)</label>
+            <select [(ngModel)]="selectedItem.role">
+              <option value="user">Usuário</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pontos XP ⚡</label>
+              <input type="number" [(ngModel)]="selectedItem.points">
+            </div>
+            <div class="form-group">
+              <label>Moedas 💰</label>
+              <input type="number" [(ngModel)]="selectedItem.coins">
+            </div>
+          </div>
+          <div class="checkbox-group">
+            <label><input type="checkbox" [(ngModel)]="selectedItem.isPremium"> Conta Premium</label>
+            <label><input type="checkbox" [(ngModel)]="selectedItem.isBanned"> Banir Usuário</label>
+          </div>
+        </div>
+
+        <!-- FORM TEMPLATE DE ROTINA -->
+        <div *ngIf="modalType === 'template'">
+          <div class="form-group">
+            <label>Título da Rotina</label>
+            <input type="text" [(ngModel)]="selectedItem.title">
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea [(ngModel)]="selectedItem.description"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Categoria</label>
+              <input type="text" [(ngModel)]="selectedItem.category" placeholder="ex: saúde, estudos">
+            </div>
+            <div class="form-group">
+              <label>Frequência</label>
+              <select [(ngModel)]="selectedItem.frequency">
+                <option value="daily">Diário</option>
+                <option value="weekly">Semanal</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- LISTA DE TAREFAS DENTRO DO TEMPLATE (Apenas no Create) -->
+          <div class="tasks-builder" *ngIf="modalAction === 'create'">
+            <h4>Tarefas inclusas no Modelo</h4>
+            <div class="task-row" *ngFor="let task of selectedItem.tasks; let i = index">
+              <input type="text" [(ngModel)]="task.title" placeholder="Título da tarefa">
+              <select [(ngModel)]="task.importance">
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+                <option value="critica">Crítica</option>
+              </select>
+              <input type="number" [(ngModel)]="task.xpReward" placeholder="XP" style="width: 60px;">
+              <input type="number" [(ngModel)]="task.coinReward" placeholder="Moedas" style="width: 60px;">
+              <button class="remove-task" (click)="removeTaskFromTemplate(i)">✕</button>
+            </div>
+            <button class="add-task-btn" (click)="addTaskToTemplate()">+ Adicionar Tarefa</button>
+          </div>
+        </div>
+
+        <!-- FORM MEDALHA -->
+        <div *ngIf="modalType === 'medal'">
+          <div class="form-group">
+            <label>Nome da Medalha</label>
+            <input type="text" [(ngModel)]="selectedItem.name">
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea [(ngModel)]="selectedItem.description"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Ícone (Emoji ou caractere)</label>
+            <input type="text" [(ngModel)]="selectedItem.iconUrl" placeholder="ex: 🏅">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gatilho (Trigger)</label>
+                <select [(ngModel)]="selectedItem.triggerType">
+                  <option [ngValue]="2">Tarefas Concluídas</option>
+                  <option [ngValue]="3">Streak de Rotinas</option>
+                  <option [ngValue]="1">Pontos Acumulados</option>
+                  <option [ngValue]="4">Rotinas Concluídas</option>
+                  <option [ngValue]="5">Premium Adquirido</option>
+                  <option [ngValue]="6">Item da Loja Comprado</option>
+                </select>
+            </div>
+            <div class="form-group">
+              <label>Meta de Desbloqueio</label>
+              <input type="number" [(ngModel)]="selectedItem.targetValue">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Recompensa de XP ⚡</label>
+              <input type="number" [(ngModel)]="selectedItem.rewardPoints" placeholder="ex: 50">
+            </div>
+            <div class="form-group">
+              <label>Recompensa de Moedas 💰</label>
+              <input type="number" [(ngModel)]="selectedItem.rewardCoins" placeholder="ex: 20">
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM ITEM DA LOJA -->
+        <div *ngIf="modalType === 'shop'">
+          <div class="form-group">
+            <label>Nome do Cosmético</label>
+            <input type="text" [(ngModel)]="selectedItem.name">
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea [(ngModel)]="selectedItem.description"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ícone (Emoji ou caractere)</label>
+              <input type="text" [(ngModel)]="selectedItem.icon" placeholder="ex: 👑">
+            </div>
+            <div class="form-group">
+              <label>Categoria</label>
+              <select [(ngModel)]="selectedItem.category">
+                <option value="avatar">Avatar (Foto de Perfil)</option>
+                <option value="border">Borda</option>
+                <option value="level_icon">Ícone de Nível</option>
+                <option value="background">Fundo de Modal</option>
+                <option value="navbar">Tema da NavBar</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Preço 💰</label>
+              <input type="number" [(ngModel)]="selectedItem.price">
+            </div>
+            <div class="form-group">
+              <label>Raridade</label>
+              <select [(ngModel)]="selectedItem.rarity">
+                <option value="common">Comum</option>
+                <option value="rare">Raro</option>
+                <option value="epic">Épico</option>
+                <option value="legendary">Lendário</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Desconto (%)</label>
+            <input type="number" [(ngModel)]="selectedItem.discount" placeholder="ex: 15 (opcional)">
+          </div>
+          <div class="checkbox-group">
+            <label><input type="checkbox" [(ngModel)]="selectedItem.isNew"> Marcar como Lançamento (Novo)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn cancel" (click)="closeModal()">Cancelar</button>
+        <button class="btn save" (click)="saveChanges()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>

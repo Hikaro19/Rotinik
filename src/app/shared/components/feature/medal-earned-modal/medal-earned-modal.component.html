@@ -1,0 +1,31 @@
+<div class="medal-overlay" *ngIf="currentMedal() as medal">
+  <div class="medal-modal" role="dialog" aria-modal="true">
+    <div class="medal-shine-bg"></div>
+    <div class="medal-content">
+      <div class="medal-icon-container">
+        <span class="medal-icon">{{ medal.iconUrl }}</span>
+      </div>
+      
+      <h2 class="medal-title">Medalha Conquistada!</h2>
+      <h3 class="medal-name">{{ medal.name }}</h3>
+      <p class="medal-desc">{{ medal.description }}</p>
+
+      <div class="medal-rewards">
+        <div class="reward-item xp" *ngIf="medal.rewardPoints > 0">
+          <span class="reward-val">+{{ medal.rewardPoints }}</span>
+          <span class="reward-label">XP</span>
+        </div>
+        <div class="reward-item coins" *ngIf="medal.rewardCoins > 0">
+          <span class="reward-val">+{{ medal.rewardCoins }}</span>
+          <span class="reward-label">Moedas</span>
+        </div>
+      </div>
+
+      <div class="medal-action">
+        <app-button variant="primary" size="md" (buttonClick)="dismiss()">
+          Incrível!
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>

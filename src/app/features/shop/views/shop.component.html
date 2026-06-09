@@ -1,0 +1,88 @@
+<div class="shop-container">
+    <div class="shop-header">
+        <div class="shop-header-content">
+            <h1 class="shop-title">Loja de Itens 🛍️</h1>
+            <p class="shop-subtitle">Gaste suas moedas em itens especiais e melhorias oficiais</p>
+        </div>
+
+        <app-card variant="outlined" padding="md" rounded="md" class="player-info">
+            <div class="player-info-content">
+                <div class="player-stat">
+                    <span class="stat-label">Suas Moedas</span>
+                    <span class="stat-value">{{ player().coins || 0 }}</span>
+                </div>
+                <div class="player-stat">
+                    <span class="stat-label">Itens Comprados</span>
+                    <span class="stat-value" [style.color]="'var(--brand-neon)'">
+                        {{ shopFacade.isLoading() ? 'Carregando...' : shopFacade.ownedItemsCount() + '/' + shopFacade.totalItemsCount() }}
+                    </span>
+                </div>
+            </div>
+        </app-card>
+    </div>
+
+    <div *ngIf="shopFacade.errorSignal()" class="shop-empty">
+        <p style="color: #fb7185;">{{ shopFacade.errorSignal() }}</p>
+    </div>
+
+    <div class="time-filter-container">
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'all'"
+            (click)="setCategory('all')">Todos</button>
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'avatar'"
+            (click)="setCategory('avatar')">Fotos de Perfil</button>
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'border'"
+            (click)="setCategory('border')">Bordas</button>
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'level_icon'"
+            (click)="setCategory('level_icon')">Ícones de Nível</button>
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'background'"
+            (click)="setCategory('background')">Fundos de Modais</button>
+        <button type="button" class="time-filter-btn" [class.active]="currentCategory() === 'navbar'"
+            (click)="setCategory('navbar')">NavBar</button>
+    </div>
+
+    <div *ngIf="shopFacade.isLoading()" style="display: flex; justify-content: center; padding: 40px 0;">
+        <app-spinner size="lg"></app-spinner>
+    </div>
+
+    <ng-container *ngIf="!shopFacade.isLoading() && !shopFacade.errorSignal()">
+        <div *ngIf="currentCategory() === 'all'" class="shop-featured">
+            <h2 class="shop-section-title">⭐ Em Destaque</h2>
+            <div class="shop-grid">
+                <app-shop-item *ngFor="let item of shopFacade.featuredItems()" [item]="item" [purchased]="item.isOwned || false"
+                    (purchase)="onPurchaseItem($event)" (equip)="onEquipItem($event)"></app-shop-item>
+            </div>
+        </div>
+
+        <h2 class="shop-section-title" *ngIf="currentCategory() === 'all'">
+            📦 Outros Itens
+        </h2>
+        <h2 class="shop-section-title" *ngIf="currentCategory() !== 'all'">
+            {{ getCategoryTitle() }}
+        </h2>
+        <div *ngIf="getFilteredItems().length > 0" class="shop-grid">
+            <app-shop-item *ngFor="let item of getFilteredItems()" [item]="item" [purchased]="item.isOwned || false"
+                (purchase)="onPurchaseItem($event)" (equip)="onEquipItem($event)"></app-shop-item>
+        </div>
+
+        <div *ngIf="getFilteredItems().length === 0 && currentCategory() !== 'all'" class="shop-empty">
+            <app-card variant="outlined" padding="lg" rounded="md">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h2>Nenhum item encontrado</h2>
+                    <p>Tente mudar a categoria para encontrar mais itens</p>
+                </div>
+            </app-card>
+        </div>
+    </ng-container>
+</div>
+
+<app-confirm-dialog
+  *ngIf="dialogConfig()?.isOpen"
+  [kicker]="''"
+  [title]="dialogConfig()!.title"
+  [message]="dialogConfig()!.message"
+  [isDestructive]="dialogConfig()!.isDestructive"
+  [showCancelButton]="false"
+  [confirmLabel]="'OK'"
+  (decision)="closeDialog()">
+</app-confirm-dialog>

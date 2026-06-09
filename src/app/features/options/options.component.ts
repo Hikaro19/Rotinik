@@ -1,130 +1,46 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '@core/services/auth.service';
-import { RoutineService } from '@core/services/routine.service';
-import { ProfileService } from '@core/services/profile.service';
+import { AuthFacadeService } from '../users/services/auth-facade.service';
+import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-options',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="options-container">
-      <div class="options-list">
-        <button class="option-btn" (click)="navigateToProfile()">
-          <span class="option-icon">👤</span>
-          <span class="option-text">Editar Perfil</span>
-        </button>
-
-        <button class="option-btn" (click)="navigateToSecurity()">
-          <span class="option-icon">🔒</span>
-          <span class="option-text">Segurança</span>
-        </button>
-
-        <button class="option-btn" (click)="navigateToSettings()">
-          <span class="option-icon">⚙️</span>
-          <span class="option-text">Configurações</span>
-        </button>
-
-        <button class="option-btn" (click)="navigateToHelp()">
-          <span class="option-icon">❓</span>
-          <span class="option-text">Ajuda</span>
-        </button>
-
-        <button class="option-btn logout-btn" (click)="logout()">
-          <span class="option-icon">🚪</span>
-          <span class="option-text">Sair</span>
-        </button>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .options-container {
-      padding: 16px;
-      min-height: 100%;
-    }
-
-    .options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .option-btn {
-      width: 100%;
-      padding: 16px;
-      border: 2px dashed rgba(100, 200, 255, 0.3);
-      border-radius: 12px;
-      background: var(--purple-primary, #9B51E0);
-      color: var(--text-primary, #FFFFFF);
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: all 0.2s ease;
-    }
-
-    .option-btn:hover {
-      background: rgba(155, 81, 224, 0.9);
-      border-color: rgba(100, 200, 255, 0.5);
-      transform: translateY(-2px);
-    }
-
-    .option-btn:active {
-      transform: translateY(0);
-      background: rgba(155, 81, 224, 0.8);
-    }
-
-    .option-icon {
-      font-size: 24px;
-      flex-shrink: 0;
-    }
-
-    .option-text {
-      flex: 1;
-      text-align: left;
-    }
-
-    .logout-btn {
-      background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
-      margin-top: 12px;
-      border-color: rgba(255, 71, 182, 0.3);
-    }
-
-    .logout-btn:hover {
-      background: linear-gradient(135deg, #9945E6 0%, #6D2FD7 100%);
-      border-color: rgba(255, 71, 182, 0.5);
-    }
-
-    @media (max-width: 480px) {
-      .options-container {
-        padding: 12px;
-      }
-
-      .options-list {
-        gap: 10px;
-      }
-
-      .option-btn {
-        padding: 14px 12px;
-        font-size: 15px;
-      }
-
-      .option-icon {
-        font-size: 20px;
-      }
-    }
-  `],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
+  templateUrl: './options.component.html',
+  styleUrl: './options.component.scss',
 })
 export class OptionsComponent {
   private readonly router = inject(Router);
-  private readonly authService = inject(AuthService);
-  private readonly routineService = inject(RoutineService);
-  private readonly profileService = inject(ProfileService);
+  private readonly authFacade = inject(AuthFacadeService);
+
+  isDeleteModalOpen = false;
+  deleteConfirmText = '';
+  
+  dialogConfig = signal<{ isOpen: boolean; title: string; message: string; isDestructive: boolean } | null>(null);
+
+  openDialog(title: string, message: string, isDestructive: boolean): void {
+    this.dialogConfig.set({
+      isOpen: true,
+      title,
+      message,
+      isDestructive
+    });
+  }
+
+  closeDialog(): void {
+    const wasDeleted = this.dialogConfig()?.title === 'Aviso';
+    this.dialogConfig.set(null);
+    if (wasDeleted) {
+      this.authFacade.logout();
+    }
+  }
+
+  navigateToPremium() {
+    this.router.navigate(['/premium']);
+  }
 
   navigateToProfile() {
     this.router.navigate(['/profile']);
@@ -146,9 +62,32 @@ export class OptionsComponent {
   }
 
   logout() {
-    this.routineService.resetState();
-    this.profileService.resetProfile();
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    this.authFacade.logout();
+  }
+
+  openDeleteModal() {
+    this.isDeleteModalOpen = true;
+    this.deleteConfirmText = '';
+  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen = false;
+    this.deleteConfirmText = '';
+  }
+
+  async confirmAccountDeletion() {
+    if (this.deleteConfirmText !== 'EXCLUIR') {
+      return;
+    }
+
+    try {
+      const response = await this.authFacade.deleteAccount();
+      this.closeDeleteModal();
+      this.openDialog('Aviso', response.message || 'Sua conta foi agendada para exclusão e será removida em 30 dias. Para cancelar, basta fazer login novamente.', false);
+    } catch (error) {
+      this.closeDeleteModal();
+      this.openDialog('Erro', 'Erro ao excluir conta. Tente novamente.', true);
+      console.error('Delete account error:', error);
+    }
   }
 }

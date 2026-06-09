@@ -1,87 +1,90 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@environments/environment';
-import { Observable, map, tap, timer, switchMap } from 'rxjs';
+import { Observable, map, tap, timer, switchMap, of } from 'rxjs';
+import { TokenService } from './token.service';
 import {
   UserLoginDto,
   UserLoginResponseDto,
   UserRegistrationDto,
   UserRegisterResponseDto,
   UserMeDto,
-} from '../models/api/user-api.models';
+} from '@features/users/models/user-api.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // Separamos as rotas para refletir os Controllers do C#
-  private readonly userUrl = `${environment.apiUrl}/user`;
-  private readonly authUrl = `${environment.apiUrl}/user`;
-
-  constructor(private readonly http: HttpClient) { }
+  private readonly http = inject(HttpClient);
+  private readonly tokenService = inject(TokenService);
+  private readonly apiUrl = `${environment.apiUrl}/user`;
 
   register(payload: UserRegistrationDto): Observable<UserRegisterResponseDto> {
-    console.log('[Rotinik Debug] Registrando:', payload);
-    // Usa o UserController
-    return this.http.post<UserRegisterResponseDto>(this.userUrl, payload);
+    return this.http.post<UserRegisterResponseDto>(this.apiUrl, payload);
   }
 
   login(payload: UserLoginDto): Observable<UserLoginResponseDto> {
-    console.log('[Rotinik Debug] Fazendo Login:', payload);
-
-    // Chama o UserController para pegar o Token
-    return this.http.post<{ data: { accessToken: string, refreshToken: string }, message: string }>(`${this.userUrl}/login`, payload).pipe(
-      tap((res) => {
-        // Armazena o token ANTES do switchMap para o Interceptor pegar
-        localStorage.setItem(environment.tokenStorageKey, res.data.accessToken);
-      }),
-      switchMap((res) => {
-        // Agora com o token salvo, chama o UserController para pegar os dados
-        return this.http.get<UserMeDto>(`${this.userUrl}/me`).pipe(
-          map((user) => ({
-            token: res.data.accessToken,
-            user: user,
-            message: res.message || 'Login realizado com sucesso',
-          }))
-        );
-      }),
-      tap((session) => this.saveSession(session))
-    );
+    return this.http
+      .post<{ data: { accessToken: string; refreshToken: string; isRestored?: boolean }; message: string }>(
+        `${this.apiUrl}/login`,
+        payload,
+      )
+      .pipe(
+        tap((res) => this.tokenService.setToken(res.data.accessToken)),
+        switchMap((res) =>
+          this.http.get<UserMeDto>(`${this.apiUrl}/me`).pipe(
+            map((user) => ({
+              token: res.data.accessToken,
+              user: user,
+              message: res.message || 'Login realizado com sucesso',
+              isRestored: res.data.isRestored
+            })),
+          ),
+        ),
+        tap((session) => this.tokenService.saveSession(session)),
+      );
   }
 
   logout(): void {
-    localStorage.removeItem(environment.tokenStorageKey);
-    localStorage.removeItem('rotinik_auth_user');
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem(environment.tokenStorageKey);
-  }
-
-  getCurrentSession(): UserLoginResponseDto | null {
-    const rawSession = localStorage.getItem('rotinik_auth_user');
-
-    if (!rawSession) return null;
-
-    try {
-      return JSON.parse(rawSession) as UserLoginResponseDto;
-    } catch {
-      this.logout();
-      return null;
-    }
-  }
-
-  recuperarSenha(email: string): Observable<void> {
-    // Mantido o mock por enquanto, até criarmos a rota real no C#
-    console.log(`[AuthService] Recuperacao de senha solicitada para: ${email}`);
-    return timer(1200).pipe(map(() => void 0));
-  }
-
-  private saveSession(session: UserLoginResponseDto): void {
-    localStorage.setItem(environment.tokenStorageKey, session.token);
-    localStorage.setItem('rotinik_auth_user', JSON.stringify(session));
+    this.tokenService.clearStorage();
   }
 
   isAuthenticated(): boolean {
+    const session = this.tokenService.getSession();
+    return Boolean(this.tokenService.getToken() && session?.user?.email);
+  }
+
+  isAdmin(): boolean {
     const session = this.getCurrentSession();
-    return Boolean(this.getToken() && session?.user?.email);
+    if (!session || !session.user) {
+      return false;
+    }
+    const user = session.user;
+    if (user.isAdmin !== undefined) {
+      return Boolean(user.isAdmin);
+    }
+    return user.role === 'admin';
+  }
+
+  getCurrentSession(): UserLoginResponseDto | null {
+    return this.tokenService.getSession();
+  }
+
+  fetchCurrentUser(): Observable<UserMeDto> {
+    return this.http.get<UserMeDto>(`${this.apiUrl}/me`);
+  }
+
+  updateSessionUser(user: UserMeDto): void {
+    const session = this.tokenService.getSession();
+    if (session) {
+      session.user = user;
+      this.tokenService.saveSession(session);
+    }
+  }
+
+  deleteAccount(userId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/${userId}`);
+  }
+
+  recuperarSenha(_email: string): Observable<void> {
+    return timer(1200).pipe(map(() => void 0));
   }
 }

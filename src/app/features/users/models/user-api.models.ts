@@ -1,0 +1,49 @@
+export interface UserRegistrationDto {
+  name: string;
+  email: string;
+  password?: string;
+  phone: string;
+}
+
+export interface UserLoginDto {
+  email: string;
+  password?: string;
+}
+
+export interface UserMeDto {
+  id?: string | number;
+  name: string;
+  userName: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  isAdmin?: boolean;
+  isPremium?: boolean;
+  equippedCosmetics?: Record<string, string>;
+}
+
+export interface UserLoginResponseDto {
+  token: string;
+  user?: UserMeDto;
+  message?: string;
+  isRestored?: boolean;
+}
+
+export interface UserRegisterResponseDto {
+  id: string;
+}
+
+export interface UserApiDto {
+  id?: string | number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  userName?: string;
+  points?: number;
+  level?: number;
+  coins?: number;
+  achievements?: number;
+  joinDate?: string | Date;
+  lastActivityDate?: string | Date;
+  isFollowed?: boolean;
+}

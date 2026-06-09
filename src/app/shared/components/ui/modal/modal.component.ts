@@ -1,150 +1,54 @@
-import { Component, Input, Output, EventEmitter, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppCardComponent } from '../card/card.component';
-import { AppSpinnerComponent } from '../spinner/spinner.component';
-import { AppButtonComponent } from '../button/button.component';
-
-type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule, AppCardComponent, AppSpinnerComponent, AppButtonComponent],
+  imports: [CommonModule],
   template: `
-    <!-- Backdrop -->
-    <div
-      *ngIf="isOpen()"
-      class="app-modal__backdrop"
-      (click)="onBackdropClick()"
-      [attr.aria-hidden]="'true'"
-    ></div>
+    <div class="modal-overlay" (click)="onOverlayClick($event)">
+      <div class="modal-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <button type="button" class="btn-close" [disabled]="submitting" (click)="close.emit()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
 
-    <!-- Modal Container -->
-    <div *ngIf="isOpen()" class="app-modal__container" [class.app-modal__container--open]="isOpen()">
-      <div class="app-modal__dialog" [class]="dialogClasses()">
-        <!-- Use Card as wrapper -->
-        <app-card
-          variant="elevated"
-          [padding]="'none'"
-          role="dialog"
-          aria-modal="true"
-          [attr.aria-labelledby]="headerId"
-        >
-          <!-- Modal Header -->
-          <div appCardHeader class="app-modal__header">
-            <h2 [id]="headerId" class="app-modal__title">
-              {{ title }}
-            </h2>
-            <button
-              *ngIf="closeable"
-              type="button"
-              class="app-modal__close-btn"
-              aria-label="Fechar modal"
-              (click)="close()"
-            >
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
+        <div class="modal-header">
+          <p class="subtitle">{{ subtitle }}</p>
+          <h2 class="title">{{ title }}</h2>
+          <p class="description">{{ description }}</p>
+        </div>
 
-          <!-- Loading State -->
-          <div *ngIf="isLoading()" class="app-modal__loading">
-            <app-spinner size="md" [showText]="true" [text]="loadingText"></app-spinner>
-          </div>
-
-          <!-- Modal Content -->
-          <div *ngIf="!isLoading()" class="app-modal__content">
-            <ng-content></ng-content>
-          </div>
-
-          <!-- Modal Footer (if action buttons exist) -->
-          <div *ngIf="!isLoading() && (primaryAction || secondaryAction)" class="app-modal__footer">
-            <app-button
-              *ngIf="secondaryAction"
-              variant="ghost"
-              size="md"
-              (buttonClick)="onSecondaryAction()"
-            >
-              {{ secondaryActionLabel }}
-            </app-button>
-            <app-button
-              *ngIf="primaryAction"
-              variant="primary"
-              size="md"
-              [loading]="isLoading()"
-              [disabled]="isLoading()"
-              (buttonClick)="onPrimaryAction()"
-            >
-              {{ primaryActionLabel }}
-            </app-button>
-          </div>
-        </app-card>
+        <ng-content></ng-content>
       </div>
     </div>
   `,
-  styleUrl: './modal.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); }
+    .modal-card { position: relative; width: 100%; max-width: 450px; max-height: calc(100vh - 2rem); overflow-y: auto; background: #13111b; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); color: white; font-family: inherit; }
+    .btn-close { position: absolute; top: 1.25rem; right: 1.25rem; background: transparent; border: none; color: #9ca3af; cursor: pointer; transition: color 0.2s; }
+    .btn-close svg { width: 1.5rem; height: 1.5rem; }
+    .btn-close:hover { color: white; }
+    .modal-header { margin-bottom: 1.75rem; padding-right: 2rem; }
+    .subtitle { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; color: #d8b4fe; margin-bottom: 0.5rem; }
+    .title { font-size: 1.875rem; font-weight: 800; margin: 0; }
+    .description { font-size: 0.875rem; line-height: 1.5; color: #a78bfa; margin-top: 0.5rem; }
+  `]
 })
-export class AppModalComponent {
-  @Input() title = 'Modal';
-  @Input() size: ModalSize = 'md';
-  @Input() closeable = true;
-  @Input() closeOnBackdrop = true;
-  @Input() primaryActionLabel = 'Confirmar';
-  @Input() secondaryActionLabel = 'Cancelar';
-  @Input() loadingText = 'Processando...';
+export class ModalComponent {
+  @Input({ required: true }) title!: string;
+  @Input({ required: true }) subtitle!: string;
+  @Input({ required: true }) description!: string;
+  @Input() submitting = false;
+  @Output() close = new EventEmitter<void>();
 
-  @Output() primaryAction = new EventEmitter<void>();
-  @Output() secondaryAction = new EventEmitter<void>();
-  @Output() onClose = new EventEmitter<void>();
-
-  // Signals
-  isOpen = signal(false);
-  isLoading = signal(false);
-
-  // Generate unique ID for aria-labelledby
-  headerId = `modal-title-${Math.random().toString(36).substr(2, 9)}`;
-
-  // Computed
-  dialogClasses = computed(() => {
-    const base = 'app-modal__dialog';
-    const sizeClass = `app-modal__dialog--${this.size}`;
-
-    return [base, sizeClass].filter(Boolean).join(' ');
-  });
-
-  // Methods
-  open(): void {
-    this.isOpen.set(true);
-    document.body.style.overflow = 'hidden';
+  onOverlayClick(event: MouseEvent): void {
+    if (!this.submitting) this.close.emit();
   }
 
-  close(): void {
-    this.isOpen.set(false);
-    document.body.style.overflow = '';
-    this.onClose.emit();
-  }
-
-  setLoading(loading: boolean): void {
-    this.isLoading.set(loading);
-  }
-
-  onBackdropClick(): void {
-    if (this.closeOnBackdrop && this.closeable) {
-      this.close();
-    }
-  }
-
-  onPrimaryAction(): void {
-    this.primaryAction.emit();
-  }
-
-  onSecondaryAction(): void {
-    this.secondaryAction.emit();
-    if (this.closeOnBackdrop) {
-      this.close();
-    }
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (!this.submitting) this.close.emit();
   }
 }

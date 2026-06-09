@@ -1,72 +1,4 @@
-// O Overlay Cobre a Tela Toda
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-}
-
-// O Card Central
-.modal-card {
-  position: relative;
-  width: 100%;
-  max-width: 450px;
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-  background: #13111b;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  border-radius: 1.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
-  color: white;
-  font-family: inherit;
-}
-
-// Botão Fechar (X)
-.btn-close {
-  position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
-  background: transparent;
-  border: none;
-  color: #9ca3af;
-  cursor: pointer;
-  transition: color 0.2s;
-  
-  svg { width: 1.5rem; height: 1.5rem; }
-  &:hover { color: white; }
-}
-
-// Tipografia do Header
-.modal-header {
-  margin-bottom: 1.75rem;
-  padding-right: 2rem;
-
-  .subtitle {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: #d8b4fe;
-    margin-bottom: 0.5rem;
-  }
-  .title {
-    font-size: 1.875rem;
-    font-weight: 800;
-    margin: 0;
-  }
-  .description {
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: #a78bfa;
-    margin-top: 0.5rem;
-  }
-}
+@use '../../../../../styles.scss' as *;
 
 // Formulário e Inputs
 .modal-form {
@@ -90,22 +22,27 @@
   input, textarea {
     width: 100%;
     background: #1c1926;
-    border: 1px solid #374151;
+    border: 1px solid var(--border-subtle);
     border-radius: 0.75rem;
     padding: 0.875rem;
     color: white;
     font-size: 1rem;
     outline: none;
-    transition: all 0.2s;
+    transition: all var(--transition-fast);
 
-    &::placeholder { color: #6b7280; }
+    &::placeholder {
+      color: #6b7280;
+    }
+
     &:focus {
       border-color: #a855f7;
       box-shadow: 0 0 0 1px #a855f7;
     }
   }
 
-  textarea { resize: vertical; }
+  textarea {
+    resize: vertical;
+  }
   
   .error-msg {
     font-size: 0.75rem;
@@ -117,7 +54,10 @@
 .input-with-suffix {
   position: relative;
   
-  input { padding-right: 4rem; }
+  input {
+    padding-right: 4rem;
+  }
+
   .suffix {
     position: absolute;
     right: 1rem;
@@ -144,9 +84,9 @@
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast);
     background: transparent;
-    border: 1px solid #374151;
+    border: 1px solid var(--border-subtle);
     color: #9ca3af;
 
     .dot {
@@ -163,35 +103,48 @@
     }
 
     &.pill-active {
-      .dot { opacity: 1; }
+      .dot {
+        opacity: 1;
+      }
       
       &.baixa {
         border-color: rgba(52, 211, 153, 0.7);
         background: rgba(52, 211, 153, 0.15);
         color: #6ee7b7;
         box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
-        .dot { box-shadow: 0 0 8px currentColor; }
+        .dot {
+          box-shadow: 0 0 8px currentColor;
+        }
       }
+
       &.media {
         border-color: rgba(251, 191, 36, 0.7);
         background: rgba(251, 191, 36, 0.15);
         color: #fcd34d;
         box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
-        .dot { box-shadow: 0 0 8px currentColor; }
+        .dot {
+          box-shadow: 0 0 8px currentColor;
+        }
       }
+
       &.alta {
         border-color: rgba(249, 115, 22, 0.7);
         background: rgba(249, 115, 22, 0.15);
         color: #fdba74;
         box-shadow: 0 0 12px rgba(249, 115, 22, 0.2);
-        .dot { box-shadow: 0 0 8px currentColor; }
+        .dot {
+          box-shadow: 0 0 8px currentColor;
+        }
       }
+
       &.critica {
         border-color: rgba(244, 63, 94, 0.7);
         background: rgba(244, 63, 94, 0.15);
         color: #fda4af;
         box-shadow: 0 0 12px rgba(244, 63, 94, 0.2);
-        .dot { box-shadow: 0 0 8px currentColor; }
+        .dot {
+          box-shadow: 0 0 8px currentColor;
+        }
       }
     }
   }
@@ -208,7 +161,10 @@
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
 
-  strong { text-transform: capitalize; }
+  strong {
+    text-transform: capitalize;
+  }
+
   .summary-dot {
     width: 0.375rem;
     height: 0.375rem;
@@ -224,10 +180,6 @@
   gap: 0.75rem;
   margin-top: 1rem;
 
-  @media (max-width: 640px) {
-    flex-direction: column-reverse;
-  }
-
   .btn-cancel {
     background: transparent;
     border: none;
@@ -236,8 +188,12 @@
     padding: 0.75rem 1.25rem;
     border-radius: 9999px;
     cursor: pointer;
-    transition: background 0.2s;
-    &:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+    transition: background var(--transition-fast);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
   }
 
   .btn-submit {
@@ -249,16 +205,24 @@
     border-radius: 9999px;
     cursor: pointer;
     box-shadow: 0 0 15px rgba(109, 40, 217, 0.4);
-    transition: all 0.2s;
+    transition: all var(--transition-fast);
 
     &:hover {
       background: linear-gradient(to right, #7c3aed, #5b21b6);
       transform: translateY(-1px);
     }
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       transform: none;
     }
+  }
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .modal-footer {
+    flex-direction: column-reverse;
   }
 }

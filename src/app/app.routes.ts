@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './shared/components/feature/layout/layout.component';
 import { authGuard } from './core/http/auth.guard';
+import { adminGuard } from './core/http/admin.guard';
 
 export const appRoutes: Routes = [
     {
@@ -35,7 +36,7 @@ export const appRoutes: Routes = [
             {
                 path: 'success',
                 loadComponent: () =>
-                    import('./features/auth/register-success/register-success.component').then((m) => m.RegisterSuccessComponent),
+                    import('@features/auth/register-success/register-success.component').then((m) => m.RegisterSuccessComponent),
             },
             {
                 path: '',
@@ -51,6 +52,12 @@ export const appRoutes: Routes = [
         canActivateChild: [authGuard],
         children: [
             {
+                path: 'admin',
+                canActivate: [adminGuard],
+                loadComponent: () =>
+                    import('@features/admin/admin.component').then((m) => m.AdminComponent),
+            },
+            {
                 path: 'home',
                 loadComponent: () =>
                     import('@features/home/home.component').then((m) => m.HomeComponent),
@@ -61,7 +68,7 @@ export const appRoutes: Routes = [
                     {
                         path: '',
                         loadComponent: () =>
-                            import('@features/routines/routines.component').then((m) => m.RoutinesComponent),
+                            import('@features/routines/views/routines.component').then((m) => m.RoutinesComponent),
                     },
                     {
                         path: ':id',
@@ -92,12 +99,17 @@ export const appRoutes: Routes = [
             {
                 path: 'shop',
                 loadComponent: () =>
-                    import('@features/shop/shop.component').then((m) => m.ShopComponent),
+                    import('@app/features/shop/views/shop.component').then((m) => m.ShopComponent),
+            },
+            {
+                path: 'premium',
+                loadComponent: () =>
+                    import('@features/payments/views/premium/premium.component').then((m) => m.PremiumComponent),
             },
             {
                 path: 'profile',
                 loadComponent: () =>
-                    import('@features/profile/profile.component').then((m) => m.ProfileComponent),
+                    import('@features/statistics/views/profile.component').then((m) => m.ProfileComponent),
             },
             {
                 path: 'friends',

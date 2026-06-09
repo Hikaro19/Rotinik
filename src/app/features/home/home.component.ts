@@ -1,9 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HomeFacadeService } from '@core/services/home-facade.service';
-import { RoutineService } from '@core/services/routine.service';
-import { ProfileService } from '@core/services/profile.service';
+import { HomeFacadeService } from '../routines/services/home-facade.service';
 import { AppRoutineCardComponent } from '@shared/components/feature/routine-card/routine-card.component';
 
 @Component({
@@ -13,38 +11,35 @@ import { AppRoutineCardComponent } from '@shared/components/feature/routine-card
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
   private readonly router = inject(Router);
   private readonly homeFacade = inject(HomeFacadeService);
-  private readonly routineService = inject(RoutineService);
-  private readonly profileService = inject(ProfileService);
 
-  ngOnInit(): void {
-    this.routineService.initialize();
-    this.profileService.initialize();
-  }
+  readonly activeTab = signal<'rotinas' | 'concluidas'>('rotinas');
+  readonly tarefaFiltro = signal<'todas' | 'pendente' | 'andamento' | 'concluida'>('todas');
 
-  activeTab = signal<'tarefas' | 'rotinas'>('rotinas');
-  tarefaFiltro = signal<'todas' | 'pendente' | 'andamento' | 'concluida'>('todas');
+  readonly rotinas = this.homeFacade.rotinas;
+  readonly totalRotinas = this.homeFacade.totalRotinas;
+  readonly rotinasCompletas = this.homeFacade.rotinasCompletas;
+  readonly xpTotal = this.homeFacade.xpTotal;
+  readonly tarefasPendentes = this.homeFacade.tarefasPendentes;
+  readonly maiorStreak = this.homeFacade.maiorStreak;
+  readonly usuarioAtual = this.homeFacade.usuarioAtual;
+  readonly nomeUsuario = this.homeFacade.nomeUsuario;
+  readonly usernameUsuario = this.homeFacade.usernameUsuario;
+  readonly nivelUsuario = this.homeFacade.nivelUsuario;
+  readonly progressoNivel = this.homeFacade.progressoNivel;
+  readonly moedas = this.homeFacade.moedas;
+  readonly progressoMedio = this.homeFacade.progressoMedio;
+  readonly rotinasEmAndamento = this.homeFacade.rotinasEmAndamento;
+  readonly rotinasCompletas$ = this.homeFacade.rotinasCompletasDetalhadas;
+  readonly statsCard = this.homeFacade.statsCard;
 
-  rotinas = this.homeFacade.rotinas;
-  totalRotinas = this.homeFacade.totalRotinas;
-  rotinasCompletas = this.homeFacade.rotinasCompletas;
-  xpTotal = this.homeFacade.xpTotal;
-  tarefasPendentes = this.homeFacade.tarefasPendentes;
-  maiorStreak = this.homeFacade.maiorStreak;
-  usuarioAtual = this.homeFacade.usuarioAtual;
-  nomeUsuario = this.homeFacade.nomeUsuario;
-  usernameUsuario = this.homeFacade.usernameUsuario;
-  nivelUsuario = this.homeFacade.nivelUsuario;
-  progressoNivel = this.homeFacade.progressoNivel;
-  moedas = this.homeFacade.moedas;
-  progressoMedio = this.homeFacade.progressoMedio;
-  rotinasEmAndamento = this.homeFacade.rotinasEmAndamento;
-  rotinasCompletas$ = this.homeFacade.rotinasCompletasDetalhadas;
-  statsCard = this.homeFacade.statsCard;
+  readonly avatarUrl = this.homeFacade.avatarUrl;
+  readonly avatarBorderUrl = this.homeFacade.avatarBorderUrl;
+  readonly levelIconUrl = this.homeFacade.levelIconUrl;
 
-  switchTab(tab: 'tarefas' | 'rotinas'): void {
+  switchTab(tab: 'rotinas' | 'concluidas'): void {
     this.activeTab.set(tab);
   }
 
@@ -54,5 +49,13 @@ export class HomeComponent implements OnInit {
 
   goToRoutinesList(): void {
     this.router.navigate(['/routines']);
+  }
+
+  onToggleTask(event: { routineId: string, taskId: string, completed: boolean }): void {
+    if (event.completed) {
+      this.homeFacade.completeTask(event.routineId, event.taskId);
+    } else {
+      this.homeFacade.uncompleteTask(event.routineId, event.taskId);
+    }
   }
 }

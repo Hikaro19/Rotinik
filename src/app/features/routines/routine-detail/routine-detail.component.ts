@@ -2,21 +2,31 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs/operators';
-import { CreateTaskRequestDto } from '@core/models/api';
-import { RoutineApiService } from '@core/services/routine-api.service';
+import { TaskItemComponent } from './task-item/task-item.component';
+import { CreateTaskRequestDto } from '../models/routine-api.models';
+import { RoutineApiService } from '../services/routine-api.service';
 import { RoutineService, Task } from '@core/services/routine.service';
-import { RoutineDetailFacadeService } from '@core/services/routine-detail-facade.service';
+import { RoutineDetailFacadeService } from '../services/routine-detail-facade.service';
 import { TaskFormComponent, TaskFormValue } from './task-form/task-form.component';
+import { RoutineFormComponent } from './routine-form/routine-form.component';
 import { AppToastComponent } from '@shared/components/ui/toast/toast.component';
 import { ConfirmDialogComponent } from '@shared/components/ui/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-routine-detail',
   standalone: true,
-  imports: [CommonModule, TaskFormComponent, AppToastComponent, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    TaskFormComponent,
+    RoutineFormComponent,
+    AppToastComponent,
+    ConfirmDialogComponent,
+    TaskItemComponent
+  ],
   templateUrl: './routine-detail.component.html',
   styleUrl: './routine-detail.component.scss',
 })
+
 export class RoutineDetailComponent implements OnInit {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -127,18 +137,76 @@ export class RoutineDetailComponent implements OnInit {
       : this.routineApi.addTask(routineId, apiPayload);
 
     request$.pipe(take(1)).subscribe({
-      next: (updatedRoutine) => {
-        this.routineService.syncRoutineFromApi(updatedRoutine);
-        this.routineDetailFacade.refreshRoutine();
+      next: () => {
+        this.routineService.forceReload();
         this.isSubmittingTaskForm.set(false);
         this.closeTaskForm();
         this.toastMessage.set(editingTask ? 'Tarefa atualizada.' : 'Tarefa criada.');
       },
-      error: () => {
+      error: (err: any) => {
         this.isSubmittingTaskForm.set(false);
-        this.localErrorMessage.set('Não foi possível salvar a tarefa.');
+        const errMessage = err?.error?.detail || err?.error?.title || err?.message || 'Não foi possível salvar a tarefa.';
+        if (typeof errMessage === 'string' && errMessage.toLowerCase().includes('limit reached')) {
+          if (errMessage.toLowerCase().includes('upgrade to premium')) {
+            this.dialogConfig.set({
+              isOpen: true,
+              title: 'Limite de Tarefas Atingido',
+              message: 'Sua conta gratuita permite o máximo de 10 tarefas por rotina. Deseja adquirir o Premium para desbloquear até 30 tarefas por rotina, e mais tarefas de alta prioridade?',
+              isDestructive: false,
+              showCancelButton: true,
+              confirmLabel: 'Comprar Premium',
+              cancelLabel: 'Agora não',
+              isPremiumPrompt: true
+            });
+          } else {
+            this.dialogConfig.set({
+              isOpen: true,
+              title: 'Limite Máximo Atingido',
+              message: 'Você já atingiu o limite máximo absoluto permitido pelo plano Premium (30 tarefas)!',
+              isDestructive: false,
+              showCancelButton: false,
+              confirmLabel: 'OK',
+              isPremiumPrompt: false
+            });
+          }
+        } else {
+          this.dialogConfig.set({
+            isOpen: true,
+            title: 'Erro',
+            message: errMessage,
+            isDestructive: false,
+            showCancelButton: false,
+            confirmLabel: 'OK',
+            isPremiumPrompt: false
+          });
+        }
       },
     });
+  }
+
+  readonly dialogConfig = signal<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    isDestructive: boolean;
+    showCancelButton?: boolean;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    isPremiumPrompt?: boolean;
+  } | null>(null);
+
+  handleDialogDecision(decision: boolean): void {
+    const isPremiumPrompt = this.dialogConfig()?.isPremiumPrompt;
+    this.dialogConfig.set(null);
+    
+    if (isPremiumPrompt && decision) {
+      this.onBuyPremium();
+    }
+  }
+
+  onBuyPremium(): void {
+    this.closeTaskForm();
+    this.router.navigate(['/premium']);
   }
 
   confirmDeleteTask(confirmed: boolean): void {
@@ -160,9 +228,8 @@ export class RoutineDetailComponent implements OnInit {
       .deleteTask(routineId, task.id)
       .pipe(take(1))
       .subscribe({
-        next: (updatedRoutine) => {
-          this.routineService.syncRoutineFromApi(updatedRoutine);
-          this.routineDetailFacade.refreshRoutine();
+        next: () => {
+          this.routineService.forceReload();
           this.toastMessage.set('Tarefa excluída.');
           this.isDeletingTaskRequest.set(false);
           this.isDeleteTaskDialogOpen.set(false);
@@ -240,12 +307,39 @@ export class RoutineDetailComponent implements OnInit {
     return {
       title: payload.title,
       description: payload.description,
-      estimatedMinutes: payload.estimatedMinutes,
+      deadlineValue: payload.deadlineValue,
       importance: payload.importance,
     };
   }
 
   backToRoutines(): void {
     this.router.navigate(['/routines']);
+  }
+
+  readonly isRoutineFormOpen = signal(false);
+
+  openEditRoutineDialog(): void {
+    this.isRoutineFormOpen.set(true);
+  }
+
+  closeRoutineForm(): void {
+    this.isRoutineFormOpen.set(false);
+  }
+
+  submitRoutineForm(payload: import('./routine-form/routine-form.component').RoutineFormValue): void {
+    const routineId = this.routineId();
+    if (!routineId) return;
+
+    this.localErrorMessage.set(null);
+    this.routineDetailFacade.updateRoutine({
+      title: payload.title,
+      description: payload.description,
+      category: payload.category,
+      frequency: payload.frequency as any
+    });
+
+    // Simular o comportamento reativo já que a API handle o state no RoutineService
+    this.toastMessage.set('Rotina atualizada.');
+    this.closeRoutineForm();
   }
 }

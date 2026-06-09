@@ -54,7 +54,12 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
             </div>
             <div class="reward-badge">
               <span class="reward-badge__icon">💰</span>
-              <span class="reward-badge__value">+{{ currentTask().coinReward }} moedas</span>
+              <span class="reward-badge__value">
+                +{{ currentTask().coinReward }} moedas
+                <span class="reward-badge__bonus" *ngIf="currentTask().deadlineValue && !currentTask().completed" title="Bônus de Prazo" style="color: #2ecc71; margin-left: 4px; font-weight: bold;">
+                  (+{{ getBonus(currentTask().coinReward) }})
+                </span>
+              </span>
             </div>
           </div>
 
@@ -102,7 +107,13 @@ import { AppTaskRewardComponent } from '../task-reward/task-reward.component';
             >
               <span class="task-item__checkbox">{{ task.completed ? '✓' : '○' }}</span>
               <span class="task-item__title">{{ task.title }}</span>
-              <span class="task-item__xp">{{ task.xpReward }} XP</span>
+              <div class="task-item__rewards" style="display: flex; gap: 8px; font-size: 12px; font-weight: 600;">
+                <span class="task-item__xp" style="color: var(--game-xp);">{{ task.xpReward }} XP</span>
+                <span class="task-item__coins" style="color: #f1c40f;">
+                  {{ task.coinReward }} 🪙
+                  <span *ngIf="task.deadlineValue && !task.completed" style="color: #2ecc71;">(+{{ getBonus(task.coinReward) }})</span>
+                </span>
+              </div>
             </div>
           </div>
         </app-card>
@@ -536,5 +547,9 @@ export class AppTaskExecutionComponent implements OnInit {
     if (this.onCloseCallback) {
       this.onCloseCallback();
     }
+  }
+
+  getBonus(coins: number): number {
+    return Math.floor(coins * 0.5);
   }
 }

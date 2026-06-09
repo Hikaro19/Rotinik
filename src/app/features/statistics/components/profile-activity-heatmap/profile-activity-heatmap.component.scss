@@ -1,0 +1,119 @@
+@use '../../../../../styles.scss' as *;
+
+.heatmap-container {
+  width: 100%;
+
+  .heatmap-legend {
+    display: flex;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-6);
+    justify-content: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .legend-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+
+    &.active {
+      background: var(--brand-gradient);
+      border-color: rgba(168, 85, 247, 0.55);
+    }
+
+    &.inactive {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .heatmap-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-6);
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .heatmap-week {
+    display: flex;
+    gap: var(--spacing-2);
+    min-width: max-content;
+  }
+
+  .heatmap-day {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    border: 1px solid var(--border-subtle);
+
+    &.active {
+      background: var(--brand-gradient);
+      box-shadow: 0 2px 4px rgba(168, 85, 247, 0.28);
+
+      &:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 8px rgba(168, 85, 247, 0.45);
+      }
+    }
+
+    &.inactive {
+      background: rgba(255, 255, 255, 0.05);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.08);
+      }
+    }
+
+    &:hover {
+      z-index: 10;
+    }
+  }
+
+  .heatmap-info {
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    padding: var(--spacing-4);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-sm);
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// 📱 Responsive
+@media (max-width: 768px) {
+  .heatmap-container {
+    .heatmap-day {
+      width: 18px;
+      height: 18px;
+    }
+
+    .heatmap-week {
+      gap: var(--spacing-1);
+    }
+
+    .heatmap-grid {
+      gap: var(--spacing-1);
+    }
+
+    .heatmap-legend {
+      gap: var(--spacing-4);
+    }
+  }
+}

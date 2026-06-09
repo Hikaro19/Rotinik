@@ -1,0 +1,72 @@
+<div class="premium-container">
+  <div class="premium-header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="icon">❮</span> Voltar
+    </button>
+  </div>
+
+  <div class="premium-content">
+    <div class="hero-section">
+      <div class="glow-bg"></div>
+      <h1 class="title">Seja <span>Premium</span></h1>
+      <p class="subtitle">Evolua sua jornada. Desbloqueie limites e conquiste recompensas exclusivas.</p>
+    </div>
+
+    <div class="advantages-box">
+      <h3 class="advantages-title">O que você ganha?</h3>
+      <ul class="advantages-list">
+        <li *ngFor="let adv of advantages">
+          <span class="adv-icon">{{ adv.icon }}</span>
+          <span class="adv-text">{{ adv.text }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="plans-container">
+      <div class="plan-card">
+        <h3 class="plan-name">Mensal</h3>
+        <div class="plan-price">
+          <span class="currency">R$</span>
+          <span class="value">39</span>
+          <span class="cents">,90</span>
+          <span class="period">/mês</span>
+        </div>
+        <p class="plan-desc">Acesso total e flexibilidade.</p>
+        <app-button variant="secondary" [fullWidth]="true" [loading]="isSubscribing()" (buttonClick)="openSubscribeDialog('monthly')">
+          Assinar Mensal
+        </app-button>
+      </div>
+
+      <div class="plan-card popular-plan">
+        <div class="popular-badge">Mais Popular - 25% OFF</div>
+        <h3 class="plan-name">Anual</h3>
+        <div class="plan-price">
+          <span class="currency">R$</span>
+          <span class="value">29</span>
+          <span class="cents">,90</span>
+          <span class="period">/mês</span>
+        </div>
+        <p class="plan-desc">O melhor custo benefício para o seu crescimento contínuo.</p>
+        <app-button variant="primary" [fullWidth]="true" [loading]="isSubscribing()" (buttonClick)="openSubscribeDialog('yearly')">
+          Assinar Anual
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-layer" *ngIf="toastMessage() as msg">
+    <app-toast type="success" title="Parabéns!" [message]="msg" [duration]="3000" (close)="closeToast()"></app-toast>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="dialogConfig()?.isOpen"
+  [kicker]="''"
+  [title]="dialogConfig()!.title"
+  [message]="dialogConfig()!.message"
+  [isDestructive]="dialogConfig()!.isDestructive"
+  [showCancelButton]="dialogConfig()!.showCancelButton ?? true"
+  [confirmLabel]="dialogConfig()!.confirmLabel ?? 'Confirmar'"
+  [cancelLabel]="dialogConfig()!.cancelLabel ?? 'Cancelar'"
+  (decision)="handleDialogDecision($event)">
+</app-confirm-dialog>

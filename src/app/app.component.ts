@@ -1,32 +1,29 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, effect, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { RoutineService } from './core/services/routine.service';
-import { ProfileService } from './core/services/profile.service';
-import { AuthService } from './core/services/auth.service';
+import { ThemeService } from '@core/services/theme.service';
+import { AuthFacadeService } from '@features/users/services/auth-facade.service';
+import { MedalEarnedModalComponent } from '@shared/components/feature/medal-earned-modal/medal-earned-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [RouterOutlet, MedalEarnedModalComponent],
   template: `
     <router-outlet></router-outlet>
+    <app-medal-earned-modal></app-medal-earned-modal>
   `,
   styles: [],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'Rotinik';
+  private themeService = inject(ThemeService);
+  private authFacade = inject(AuthFacadeService);
 
-  private readonly routineService = inject(RoutineService);
-  private readonly profileService = inject(ProfileService);
-  private readonly authService = inject(AuthService);
-
-  ngOnInit(): void {
-    if (!this.authService.isAuthenticated()) {
-      return;
-    }
-
-    this.routineService.initialize();
-    this.profileService.initialize();
+  constructor() {
+    effect(() => {
+      // Re-aplica o tema toda vez que a session for atualizada
+      this.authFacade.session();
+      this.themeService.applyCosmetics();
+    });
   }
 }

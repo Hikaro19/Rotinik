@@ -1,0 +1,58 @@
+<div class="modal-overlay" (click)="fecharModal()">
+  <div class="modal-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+    
+    <button type="button" class="btn-close" [disabled]="submitting" (click)="fecharModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+
+    <div class="modal-header">
+      <p class="subtitle">Ajuste de Estratégia</p>
+      <h2 class="title">Editar Rotina</h2>
+      <p class="description">
+        Modifique as configurações gerais desta rotina.
+      </p>
+    </div>
+
+    <form class="modal-form" [formGroup]="routineForm" (ngSubmit)="onSubmit()">
+      
+      <div class="form-group">
+        <label>Nome da Rotina</label>
+        <input type="text" formControlName="title" placeholder="Ex: Treino da Manhã" />
+        <span class="error-msg" *ngIf="routineForm.controls.title.touched && routineForm.controls.title.invalid">
+          Informe um título com pelo menos 3 caracteres.
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Objetivo / Descrição</label>
+        <textarea rows="3" formControlName="description" placeholder="Ex: Manter o corpo ativo e saudável..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Categoria</label>
+        <select formControlName="category">
+          <option *ngFor="let cat of categorias" [value]="cat.toLowerCase()">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Frequência (Prazo Mínimo)</label>
+        <select formControlName="frequency">
+          <option *ngFor="let f of frequencias" [value]="f.value">{{ f.label }}</option>
+        </select>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" [disabled]="submitting" (click)="fecharModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="submitting">
+          Salvar Alterações
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

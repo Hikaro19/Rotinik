@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ShopItem } from '@core/services/shop.service';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
+import { ShopItem } from '../../../../features/shop/services/shop.service';
 import { AppCardComponent } from '../../ui/card/card.component';
 import { AppButtonComponent } from '../../ui/button/button.component';
 
@@ -22,7 +23,26 @@ import { AppButtonComponent } from '../../ui/button/button.component';
     >
       <!-- Item Header -->
       <div class="shop-item__header">
-        <div class="shop-item__icon">{{ item.icon }}</div>
+        <div class="shop-item__icon">
+          <!-- Graphic Items (Border, Background, Navbar) -->
+          <ng-container *ngIf="isGraphicItem(item)">
+            <div class="shop-item__graphic-container">
+              <div class="shop-item__graphic-circle"
+                   [style]="getGraphicStyle(item)">
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Text/Image Items (Avatar, Level Icon, etc) -->
+          <ng-container *ngIf="!isGraphicItem(item)">
+            <ng-container *ngIf="isImageUrl(item.icon)">
+              <img [src]="item.icon" [alt]="item.name" class="shop-item__image" />
+            </ng-container>
+            <ng-container *ngIf="!isImageUrl(item.icon)">
+              {{ item.icon }}
+            </ng-container>
+          </ng-container>
+        </div>
         <div class="shop-item__badge" [class]="'shop-item__badge--' + item.rarity">
           {{ rarityLabel() }}
         </div>
@@ -54,13 +74,23 @@ import { AppButtonComponent } from '../../ui/button/button.component';
       <!-- Action -->
       <div class="shop-item__footer">
         <app-button
-          [variant]="purchased ? 'ghost' : 'primary'"
+          *ngIf="!purchased"
+          variant="primary"
           size="sm"
-          [disabled]="purchased"
           (buttonClick)="onPurchase()"
           [attr.aria-label]="'Comprar ' + item.name"
         >
-          {{ purchased ? '✓ Possuído' : '🛒 Comprar' }}
+          🛒 Comprar
+        </app-button>
+
+        <app-button
+          *ngIf="purchased"
+          [variant]="item.isEquipped ? 'ghost' : 'primary'"
+          size="sm"
+          (buttonClick)="onEquip()"
+          [attr.aria-label]="item.isEquipped ? 'Desequipar ' + item.name : 'Equipar ' + item.name"
+        >
+          {{ item.isEquipped ? '✓ Equipado' : '👕 Equipar' }}
         </app-button>
       </div>
     </app-card>
@@ -81,10 +111,36 @@ import { AppButtonComponent } from '../../ui/button/button.component';
       }
 
       .shop-item__icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         font-size: 56px;
         text-align: center;
         margin-bottom: 8px;
         line-height: 1;
+        min-height: 64px;
+      }
+
+      .shop-item__graphic-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 64px;
+        height: 64px;
+      }
+
+      .shop-item__graphic-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        box-sizing: content-box;
+      }
+
+      .shop-item__image {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       .shop-item__badge {
@@ -208,6 +264,9 @@ import { AppButtonComponent } from '../../ui/button/button.component';
         margin-top: auto;
         padding-top: 12px;
         border-top: 1px solid var(--surface-tertiary);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
       @keyframes pulse {
@@ -233,9 +292,22 @@ import { AppButtonComponent } from '../../ui/button/button.component';
   ],
 })
 export class AppShopItemComponent {
+  private readonly sanitizer = inject(DomSanitizer);
+
   @Input() item!: ShopItem;
   @Input() purchased = false;
   @Output() purchase = new EventEmitter<ShopItem>();
+  @Output() equip = new EventEmitter<ShopItem>();
+
+  getGraphicStyle(item: ShopItem): SafeStyle {
+    const cat = item.category?.toLowerCase()?.trim() || '';
+    const bg = (cat === 'background' || cat === 'navbar') ? item.icon : 'rgba(255,255,255,0.1)';
+    const border = cat === 'border' ? item.icon : 'none';
+    
+    // Generate a single safe style string for the element
+    const styleStr = `background: ${bg}; border: ${border};`;
+    return this.sanitizer.bypassSecurityTrustStyle(styleStr);
+  }
 
   rarityLabel(): string {
     const labels: Record<ShopItem['rarity'], string> = {
@@ -248,13 +320,15 @@ export class AppShopItemComponent {
   }
 
   categoryLabel(): string {
-    const labels: Record<ShopItem['category'], string> = {
-      cosmetic: 'Cosmético',
-      boost: 'Impulso',
-      theme: 'Tema',
-      badge: 'Placa',
+    const labels: Record<string, string> = {
+      avatar: 'Avatar',
+      border: 'Borda',
+      level_icon: 'Ícone',
+      background: 'Fundo',
+      navbar: 'NavBar',
     };
-    return labels[this.item.category];
+    const cat = this.item.category?.toLowerCase()?.trim() || '';
+    return labels[cat] || this.item.category;
   }
 
   finalPrice(): number {
@@ -264,5 +338,19 @@ export class AppShopItemComponent {
 
   onPurchase(): void {
     this.purchase.emit(this.item);
+  }
+
+  onEquip(): void {
+    this.equip.emit(this.item);
+  }
+
+  isGraphicItem(item: ShopItem): boolean {
+    const cat = item.category?.toLowerCase()?.trim() || '';
+    return ['border', 'background', 'navbar'].includes(cat);
+  }
+
+  isImageUrl(icon: string): boolean {
+    if (!icon) return false;
+    return icon.startsWith('http') || icon.startsWith('assets/') || icon.startsWith('/');
   }
 }
